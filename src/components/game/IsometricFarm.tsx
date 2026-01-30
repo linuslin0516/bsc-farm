@@ -6,6 +6,7 @@ import { getCropById } from '../../data/crops';
 import { Position, FarmCell } from '../../types';
 import { updateAchievementProgress } from '../../services/achievementService';
 import { updateTaskProgress } from '../../services/dailyTaskService';
+import { incrementStats } from '../../services/leaderboardService';
 
 interface IsometricFarmProps {
   onNotify: (type: 'success' | 'error' | 'info' | 'warning', message: string) => void;
@@ -79,13 +80,14 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
         plantCrop(position, selectedCrop);
         onNotify('success', `種下了 ${cropDef.nameCn}！`);
 
-        // Update achievements and daily tasks
+        // Update achievements, daily tasks, and leaderboard stats
         if (player) {
           try {
             await updateAchievementProgress(player.oderId, 'plant', 1);
             await updateTaskProgress(player.oderId, 'plant', 1);
+            await incrementStats(player.oderId, 'plant', 1, player.level);
           } catch (error) {
-            console.error('Failed to update achievements/tasks:', error);
+            console.error('Failed to update achievements/tasks/stats:', error);
           }
         }
 
@@ -108,7 +110,7 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
           addExperience(cropDef.experience);
           onNotify('success', `收成了 ${cropDef.nameCn}！+${cropDef.sellPrice} $FARM`);
 
-          // Update achievements and daily tasks - mark crop as discovered
+          // Update achievements, daily tasks, and leaderboard stats - mark crop as discovered
           try {
             await updateAchievementProgress(player.oderId, 'discover_crop', 1, {
               cropId: harvested.cropId,
@@ -119,8 +121,12 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
             // Update daily tasks
             await updateTaskProgress(player.oderId, 'harvest', 1);
             await updateTaskProgress(player.oderId, 'earn', cropDef.sellPrice);
+
+            // Update leaderboard stats
+            await incrementStats(player.oderId, 'harvest', 1, player.level);
+            await incrementStats(player.oderId, 'earn', cropDef.sellPrice, player.level);
           } catch (error) {
-            console.error('Failed to update achievements/tasks:', error);
+            console.error('Failed to update achievements/tasks/stats:', error);
           }
 
           // Sync to Firebase

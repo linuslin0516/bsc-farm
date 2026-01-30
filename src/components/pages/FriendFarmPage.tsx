@@ -7,6 +7,9 @@ import { getUserById } from '../../services/userService';
 import { stealCrop, getStolenCellsForTarget } from '../../services/stealService';
 import { useGameStore } from '../../store/useGameStore';
 import { getCropById } from '../../data/crops';
+import { incrementStats } from '../../services/leaderboardService';
+import { updateAchievementProgress } from '../../services/achievementService';
+import { updateTaskProgress } from '../../services/dailyTaskService';
 
 // Calculate crop stage based on planted time
 const getCropStage = (plantedAt: number, growthTime: number): CropStage => {
@@ -54,7 +57,7 @@ export const FriendFarmPage: React.FC<FriendFarmPageProps> = ({
   const [notification, setNotification] = useState<NotificationType | null>(null);
   const [friendLevel, setFriendLevel] = useState(1);
 
-  const { addDemoBalance } = useGameStore();
+  const { addDemoBalance, player } = useGameStore();
 
   const handleNotify = useCallback(
     (type: NotificationType['type'], message: string) => {
@@ -111,6 +114,17 @@ export const FriendFarmPage: React.FC<FriendFarmPageProps> = ({
 
         // Add to stolen positions
         setStolenPositions((prev) => [...prev, position]);
+
+        // Update achievements, tasks, and leaderboard stats
+        if (player) {
+          try {
+            await updateAchievementProgress(player.oderId, 'steal', 1);
+            await updateTaskProgress(player.oderId, 'steal', 1);
+            await incrementStats(player.oderId, 'steal', 1, player.level);
+          } catch (error) {
+            console.error('Failed to update stats:', error);
+          }
+        }
 
         handleNotify('success', result.message);
       } else {

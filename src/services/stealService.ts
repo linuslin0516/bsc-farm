@@ -2,6 +2,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
   collection,
   query,
   where,
@@ -51,7 +52,7 @@ export const checkStealCooldown = async (
   const recordsRef = collection(db, STEAL_RECORDS_COLLECTION);
   const q = query(
     recordsRef,
-    where('stealerId', '==', oderId),
+    where('oderId', '==', oderId),
     where('targetId', '==', targetId)
   );
 
@@ -142,6 +143,20 @@ export const stealCrop = async (
   // Update thief's balance
   await updateBalance(oderId, thief.farmBalance + stolenAmount);
 
+  // Remove crop from victim's farm
+  const updatedFarmCells = targetUser.farmCells.map((c) => {
+    if (c.position.x === position.x && c.position.y === position.y) {
+      return { ...c, plantedCrop: undefined };
+    }
+    return c;
+  });
+
+  // Update victim's farm in Firebase
+  const targetDocRef = doc(db, 'users', targetId);
+  await updateDoc(targetDocRef, {
+    farmCells: updatedFarmCells,
+  });
+
   // Record the steal
   const stealRecord: StealRecord = {
     oderId: oderId,
@@ -158,7 +173,7 @@ export const stealCrop = async (
   return {
     success: true,
     amount: stolenAmount,
-    message: `成功偷到 ${stolenAmount} $FARM！`,
+    message: `成功偷到 ${crop.nameCn}！獲得 ${stolenAmount} $FARM！`,
   };
 };
 
@@ -170,7 +185,7 @@ export const getStolenCellsForTarget = async (
   const recordsRef = collection(db, STEAL_RECORDS_COLLECTION);
   const q = query(
     recordsRef,
-    where('stealerId', '==', oderId),
+    where('oderId', '==', oderId),
     where('targetId', '==', targetId)
   );
 

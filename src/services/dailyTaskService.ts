@@ -72,12 +72,14 @@ export const updateTaskProgress = async (
     }
   }
 
-  // Save to Firebase
+  // Save to Firebase (use setDoc to handle both create and update)
   const docRef = doc(db, DAILY_TASKS_COLLECTION, oderId);
-  await updateDoc(docRef, {
+  await setDoc(docRef, {
+    oderId: playerTasks.oderId,
+    date: playerTasks.date,
     tasks: playerTasks.tasks,
     updatedAt: serverTimestamp(),
-  });
+  }, { merge: true });
 
   return { completedTasks, playerTasks };
 };
@@ -100,12 +102,14 @@ export const claimTaskReward = async (
   // Mark as claimed
   taskProgress.claimed = true;
 
-  // Save to Firebase
+  // Save to Firebase (use setDoc with merge to handle both create and update)
   const docRef = doc(db, DAILY_TASKS_COLLECTION, oderId);
-  await updateDoc(docRef, {
+  await setDoc(docRef, {
+    oderId: playerTasks.oderId,
+    date: playerTasks.date,
     tasks: playerTasks.tasks,
     updatedAt: serverTimestamp(),
-  });
+  }, { merge: true });
 
   return {
     xp: task.rewardXp,

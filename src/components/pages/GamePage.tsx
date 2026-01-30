@@ -19,6 +19,7 @@ import { Notification as NotificationType, CropRarity } from '../../types';
 import { getCropById } from '../../data/crops';
 import { updateTaskProgress } from '../../services/dailyTaskService';
 import { updateAchievementProgress } from '../../services/achievementService';
+import { incrementStats } from '../../services/leaderboardService';
 
 interface VisitingState {
   isVisiting: boolean;
@@ -117,13 +118,14 @@ export const GamePage: React.FC = () => {
         }
       }
 
-      // Update achievements and daily tasks
+      // Update achievements, daily tasks, and leaderboard stats
       if (player && planted > 0) {
         try {
           await updateAchievementProgress(player.oderId, 'plant', planted);
           await updateTaskProgress(player.oderId, 'plant', planted);
+          await incrementStats(player.oderId, 'plant', planted, player.level);
         } catch (error) {
-          console.error('Failed to update achievements/tasks:', error);
+          console.error('Failed to update achievements/tasks/stats:', error);
         }
       }
 
@@ -140,13 +142,14 @@ export const GamePage: React.FC = () => {
       }
     }
 
-    // Update achievements and daily tasks
+    // Update achievements, daily tasks, and leaderboard stats
     if (player && planted > 0) {
       try {
         await updateAchievementProgress(player.oderId, 'plant', planted);
         await updateTaskProgress(player.oderId, 'plant', planted);
+        await incrementStats(player.oderId, 'plant', planted, player.level);
       } catch (error) {
-        console.error('Failed to update achievements/tasks:', error);
+        console.error('Failed to update achievements/tasks/stats:', error);
       }
     }
 
