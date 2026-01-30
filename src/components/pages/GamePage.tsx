@@ -70,6 +70,9 @@ export const GamePage: React.FC = () => {
     farmCells,
     selectedCrop,
     plantCrop,
+    harvestCrop,
+    addDemoBalance,
+    addExperience,
     demoBalance,
     subtractDemoBalance,
     syncFarmToFirebase,
@@ -182,6 +185,74 @@ export const GamePage: React.FC = () => {
     });
   }, []);
 
+  // Harvest all mature crops
+  const handleHarvestAll = useCallback(async () => {
+    const matureCells = farmCells.filter(
+      (cell) => cell.plantedCrop && cell.plantedCrop.stage === 'mature'
+    );
+
+    if (matureCells.length === 0) {
+      handleNotify('info', '沒有成熟的作物可以收成！');
+      return;
+    }
+
+    let totalEarnings = 0;
+    let totalXP = 0;
+    let harvested = 0;
+
+    for (const cell of matureCells) {
+      const result = harvestCrop(cell.position);
+      if (result) {
+        const cropDef = getCropById(result.cropId);
+        if (cropDef) {
+          totalEarnings += cropDef.sellPrice;
+          totalXP += cropDef.experience;
+          harvested++;
+
+          // Mark crop as discovered
+          if (player) {
+            try {
+              await updateAchievementProgress(player.oderId, 'discover_crop', 1, {
+                cropId: result.cropId,
+              });
+            } catch (error) {
+              console.error('Failed to update crop discovery:', error);
+            }
+          }
+        }
+      }
+    }
+
+    if (harvested > 0 && player) {
+      // Apply rewards
+      addDemoBalance(totalEarnings);
+      addExperience(totalXP);
+
+      // Update achievements, tasks, and stats
+      try {
+        await updateAchievementProgress(player.oderId, 'harvest', harvested);
+        await updateAchievementProgress(player.oderId, 'earn', totalEarnings);
+        await updateTaskProgress(player.oderId, 'harvest', harvested);
+        await updateTaskProgress(player.oderId, 'earn', totalEarnings);
+        await incrementStats(player.oderId, 'harvest', harvested, player.level);
+        await incrementStats(player.oderId, 'earn', totalEarnings, player.level);
+      } catch (error) {
+        console.error('Failed to update achievements/tasks/stats:', error);
+      }
+
+      await syncFarmToFirebase();
+      handleNotify('success', `收成了 ${harvested} 塊作物！獲得 ${totalEarnings} $FARM 和 ${totalXP} XP！`);
+    }
+  }, [
+    farmCells,
+    harvestCrop,
+    addDemoBalance,
+    addExperience,
+    syncFarmToFirebase,
+    handleNotify,
+    player,
+  ]);
+
   // Function to show unlock animation (exported for use by other components)
   const showUnlockAnimation = useCallback((
     type: 'crop' | 'achievement',
@@ -252,7 +323,7 @@ export const GamePage: React.FC = () => {
 
       {/* Floating Tool Toolbar - Bottom Right */}
       <div className="fixed bottom-4 right-4 z-40">
-        <ToolToolbar onNotify={handleNotify} onPlantAll={handlePlantAll} />
+        <ToolToolbar onNotify={handleNotify} onPlantAll={handlePlantAll} onHarvestAll={handleHarvestAll} />
       </div>
 
       {/* Help Tooltip - Bottom Left */}

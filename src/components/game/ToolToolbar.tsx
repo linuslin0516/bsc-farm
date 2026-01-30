@@ -4,9 +4,10 @@ import { useGameStore } from '../../store/useGameStore';
 interface ToolToolbarProps {
   onNotify: (type: 'success' | 'error' | 'info' | 'warning', message: string) => void;
   onPlantAll: () => void;
+  onHarvestAll: () => void;
 }
 
-export const ToolToolbar: React.FC<ToolToolbarProps> = ({ onNotify, onPlantAll }) => {
+export const ToolToolbar: React.FC<ToolToolbarProps> = ({ onNotify, onPlantAll, onHarvestAll }) => {
   const { selectedTool, setSelectedTool, inventory } = useGameStore();
 
   // Get tool quantities from inventory
@@ -115,6 +116,16 @@ export const ToolToolbar: React.FC<ToolToolbarProps> = ({ onNotify, onPlantAll }
         >
           <div className="text-3xl">🌾</div>
           <span className="text-xs mt-1 font-medium text-green-400">一鍵播種</span>
+        </button>
+
+        {/* Harvest All button */}
+        <button
+          onClick={onHarvestAll}
+          className="relative flex-shrink-0 flex flex-col items-center p-2 rounded-xl border-2 border-yellow-400/50 hover:border-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 transition-all min-w-[70px] cursor-pointer hover:scale-105"
+          title="收成所有成熟作物"
+        >
+          <div className="text-3xl">✨</div>
+          <span className="text-xs mt-1 font-medium text-yellow-400">一鍵收成</span>
         </button>
       </div>
 

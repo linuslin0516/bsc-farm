@@ -62,12 +62,12 @@ export const updatePlayerStats = async (
     newStats.score = calculateScore(level, newStats.totalHarvests, newStats.totalSteals);
   }
 
-  // Save to Firebase
+  // Save to Firebase (use setDoc with merge to handle both create and update)
   const docRef = doc(db, STATS_COLLECTION, oderId);
-  await updateDoc(docRef, {
+  await setDoc(docRef, {
     ...newStats,
     updatedAt: serverTimestamp(),
-  });
+  }, { merge: true });
 
   return newStats;
 };
