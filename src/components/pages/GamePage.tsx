@@ -86,9 +86,8 @@ export const GamePage: React.FC = () => {
     });
   }, []);
 
-  // Function to show unlock animation (can be called from anywhere)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _showUnlockAnimation = useCallback((
+  // Function to show unlock animation (exported for use by other components)
+  const showUnlockAnimation = useCallback((
     type: 'crop' | 'achievement',
     title: string,
     emoji: string,
@@ -106,6 +105,11 @@ export const GamePage: React.FC = () => {
       rewards,
     });
   }, []);
+
+  // Expose showUnlockAnimation to window for global access (e.g., from services)
+  if (typeof window !== 'undefined') {
+    (window as unknown as { showUnlockAnimation: typeof showUnlockAnimation }).showUnlockAnimation = showUnlockAnimation;
+  }
 
   if (!player) return null;
 
