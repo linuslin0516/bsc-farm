@@ -46,10 +46,10 @@ export const Modal: React.FC<ModalProps> = ({
         onClick={onClose}
       />
       <div
-        className={`relative ${sizes[size]} w-full mx-4 bg-binance-dark border-2 border-binance-yellow rounded-xl shadow-2xl shadow-binance-yellow/20 animate-grow`}
+        className={`relative ${sizes[size]} w-full mx-4 max-h-[90vh] bg-binance-dark border-2 border-binance-yellow rounded-xl shadow-2xl shadow-binance-yellow/20 animate-grow flex flex-col`}
       >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-binance-gray-light">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-binance-gray-light flex-shrink-0">
             <h2 className="text-xl font-bold text-binance-yellow">{title}</h2>
             <button
               onClick={onClose}
@@ -61,7 +61,7 @@ export const Modal: React.FC<ModalProps> = ({
             </button>
           </div>
         )}
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );

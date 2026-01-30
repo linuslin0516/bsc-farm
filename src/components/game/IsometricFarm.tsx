@@ -4,6 +4,7 @@ import { IsometricCell } from './IsometricCell';
 import { useGameStore } from '../../store/useGameStore';
 import { getCropById } from '../../data/crops';
 import { Position, FarmCell } from '../../types';
+import { updateAchievementProgress } from '../../services/achievementService';
 
 interface IsometricFarmProps {
   onNotify: (type: 'success' | 'error' | 'info' | 'warning', message: string) => void;
@@ -28,6 +29,7 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
     player,
     farmCells,
     selectedCrop,
+    selectedTool,
     plantCrop,
     harvestCrop,
     updateCropStages,
@@ -36,6 +38,9 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
     subtractDemoBalance,
     demoBalance,
     syncFarmToFirebase,
+    fertilizeCrop,
+    removeCrop,
+    setSelectedTool,
   } = useGameStore();
 
   const [, setTick] = useState(0);
@@ -72,11 +77,21 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
       if (subtractDemoBalance(cropDef.cost)) {
         plantCrop(position, selectedCrop);
         onNotify('success', `種下了 ${cropDef.nameCn}！`);
+
+        // Update achievements
+        if (player) {
+          try {
+            await updateAchievementProgress(player.oderId, 'plant', 1);
+          } catch (error) {
+            console.error('Failed to update achievements:', error);
+          }
+        }
+
         // Sync to Firebase
         await syncFarmToFirebase();
       }
     },
-    [selectedCrop, demoBalance, subtractDemoBalance, plantCrop, onNotify, isVisiting, syncFarmToFirebase]
+    [selectedCrop, demoBalance, subtractDemoBalance, plantCrop, onNotify, isVisiting, syncFarmToFirebase, player]
   );
 
   const handleHarvest = useCallback(
@@ -86,16 +101,28 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
       const harvested = harvestCrop(position);
       if (harvested) {
         const cropDef = getCropById(harvested.cropId);
-        if (cropDef) {
+        if (cropDef && player) {
           addDemoBalance(cropDef.sellPrice);
           addExperience(cropDef.experience);
           onNotify('success', `收成了 ${cropDef.nameCn}！+${cropDef.sellPrice} $FARM`);
+
+          // Update achievements - mark crop as discovered
+          try {
+            await updateAchievementProgress(player.oderId, 'discover_crop', 1, {
+              cropId: harvested.cropId,
+            });
+            await updateAchievementProgress(player.oderId, 'harvest', 1);
+            await updateAchievementProgress(player.oderId, 'earn', cropDef.sellPrice);
+          } catch (error) {
+            console.error('Failed to update achievements:', error);
+          }
+
           // Sync to Firebase
           await syncFarmToFirebase();
         }
       }
     },
-    [harvestCrop, addDemoBalance, addExperience, onNotify, isVisiting, syncFarmToFirebase]
+    [harvestCrop, addDemoBalance, addExperience, onNotify, isVisiting, syncFarmToFirebase, player]
   );
 
   const handleCellClick = useCallback(
@@ -115,13 +142,63 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
         return;
       }
 
+      // Handle tool usage
+      if (selectedTool && cell.plantedCrop) {
+        if (selectedTool === 'remove') {
+          if (removeCrop(cell.position)) {
+            onNotify('success', '已移除作物！');
+            await syncFarmToFirebase();
+          }
+          return;
+        }
+
+        if (selectedTool === 'fertilizer' || selectedTool === 'super_fertilizer') {
+          if (cell.plantedCrop.stage === 'mature') {
+            onNotify('info', '作物已經成熟了，不需要施肥！');
+            return;
+          }
+
+          if (cell.plantedCrop.fertilizedAt) {
+            onNotify('info', '這塊地已經施過肥了！');
+            return;
+          }
+
+          if (fertilizeCrop(cell.position, selectedTool)) {
+            const cropDef = getCropById(cell.plantedCrop.cropId);
+            const fertName = selectedTool === 'super_fertilizer' ? '超級肥料' : '肥料';
+            onNotify('success', `對 ${cropDef?.nameCn} 施了${fertName}！`);
+            await syncFarmToFirebase();
+            // Auto-deselect tool if it was super fertilizer
+            if (selectedTool === 'super_fertilizer') {
+              setSelectedTool(null);
+            }
+          } else {
+            onNotify('error', '沒有肥料了！請在商店購買。');
+          }
+          return;
+        }
+      }
+
+      // Handle normal planting and harvesting
       if (cell.plantedCrop?.stage === 'mature') {
         await handleHarvest(cell.position);
-      } else if (!cell.plantedCrop) {
+      } else if (!cell.plantedCrop && !selectedTool) {
         await handlePlant(cell.position);
       }
     },
-    [handlePlant, handleHarvest, isVisiting, onSteal, stolenPositions, onNotify]
+    [
+      handlePlant,
+      handleHarvest,
+      isVisiting,
+      onSteal,
+      stolenPositions,
+      onNotify,
+      selectedTool,
+      fertilizeCrop,
+      removeCrop,
+      syncFarmToFirebase,
+      setSelectedTool,
+    ]
   );
 
   const getTimeRemaining = useCallback(

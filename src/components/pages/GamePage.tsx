@@ -4,6 +4,7 @@ import { HUD } from '../game/HUD';
 import { CharacterStatsPanel } from '../game/CharacterStatsPanel';
 import { IsometricFarm } from '../game/IsometricFarm';
 import { CropToolbar } from '../game/CropToolbar';
+import { ToolToolbar } from '../game/ToolToolbar';
 import { Shop } from '../game/Shop';
 import { FriendPanel } from '../social/FriendPanel';
 import { FriendFarmPage } from './FriendFarmPage';
@@ -15,6 +16,7 @@ import { CropCodex } from '../game/CropCodex';
 import { UnlockAnimation } from '../ui/UnlockAnimation';
 import { useGameStore } from '../../store/useGameStore';
 import { Notification as NotificationType, CropRarity } from '../../types';
+import { getCropById } from '../../data/crops';
 
 interface VisitingState {
   isVisiting: boolean;
@@ -60,7 +62,15 @@ export const GamePage: React.FC = () => {
     rarity: 'common',
   });
 
-  const { player } = useGameStore();
+  const {
+    player,
+    farmCells,
+    selectedCrop,
+    plantCrop,
+    demoBalance,
+    subtractDemoBalance,
+    syncFarmToFirebase,
+  } = useGameStore();
 
   const handleNotify = useCallback(
     (type: NotificationType['type'], message: string, duration?: number) => {
@@ -68,6 +78,64 @@ export const GamePage: React.FC = () => {
     },
     []
   );
+
+  // Plant all empty cells with selected crop
+  const handlePlantAll = useCallback(async () => {
+    if (!selectedCrop) {
+      handleNotify('info', '請先選擇種子！');
+      return;
+    }
+
+    const cropDef = getCropById(selectedCrop);
+    if (!cropDef) return;
+
+    const emptyCells = farmCells.filter((cell) => !cell.plantedCrop);
+    if (emptyCells.length === 0) {
+      handleNotify('info', '沒有空地了！');
+      return;
+    }
+
+    const totalCost = emptyCells.length * cropDef.cost;
+    if (demoBalance < totalCost) {
+      const maxPlantable = Math.floor(demoBalance / cropDef.cost);
+      if (maxPlantable === 0) {
+        handleNotify('error', `$FARM 不足！需要 ${cropDef.cost}`);
+        return;
+      }
+      handleNotify(
+        'warning',
+        `$FARM 不足種滿！僅種植 ${maxPlantable} 塊地（共需 ${totalCost}，目前有 ${demoBalance.toFixed(0)}）`
+      );
+      // Plant what we can afford
+      for (let i = 0; i < maxPlantable; i++) {
+        if (subtractDemoBalance(cropDef.cost)) {
+          plantCrop(emptyCells[i].position, selectedCrop);
+        }
+      }
+      await syncFarmToFirebase();
+      return;
+    }
+
+    // Plant all
+    let planted = 0;
+    for (const cell of emptyCells) {
+      if (subtractDemoBalance(cropDef.cost)) {
+        plantCrop(cell.position, selectedCrop);
+        planted++;
+      }
+    }
+
+    await syncFarmToFirebase();
+    handleNotify('success', `成功種植 ${planted} 塊 ${cropDef.nameCn}！`);
+  }, [
+    selectedCrop,
+    farmCells,
+    demoBalance,
+    subtractDemoBalance,
+    plantCrop,
+    syncFarmToFirebase,
+    handleNotify,
+  ]);
 
   const handleVisitFriend = useCallback((friendId: string, friendName: string) => {
     setVisitingState({
@@ -148,6 +216,11 @@ export const GamePage: React.FC = () => {
 
       {/* Character Stats Panel */}
       <CharacterStatsPanel />
+
+      {/* Floating Tool Toolbar - Bottom Center (above crop toolbar) */}
+      <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-40">
+        <ToolToolbar onNotify={handleNotify} onPlantAll={handlePlantAll} />
+      </div>
 
       {/* Floating Crop Toolbar - Bottom */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40">

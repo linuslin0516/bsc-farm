@@ -1,15 +1,44 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { getUnlockedCrops, getCropById } from '../../data/crops';
 import { CropShopIcon } from './CropIcon';
-import { RARITY_COLORS, RARITY_NAMES } from '../../types';
+import { RARITY_COLORS, RARITY_NAMES, CropRarity } from '../../types';
+
+type SortMode = 'unlock' | 'price' | 'rarity' | 'profit';
+
+const rarityOrder: Record<CropRarity, number> = {
+  common: 1,
+  uncommon: 2,
+  rare: 3,
+  epic: 4,
+  legendary: 5,
+};
 
 export const CropToolbar: React.FC = () => {
   const { player, selectedCrop, setSelectedCrop, demoBalance } = useGameStore();
+  const [sortMode, setSortMode] = useState<SortMode>('unlock');
 
   if (!player) return null;
 
-  const unlockedCrops = getUnlockedCrops(player.level);
+  const unlockedCrops = useMemo(() => {
+    const crops = getUnlockedCrops(player.level);
+
+    switch (sortMode) {
+      case 'price':
+        return [...crops].sort((a, b) => a.cost - b.cost);
+      case 'rarity':
+        return [...crops].sort((a, b) => rarityOrder[b.rarity] - rarityOrder[a.rarity]);
+      case 'profit':
+        return [...crops].sort((a, b) => {
+          const profitA = a.sellPrice - a.cost;
+          const profitB = b.sellPrice - b.cost;
+          return profitB - profitA;
+        });
+      case 'unlock':
+      default:
+        return crops;
+    }
+  }, [player.level, sortMode]);
 
   return (
     <div className="glass-panel rounded-2xl p-3 pointer-events-auto max-w-[90vw] sm:max-w-xl">
@@ -19,14 +48,27 @@ export const CropToolbar: React.FC = () => {
           <span className="text-lg">🌱</span>
           <h3 className="text-sm font-bold text-binance-yellow">選擇種子</h3>
         </div>
-        {selectedCrop && (
-          <button
-            onClick={() => setSelectedCrop(null)}
-            className="text-xs text-gray-400 hover:text-white transition-colors"
+        <div className="flex items-center gap-2">
+          {/* Sort dropdown */}
+          <select
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value as SortMode)}
+            className="text-xs bg-binance-gray border border-binance-yellow/30 rounded px-2 py-1 text-gray-300 focus:outline-none focus:border-binance-yellow"
           >
-            取消選擇
-          </button>
-        )}
+            <option value="unlock">解鎖順序</option>
+            <option value="price">價格</option>
+            <option value="rarity">稀有度</option>
+            <option value="profit">利潤</option>
+          </select>
+          {selectedCrop && (
+            <button
+              onClick={() => setSelectedCrop(null)}
+              className="text-xs text-gray-400 hover:text-white transition-colors"
+            >
+              取消選擇
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Crop Grid - Horizontal scrollable */}

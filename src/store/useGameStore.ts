@@ -28,6 +28,8 @@ interface GameStore {
   harvestCrop: (position: Position) => PlantedCrop | null;
   updateCropStages: () => void;
   syncFarmToFirebase: () => Promise<void>;
+  fertilizeCrop: (position: Position, fertilizerId: string) => boolean;
+  removeCrop: (position: Position) => boolean;
 
   // Inventory
   inventory: InventoryItem[];
@@ -41,6 +43,8 @@ interface GameStore {
   // Selection state
   selectedCrop: string | null;
   setSelectedCrop: (cropId: string | null) => void;
+  selectedTool: string | null;
+  setSelectedTool: (toolId: string | null) => void;
 
   // Demo mode balance (when no real token)
   demoBalance: number;
@@ -244,9 +248,80 @@ export const useGameStore = create<GameStore>()(
           ],
         })),
 
+      fertilizeCrop: (position, fertilizerId) => {
+        const state = get();
+        const cell = state.farmCells.find(
+          (c) => c.position.x === position.x && c.position.y === position.y
+        );
+
+        if (!cell?.plantedCrop) return false;
+
+        // Check if already fertilized
+        if (cell.plantedCrop.fertilizedAt) return false;
+
+        // Remove fertilizer from inventory
+        if (!state.removeFromInventory(fertilizerId, 1)) return false;
+
+        const crop = getCropById(cell.plantedCrop.cropId);
+        if (!crop) return false;
+
+        // Get fertilizer effect
+        const fertilizerEffect = fertilizerId === 'super_fertilizer' ? 1 : 0.5;
+
+        // Calculate new planted time based on fertilizer effect
+        let newPlantedAt = cell.plantedCrop.plantedAt;
+        if (fertilizerEffect === 1) {
+          // Super fertilizer: instant mature
+          newPlantedAt = Date.now() - crop.growthTime * 1000;
+        } else {
+          // Regular fertilizer: 50% faster (reduce remaining time by 50%)
+          const elapsed = (Date.now() - cell.plantedCrop.plantedAt) / 1000;
+          const remaining = crop.growthTime - elapsed;
+          const reducedRemaining = remaining * (1 - fertilizerEffect);
+          newPlantedAt = Date.now() - (elapsed + crop.growthTime - reducedRemaining) * 1000;
+        }
+
+        set({
+          farmCells: state.farmCells.map((c) =>
+            c.position.x === position.x && c.position.y === position.y && c.plantedCrop
+              ? {
+                  ...c,
+                  plantedCrop: {
+                    ...c.plantedCrop,
+                    fertilizedAt: Date.now(),
+                    plantedAt: newPlantedAt,
+                  },
+                }
+              : c
+          ),
+        });
+
+        return true;
+      },
+      removeCrop: (position) => {
+        const state = get();
+        const cell = state.farmCells.find(
+          (c) => c.position.x === position.x && c.position.y === position.y
+        );
+
+        if (!cell?.plantedCrop) return false;
+
+        set({
+          farmCells: state.farmCells.map((c) =>
+            c.position.x === position.x && c.position.y === position.y
+              ? { ...c, plantedCrop: undefined }
+              : c
+          ),
+        });
+
+        return true;
+      },
+
       // Selection
       selectedCrop: null,
       setSelectedCrop: (cropId) => set({ selectedCrop: cropId }),
+      selectedTool: null,
+      setSelectedTool: (toolId) => set({ selectedTool: toolId }),
 
       // Demo balance
       demoBalance: GAME_CONFIG.INITIAL_FARM_BALANCE,
@@ -268,6 +343,7 @@ export const useGameStore = create<GameStore>()(
           inventory: [],
           transactions: [],
           selectedCrop: null,
+          selectedTool: null,
           demoBalance: GAME_CONFIG.INITIAL_FARM_BALANCE,
         }),
     }),
