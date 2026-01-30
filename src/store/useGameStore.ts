@@ -11,14 +11,14 @@ import {
 } from '../types';
 import { getCropById } from '../data/crops';
 import { GAME_CONFIG, getExpForLevel, STORAGE_KEYS } from '../config/constants';
-import { updateFarmCells } from '../services/userService';
+import { updateFarmCells, updateUser } from '../services/userService';
 
 interface GameStore {
   // Player state
   player: Player | null;
   setPlayer: (player: Player | null) => void;
   updatePlayerName: (name: string) => void;
-  addExperience: (exp: number) => void;
+  addExperience: (exp: number) => Promise<void>;
   upgradeLand: (newSize: 4 | 5 | 6) => void;
 
   // Farm state
@@ -90,26 +90,40 @@ export const useGameStore = create<GameStore>()(
         set((state) => ({
           player: state.player ? { ...state.player, name } : null,
         })),
-      addExperience: (exp) =>
-        set((state) => {
-          if (!state.player) return state;
-          let newExp = state.player.experience + exp;
-          let newLevel = state.player.level;
+      addExperience: async (exp) => {
+        const state = get();
+        if (!state.player) return;
 
-          // Check for level up
-          while (newExp >= getExpForLevel(newLevel) && newLevel < GAME_CONFIG.MAX_LEVEL) {
-            newExp -= getExpForLevel(newLevel);
-            newLevel++;
-          }
+        let newExp = state.player.experience + exp;
+        let newLevel = state.player.level;
 
-          return {
-            player: {
-              ...state.player,
-              experience: newExp,
+        // Check for level up
+        while (newExp >= getExpForLevel(newLevel) && newLevel < GAME_CONFIG.MAX_LEVEL) {
+          newExp -= getExpForLevel(newLevel);
+          newLevel++;
+        }
+
+        // Update local state
+        set({
+          player: {
+            ...state.player,
+            experience: newExp,
+            level: newLevel,
+          },
+        });
+
+        // Sync to Firebase if level or experience changed
+        if (state.player.oderId && (newLevel !== state.player.level || newExp !== state.player.experience)) {
+          try {
+            await updateUser(state.player.oderId, {
               level: newLevel,
-            },
-          };
-        }),
+              experience: newExp,
+            });
+          } catch (error) {
+            console.error('Failed to sync player level/experience to Firebase:', error);
+          }
+        }
+      },
       upgradeLand: (newSize) =>
         set((state) => {
           if (!state.player) return state;

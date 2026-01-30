@@ -87,7 +87,7 @@ export const CropToolbar: React.FC = () => {
                 relative flex-shrink-0 flex flex-col items-center p-2 rounded-xl border-2 transition-all min-w-[70px]
                 ${isSelected
                   ? `${rarityColors.border} ${rarityColors.bg} shadow-lg ${rarityColors.glow}`
-                  : `border-white/10 hover:${rarityColors.border} bg-white/5`
+                  : `${rarityColors.border} opacity-60 hover:opacity-100 bg-white/5`
                 }
                 ${!canAfford ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}
               `}
