@@ -78,27 +78,37 @@ export const incrementStats = async (
   value: number = 1,
   level?: number
 ): Promise<void> => {
-  const stats = await getPlayerStats(oderId);
+  try {
+    console.log(`📊 [Leaderboard] Incrementing stats for ${oderId}:`, { type, value, level });
 
-  switch (type) {
-    case 'harvest':
-      stats.totalHarvests += value;
-      break;
-    case 'plant':
-      stats.totalPlants += value;
-      break;
-    case 'steal':
-      stats.totalSteals += value;
-      break;
-    case 'earn':
-      stats.totalEarnings += value;
-      break;
-    case 'achievement':
-      stats.achievementCount += value;
-      break;
+    const stats = await getPlayerStats(oderId);
+    console.log(`📊 [Leaderboard] Current stats:`, stats);
+
+    switch (type) {
+      case 'harvest':
+        stats.totalHarvests += value;
+        break;
+      case 'plant':
+        stats.totalPlants += value;
+        break;
+      case 'steal':
+        stats.totalSteals += value;
+        break;
+      case 'earn':
+        stats.totalEarnings += value;
+        break;
+      case 'achievement':
+        stats.achievementCount += value;
+        break;
+    }
+
+    console.log(`📊 [Leaderboard] Updated stats:`, stats);
+    await updatePlayerStats(oderId, stats, level);
+    console.log(`📊 [Leaderboard] Successfully saved stats to Firebase`);
+  } catch (error) {
+    console.error(`❌ [Leaderboard] Failed to increment stats:`, error);
+    throw error;
   }
-
-  await updatePlayerStats(oderId, stats, level);
 };
 
 // Get leaderboard by score
