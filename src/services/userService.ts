@@ -126,16 +126,43 @@ export const getUserByWallet = async (walletAddress: string): Promise<FirebaseUs
   } as FirebaseUser;
 };
 
+// Helper: Clean undefined values from object (Firestore doesn't accept undefined)
+const cleanUndefined = (obj: unknown): unknown => {
+  if (obj === null || obj === undefined) {
+    return null;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => cleanUndefined(item));
+  }
+
+  if (typeof obj === 'object') {
+    const cleaned: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== undefined) {
+        cleaned[key] = cleanUndefined(value);
+      }
+    }
+    return cleaned;
+  }
+
+  return obj;
+};
+
 // Update user data
 export const updateUser = async (
   oderId: string,
   updates: Partial<FirebaseUser>
 ): Promise<void> => {
   const userRef = doc(db, USERS_COLLECTION, oderId);
-  await updateDoc(userRef, {
+
+  // Clean undefined values before sending to Firestore
+  const cleanedUpdates = cleanUndefined({
     ...updates,
     lastOnline: serverTimestamp(),
-  });
+  }) as Record<string, unknown>;
+
+  await updateDoc(userRef, cleanedUpdates);
 };
 
 // Update user's farm cells
