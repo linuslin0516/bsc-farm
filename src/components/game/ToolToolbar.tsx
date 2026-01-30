@@ -1,6 +1,5 @@
 import React from 'react';
 import { useGameStore } from '../../store/useGameStore';
-import { Button } from '../ui/Button';
 
 interface ToolToolbarProps {
   onNotify: (type: 'success' | 'error' | 'info' | 'warning', message: string) => void;
