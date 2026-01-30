@@ -1,8 +1,5 @@
 import {
   collection,
-  query,
-  orderBy,
-  limit,
   getDocs,
   doc,
   getDoc,

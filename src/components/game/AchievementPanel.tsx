@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Achievement, AchievementCategory, RARITY_COLORS, RARITY_NAMES } from '../../types';
-import { ACHIEVEMENTS, getAchievementsByCategory } from '../../data/achievements';
 import { getAchievementsWithProgress } from '../../services/achievementService';
 import { useGameStore } from '../../store/useGameStore';
 

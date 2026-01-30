@@ -87,7 +87,8 @@ export const GamePage: React.FC = () => {
   }, []);
 
   // Function to show unlock animation (can be called from anywhere)
-  const showUnlockAnimation = useCallback((
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _showUnlockAnimation = useCallback((
     type: 'crop' | 'achievement',
     title: string,
     emoji: string,
