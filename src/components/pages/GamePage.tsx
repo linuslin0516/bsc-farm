@@ -17,6 +17,8 @@ import { UnlockAnimation } from '../ui/UnlockAnimation';
 import { useGameStore } from '../../store/useGameStore';
 import { Notification as NotificationType, CropRarity } from '../../types';
 import { getCropById } from '../../data/crops';
+import { updateTaskProgress } from '../../services/dailyTaskService';
+import { updateAchievementProgress } from '../../services/achievementService';
 
 interface VisitingState {
   isVisiting: boolean;
@@ -107,11 +109,24 @@ export const GamePage: React.FC = () => {
         `$FARM 不足種滿！僅種植 ${maxPlantable} 塊地（共需 ${totalCost}，目前有 ${demoBalance.toFixed(0)}）`
       );
       // Plant what we can afford
+      let planted = 0;
       for (let i = 0; i < maxPlantable; i++) {
         if (subtractDemoBalance(cropDef.cost)) {
           plantCrop(emptyCells[i].position, selectedCrop);
+          planted++;
         }
       }
+
+      // Update achievements and daily tasks
+      if (player && planted > 0) {
+        try {
+          await updateAchievementProgress(player.oderId, 'plant', planted);
+          await updateTaskProgress(player.oderId, 'plant', planted);
+        } catch (error) {
+          console.error('Failed to update achievements/tasks:', error);
+        }
+      }
+
       await syncFarmToFirebase();
       return;
     }
@@ -122,6 +137,16 @@ export const GamePage: React.FC = () => {
       if (subtractDemoBalance(cropDef.cost)) {
         plantCrop(cell.position, selectedCrop);
         planted++;
+      }
+    }
+
+    // Update achievements and daily tasks
+    if (player && planted > 0) {
+      try {
+        await updateAchievementProgress(player.oderId, 'plant', planted);
+        await updateTaskProgress(player.oderId, 'plant', planted);
+      } catch (error) {
+        console.error('Failed to update achievements/tasks:', error);
       }
     }
 
@@ -217,14 +242,14 @@ export const GamePage: React.FC = () => {
       {/* Character Stats Panel */}
       <CharacterStatsPanel />
 
-      {/* Floating Tool Toolbar - Bottom Center (above crop toolbar) */}
-      <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-40">
-        <ToolToolbar onNotify={handleNotify} onPlantAll={handlePlantAll} />
-      </div>
-
       {/* Floating Crop Toolbar - Bottom */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40">
         <CropToolbar />
+      </div>
+
+      {/* Floating Tool Toolbar - Bottom Right */}
+      <div className="fixed bottom-4 right-4 z-40">
+        <ToolToolbar onNotify={handleNotify} onPlantAll={handlePlantAll} />
       </div>
 
       {/* Help Tooltip - Bottom Left */}

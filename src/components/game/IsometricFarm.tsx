@@ -5,6 +5,7 @@ import { useGameStore } from '../../store/useGameStore';
 import { getCropById } from '../../data/crops';
 import { Position, FarmCell } from '../../types';
 import { updateAchievementProgress } from '../../services/achievementService';
+import { updateTaskProgress } from '../../services/dailyTaskService';
 
 interface IsometricFarmProps {
   onNotify: (type: 'success' | 'error' | 'info' | 'warning', message: string) => void;
@@ -78,12 +79,13 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
         plantCrop(position, selectedCrop);
         onNotify('success', `種下了 ${cropDef.nameCn}！`);
 
-        // Update achievements
+        // Update achievements and daily tasks
         if (player) {
           try {
             await updateAchievementProgress(player.oderId, 'plant', 1);
+            await updateTaskProgress(player.oderId, 'plant', 1);
           } catch (error) {
-            console.error('Failed to update achievements:', error);
+            console.error('Failed to update achievements/tasks:', error);
           }
         }
 
@@ -106,15 +108,19 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
           addExperience(cropDef.experience);
           onNotify('success', `收成了 ${cropDef.nameCn}！+${cropDef.sellPrice} $FARM`);
 
-          // Update achievements - mark crop as discovered
+          // Update achievements and daily tasks - mark crop as discovered
           try {
             await updateAchievementProgress(player.oderId, 'discover_crop', 1, {
               cropId: harvested.cropId,
             });
             await updateAchievementProgress(player.oderId, 'harvest', 1);
             await updateAchievementProgress(player.oderId, 'earn', cropDef.sellPrice);
+
+            // Update daily tasks
+            await updateTaskProgress(player.oderId, 'harvest', 1);
+            await updateTaskProgress(player.oderId, 'earn', cropDef.sellPrice);
           } catch (error) {
-            console.error('Failed to update achievements:', error);
+            console.error('Failed to update achievements/tasks:', error);
           }
 
           // Sync to Firebase
