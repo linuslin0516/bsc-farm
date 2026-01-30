@@ -160,9 +160,10 @@ export const updateUser = async (
   const cleanedUpdates = cleanUndefined({
     ...updates,
     lastOnline: serverTimestamp(),
-  }) as Record<string, unknown>;
+  });
 
-  await updateDoc(userRef, cleanedUpdates);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await updateDoc(userRef, cleanedUpdates as any);
 };
 
 // Update user's farm cells
