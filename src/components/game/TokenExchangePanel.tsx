@@ -18,7 +18,7 @@ import { Modal } from '../ui/Modal';
 interface TokenExchangePanelProps {
   isOpen: boolean;
   onClose: () => void;
-  onNotify: (type: 'success' | 'error' | 'info', message: string) => void;
+  onNotify: (type: 'success' | 'error' | 'info', message: string, duration?: number) => void;
 }
 
 type ExchangeDirection = 'gold_to_farm' | 'farm_to_gold';
@@ -129,8 +129,17 @@ export const TokenExchangePanel: React.FC<TokenExchangePanelProps> = ({
         // Create exchange request
         const tx = await exchangeGoldForFarm(player.oderId, address, numAmount);
 
-        onNotify('success', `兌換請求已提交！交易 ID: ${tx.id.slice(0, 8)}...`);
-        onNotify('info', 'FARM 將在確認後發送到您的錢包');
+        if (tx.txHash) {
+          // Transaction completed successfully
+          onNotify('success', `兌換成功！TxHash: ${tx.txHash.slice(0, 16)}...`, 5000);
+        } else {
+          // Request submitted but still processing
+          onNotify('success', `兌換請求已提交！`, 3000);
+          onNotify('info', 'FARM 將在確認後發送到您的錢包', 3000);
+        }
+
+        // Refresh wallet balance
+        await refreshBalances();
       } else {
         // FARM to GOLD
         const tx = await exchangeFarmForGold(player.oderId, address, numAmount);
@@ -138,9 +147,9 @@ export const TokenExchangePanel: React.FC<TokenExchangePanelProps> = ({
         // Add GOLD to game balance
         addGoldBalance(Math.floor(outputAmount));
 
-        onNotify('success', `兌換成功！獲得 ${formatGold(Math.floor(outputAmount))} GOLD`);
+        onNotify('success', `兌換成功！獲得 ${formatGold(Math.floor(outputAmount))} GOLD`, 3000);
         if (tx.txHash) {
-          onNotify('info', `交易哈希: ${tx.txHash.slice(0, 10)}...`);
+          onNotify('info', `交易哈希: ${tx.txHash.slice(0, 16)}...`, 5000);
         }
 
         // Refresh wallet balance
@@ -159,7 +168,7 @@ export const TokenExchangePanel: React.FC<TokenExchangePanelProps> = ({
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : '兌換失敗';
-      onNotify('error', message);
+      onNotify('error', message, 3000);
 
       // If GOLD was deducted but exchange failed, refund it
       if (direction === 'gold_to_farm') {

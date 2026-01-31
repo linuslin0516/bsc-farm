@@ -272,6 +272,8 @@ export const exchangeGoldForFarm = async (
     console.log('🌾 [Withdrawal] Request created:', withdrawalRef.id);
 
     // Call the withdrawal API to process immediately
+    let txHash: string | undefined;
+    let apiSuccess = false;
     try {
       console.log('🌾 [Withdrawal] Calling withdrawal API...');
       const apiResponse = await fetch(WITHDRAWAL_API_URL, {
@@ -291,6 +293,8 @@ export const exchangeGoldForFarm = async (
 
       if (result.success) {
         console.log('🌾 [Withdrawal] Success! TxHash:', result.txHash);
+        txHash = result.txHash;
+        apiSuccess = true;
       } else {
         console.warn('🌾 [Withdrawal] API returned error:', result.error);
       }
@@ -312,7 +316,8 @@ export const exchangeGoldForFarm = async (
     return {
       id: txId,
       ...transaction,
-      status: 'pending',
+      status: apiSuccess ? 'completed' : 'pending',
+      txHash,
     };
   } catch (error) {
     // Mark transaction as failed
