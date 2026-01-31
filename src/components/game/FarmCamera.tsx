@@ -82,39 +82,6 @@ export const FarmCamera: React.FC<FarmCameraProps> = ({
       onWheel={handleWheel}
       onDoubleClick={handleDoubleClick}
     >
-      {/* Zoom indicator */}
-      <div className="absolute top-4 right-4 z-20 bg-binance-dark/80 px-3 py-1 rounded-full text-sm text-binance-yellow">
-        {Math.round(zoom * 100)}%
-      </div>
-
-      {/* Zoom controls */}
-      <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
-        <button
-          onClick={() => setZoom((prev) => Math.min(maxZoom, prev + 0.2))}
-          className="w-10 h-10 bg-binance-dark/80 border border-binance-yellow rounded-lg text-binance-yellow hover:bg-binance-yellow hover:text-black transition-colors"
-        >
-          +
-        </button>
-        <button
-          onClick={() => setZoom((prev) => Math.max(minZoom, prev - 0.2))}
-          className="w-10 h-10 bg-binance-dark/80 border border-binance-yellow rounded-lg text-binance-yellow hover:bg-binance-yellow hover:text-black transition-colors"
-        >
-          -
-        </button>
-        <button
-          onClick={handleDoubleClick}
-          className="w-10 h-10 bg-binance-dark/80 border border-binance-yellow rounded-lg text-binance-yellow hover:bg-binance-yellow hover:text-black transition-colors text-xs"
-          title="Reset view"
-        >
-          Reset
-        </button>
-      </div>
-
-      {/* Help text */}
-      <div className="absolute bottom-4 left-4 z-20 text-xs text-gray-400">
-        Drag to move | Scroll to zoom | Double-click to reset
-      </div>
-
       {/* Transformed content */}
       <div
         className="absolute inset-0 flex items-center justify-center transition-transform duration-75"
