@@ -3,7 +3,6 @@ import {
   getDoc,
   setDoc,
   serverTimestamp,
-  Timestamp,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { CropRarity } from '../types';
