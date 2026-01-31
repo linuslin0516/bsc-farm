@@ -23,7 +23,8 @@ const TRANSACTIONS_COLLECTION = 'exchange_transactions';
 
 // Treasury wallet address (receives FARM from users, sends FARM to users)
 // This should be a hot wallet controlled by your backend
-export const TREASURY_WALLET = import.meta.env.VITE_TREASURY_WALLET || '';
+// Note: .trim() removes any whitespace/newlines from env variables
+export const TREASURY_WALLET = (import.meta.env.VITE_TREASURY_WALLET || '').trim();
 
 // Default exchange rate configuration
 const DEFAULT_EXCHANGE_RATE: ExchangeRate = {

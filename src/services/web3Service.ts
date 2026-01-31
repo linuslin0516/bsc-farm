@@ -4,8 +4,8 @@ import { BSC_TESTNET, ERC20_ABI } from '../config/constants';
 // Use testnet for development
 const NETWORK = BSC_TESTNET;
 
-// $FARM Token Contract Address
-export const FARM_TOKEN_ADDRESS = import.meta.env.VITE_FARM_TOKEN_ADDRESS || '';
+// $FARM Token Contract Address (trim to remove any whitespace/newlines)
+export const FARM_TOKEN_ADDRESS = (import.meta.env.VITE_FARM_TOKEN_ADDRESS || '').trim();
 
 // Debug: Log token configuration on load
 console.log('🌾 [Web3] FARM Token Address:', FARM_TOKEN_ADDRESS || '(not set)');
