@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Players can read/write their own data
+    match /players/{oderId} {
+      allow read, write: if true; // For demo purposes - add auth later
+    }
+
+    // Exchange rates are public read
+    match /exchange/{document} {
+      allow read: if true;
+      allow write: if false; // Only admin can modify
+    }
+
+    // User exchange data
+    match /user_exchange/{userId} {
+      allow read: if true;
+      allow write: if true; // For demo purposes
+    }
+
+    // Withdrawal requests - users can create, only functions can update
+    match /withdrawal_requests/{requestId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if false; // Only Cloud Functions can update
+    }
+
+    // Exchange transactions
+    match /exchange_transactions/{txId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if false;
+    }
+
+    // Market data
+    match /market/{document} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

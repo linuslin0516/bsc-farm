@@ -20,6 +20,7 @@ const EXCHANGE_COLLECTION = 'exchange';
 const EXCHANGE_RATE_DOC = 'current_rate';
 const USER_EXCHANGE_COLLECTION = 'user_exchange';
 const TRANSACTIONS_COLLECTION = 'exchange_transactions';
+const WITHDRAWAL_REQUESTS_COLLECTION = 'withdrawal_requests';
 
 // Treasury wallet address (receives FARM from users, sends FARM to users)
 // This should be a hot wallet controlled by your backend
@@ -188,15 +189,30 @@ export const canExchange = async (
 /**
  * Exchange GOLD for FARM (withdraw to wallet)
  * User sends GOLD, receives FARM from treasury
+ *
+ * Flow:
+ * 1. User requests withdrawal (frontend)
+ * 2. Create withdrawal request in Firestore
+ * 3. Firebase Cloud Function picks up the request
+ * 4. Function sends FARM from treasury to user's wallet
+ * 5. Function updates request status to 'completed'
  */
 export const exchangeGoldForFarm = async (
   oderId: string,
-  _walletAddress: string, // Used for future on-chain verification
+  walletAddress: string,
   goldAmount: number
 ): Promise<ExchangeTransaction> => {
   // Validate
   if (goldAmount < 1000) {
     throw new Error('最小兌換金額為 1,000 GOLD');
+  }
+
+  if (!walletAddress) {
+    throw new Error('請先連接錢包');
+  }
+
+  if (!FARM_TOKEN_ADDRESS) {
+    throw new Error('FARM token not configured');
   }
 
   const { netFarmAmount } = await calculateGoldToFarm(goldAmount);
@@ -207,7 +223,7 @@ export const exchangeGoldForFarm = async (
     throw new Error(limitCheck.reason);
   }
 
-  // Create pending transaction
+  // Create transaction record
   const transaction: Omit<ExchangeTransaction, 'id'> = {
     oderId,
     type: 'gold_to_farm',
@@ -220,15 +236,27 @@ export const exchangeGoldForFarm = async (
   // Save transaction to Firestore
   const txRef = await addDoc(collection(db, TRANSACTIONS_COLLECTION), {
     ...transaction,
+    walletAddress,
     createdAt: serverTimestamp(),
   });
 
   const txId = txRef.id;
 
   try {
-    // In production, this would trigger a backend service to send FARM from treasury
-    // For now, we'll just record the transaction as pending
-    // The actual transfer should be done by a secure backend service
+    // Create withdrawal request for Cloud Function to process
+    // The Cloud Function (processWithdrawal) will automatically pick this up
+    await addDoc(collection(db, WITHDRAWAL_REQUESTS_COLLECTION), {
+      userId: oderId,
+      walletAddress: walletAddress,
+      farmAmount: netFarmAmount,
+      goldAmount: goldAmount,
+      tokenAddress: FARM_TOKEN_ADDRESS,
+      transactionId: txId,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+    });
+
+    console.log('🌾 [Withdrawal] Request created, waiting for backend processing...');
 
     // Update user's exchange data
     const userDocRef = doc(db, USER_EXCHANGE_COLLECTION, oderId);
@@ -238,13 +266,6 @@ export const exchangeGoldForFarm = async (
       dailyExchanged: userData.dailyExchanged + netFarmAmount,
       totalGoldExchanged: userData.totalGoldExchanged + goldAmount,
       lastExchangeDate: new Date().toISOString().split('T')[0],
-    });
-
-    // Update transaction status
-    // In production, mark as 'pending' until backend confirms transfer
-    await updateDoc(doc(db, TRANSACTIONS_COLLECTION, txId), {
-      status: 'pending',
-      // In production, a backend job would update this to 'completed' with txHash
     });
 
     return {

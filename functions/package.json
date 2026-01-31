@@ -1,0 +1,20 @@
+{
+  "name": "bsc-farm-functions",
+  "version": "1.0.0",
+  "description": "Firebase Cloud Functions for BSC Farm withdrawals",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "dependencies": {
+    "ethers": "^6.13.4",
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^4.5.0"
+  }
+}
