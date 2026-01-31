@@ -113,15 +113,31 @@ export const updateAchievementProgress = async (
       progress = additionalData?.friendCount || 0;
       requirementMet = progress >= achievement.requirement;
     } else if (achievement.id.startsWith('collect_')) {
-      progress = playerData.cropsDiscovered.length;
       // Special handling for collection achievements
       if (achievement.id === 'collect_all') {
+        progress = playerData.cropsDiscovered.length;
         requirementMet = progress >= 24;
       } else if (achievement.id === 'collect_legendary') {
         // Check if any legendary crop discovered
         const legendaryIds = ['rainbow_rose', 'golden_apple', 'phoenix_flower', 'moonlight_orchid', 'cosmic_fruit'];
-        requirementMet = playerData.cropsDiscovered.some(id => legendaryIds.includes(id));
+        const hasLegendary = playerData.cropsDiscovered.some(id => legendaryIds.includes(id));
+        progress = hasLegendary ? 1 : 0;
+        requirementMet = hasLegendary;
+      } else if (achievement.id === 'collect_all_common') {
+        // Check common crops discovered
+        const commonIds = ['tomato', 'carrot', 'cabbage', 'onion'];
+        const commonDiscovered = playerData.cropsDiscovered.filter(id => commonIds.includes(id)).length;
+        progress = commonDiscovered;
+        requirementMet = commonDiscovered >= 4;
+      } else if (achievement.id === 'collect_all_rare') {
+        // Check rare crops discovered
+        const rareIds = ['blueberry', 'strawberry', 'pumpkin', 'watermelon', 'grapes'];
+        const rareDiscovered = playerData.cropsDiscovered.filter(id => rareIds.includes(id)).length;
+        progress = rareDiscovered;
+        requirementMet = rareDiscovered >= 5;
       } else {
+        // Default: total crops discovered
+        progress = playerData.cropsDiscovered.length;
         requirementMet = progress >= achievement.requirement;
       }
     } else if (achievement.id === 'first_plant') {

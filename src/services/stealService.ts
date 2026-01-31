@@ -2,7 +2,6 @@ import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
   collection,
   query,
   where,
@@ -11,7 +10,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { StealRecord, Position } from '../types';
-import { getUserById, updateBalance } from './userService';
+import { getUserById, updateBalance, updateUser } from './userService';
 import { getCropById } from '../data/crops';
 
 const STEAL_RECORDS_COLLECTION = 'steal_records';
@@ -89,11 +88,19 @@ export const stealCrop = async (
   targetId: string,
   position: Position
 ): Promise<{ success: boolean; amount?: number; message: string }> => {
+  console.log(`🥷 [StealService] Stealing from target ${targetId} at position`, position);
+
   // Get target's farm
   const targetUser = await getUserById(targetId);
   if (!targetUser) {
+    console.error(`❌ [StealService] Target user not found: ${targetId}`);
     return { success: false, message: '找不到目標用戶' };
   }
+
+  console.log(`🥷 [StealService] Target user found:`, {
+    name: targetUser.name,
+    farmCellsCount: targetUser.farmCells.length
+  });
 
   // Find the cell
   const cell = targetUser.farmCells.find(
@@ -143,19 +150,23 @@ export const stealCrop = async (
   // Update thief's balance
   await updateBalance(oderId, thief.farmBalance + stolenAmount);
 
-  // Remove crop from victim's farm
+  // Remove crop from victim's farm (remove plantedCrop field completely)
   const updatedFarmCells = targetUser.farmCells.map((c) => {
     if (c.position.x === position.x && c.position.y === position.y) {
-      return { ...c, plantedCrop: undefined };
+      const { plantedCrop, ...cellWithoutCrop } = c;
+      return cellWithoutCrop;
     }
     return c;
   });
 
-  // Update victim's farm in Firebase
-  const targetDocRef = doc(db, 'users', targetId);
-  await updateDoc(targetDocRef, {
+  console.log(`🥷 [StealService] Removing crop from victim's farm at position`, position);
+
+  // Update victim's farm in Firebase using updateUser to handle undefined cleaning
+  await updateUser(targetId, {
     farmCells: updatedFarmCells,
   });
+
+  console.log(`✅ [StealService] Successfully removed crop from victim's farm`);
 
   // Record the steal
   const stealRecord: StealRecord = {
@@ -169,6 +180,8 @@ export const stealCrop = async (
 
   const recordId = getStealRecordId(oderId, targetId, position);
   await setDoc(doc(db, STEAL_RECORDS_COLLECTION, recordId), stealRecord);
+
+  console.log(`✅ [StealService] Steal successful! Crop: ${crop.nameCn}, Amount: ${stolenAmount}`);
 
   return {
     success: true,

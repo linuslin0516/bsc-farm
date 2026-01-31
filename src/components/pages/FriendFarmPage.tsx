@@ -71,21 +71,33 @@ export const FriendFarmPage: React.FC<FriendFarmPageProps> = ({
     const loadFriendData = async () => {
       setIsLoading(true);
       try {
+        console.log(`🌾 [FriendFarm] Loading friend farm for ID: ${friendId}`);
         const friendUser = await getUserById(friendId);
+
         if (friendUser) {
+          console.log(`🌾 [FriendFarm] Friend user found:`, {
+            name: friendUser.name,
+            level: friendUser.level,
+            farmCellsCount: friendUser.farmCells.length,
+            farmCells: friendUser.farmCells
+          });
+
           // Calculate current crop stages based on plantedAt time
           const updatedFarm = updateFarmCellStages(friendUser.farmCells);
+          console.log(`🌾 [FriendFarm] Updated farm cells:`, updatedFarm);
           setFriendFarm(updatedFarm);
           setFriendLevel(friendUser.level);
 
           // Load already stolen positions
           const stolen = await getStolenCellsForTarget(myUserId, friendId);
+          console.log(`🌾 [FriendFarm] Already stolen positions:`, stolen);
           setStolenPositions(stolen);
         } else {
+          console.error(`❌ [FriendFarm] Friend user not found for ID: ${friendId}`);
           handleNotify('error', '找不到好友的農場');
         }
       } catch (error) {
-        console.error('Failed to load friend farm:', error);
+        console.error('❌ [FriendFarm] Failed to load friend farm:', error);
         handleNotify('error', '載入農場失敗');
       } finally {
         setIsLoading(false);
@@ -106,14 +118,28 @@ export const FriendFarmPage: React.FC<FriendFarmPageProps> = ({
   // Handle stealing
   const handleSteal = async (position: Position) => {
     try {
+      console.log(`🥷 [FriendFarm] Attempting to steal from position:`, position);
       const result = await stealCrop(myUserId, friendId, position);
 
       if (result.success && result.amount) {
+        console.log(`✅ [FriendFarm] Steal successful! Amount: ${result.amount}`);
+
         // Update local balance
         addDemoBalance(result.amount);
 
         // Add to stolen positions
         setStolenPositions((prev) => [...prev, position]);
+
+        // Remove the crop from the friend's farm visually
+        setFriendFarm((prevFarm) =>
+          prevFarm.map((cell) => {
+            if (cell.position.x === position.x && cell.position.y === position.y) {
+              const { plantedCrop, ...cellWithoutCrop } = cell;
+              return cellWithoutCrop;
+            }
+            return cell;
+          })
+        );
 
         // Update achievements, tasks, and leaderboard stats
         if (player) {
@@ -128,10 +154,11 @@ export const FriendFarmPage: React.FC<FriendFarmPageProps> = ({
 
         handleNotify('success', result.message);
       } else {
+        console.warn(`⚠️ [FriendFarm] Steal failed:`, result.message);
         handleNotify('error', result.message);
       }
     } catch (error) {
-      console.error('Failed to steal crop:', error);
+      console.error('❌ [FriendFarm] Failed to steal crop:', error);
       handleNotify('error', '偷菜失敗');
     }
   };
