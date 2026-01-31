@@ -48,7 +48,18 @@ export const getExchangeRate = async (): Promise<ExchangeRate> => {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      return docSnap.data() as ExchangeRate;
+      const data = docSnap.data() as ExchangeRate;
+
+      // Auto-update if daily limit is the old value (100)
+      if (data.dailyExchangeLimit === 100) {
+        await updateDoc(docRef, {
+          dailyExchangeLimit: DEFAULT_EXCHANGE_RATE.dailyExchangeLimit,
+          updatedAt: serverTimestamp(),
+        });
+        return { ...data, dailyExchangeLimit: DEFAULT_EXCHANGE_RATE.dailyExchangeLimit };
+      }
+
+      return data;
     }
 
     // Initialize with default rate
