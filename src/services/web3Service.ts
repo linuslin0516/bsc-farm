@@ -4,9 +4,12 @@ import { BSC_TESTNET, ERC20_ABI } from '../config/constants';
 // Use testnet for development
 const NETWORK = BSC_TESTNET;
 
-// $FARM Token Contract Address (replace with your actual contract after deploying on FLAP)
-// For testing, we'll use a placeholder - you'll update this after launching on FLAP
+// $FARM Token Contract Address
 export const FARM_TOKEN_ADDRESS = import.meta.env.VITE_FARM_TOKEN_ADDRESS || '';
+
+// Debug: Log token configuration on load
+console.log('🌾 [Web3] FARM Token Address:', FARM_TOKEN_ADDRESS || '(not set)');
+console.log('🌾 [Web3] Network:', NETWORK.chainName, '(Chain ID:', NETWORK.chainId, ')');
 
 // Extend Window interface for ethereum
 declare global {
@@ -229,23 +232,52 @@ export const switchToBSC = async (): Promise<boolean> => {
 
 /**
  * Get FARM token balance
+ * Note: Uses ethers.getAddress() to prevent ENS resolution on BSC
  */
 export const getFarmBalance = async (address: string): Promise<string> => {
+  console.log('🌾 [FARM] Getting balance for:', address);
+  console.log('🌾 [FARM] Token address:', FARM_TOKEN_ADDRESS);
+
   if (!FARM_TOKEN_ADDRESS) {
-    console.warn('FARM token address not configured');
+    console.warn('🌾 [FARM] Token address not configured!');
     return '0';
   }
 
   const provider = getProvider();
-  if (!provider) return '0';
+  if (!provider) {
+    console.warn('🌾 [FARM] No provider available');
+    return '0';
+  }
 
   try {
-    const contract = new ethers.Contract(FARM_TOKEN_ADDRESS, ERC20_ABI, provider);
-    const balance = await contract.balanceOf(address);
+    // Validate and checksum addresses to prevent ENS resolution
+    const validatedTokenAddress = ethers.getAddress(FARM_TOKEN_ADDRESS);
+    const validatedAddress = ethers.getAddress(address);
+
+    // Check current network
+    const network = await provider.getNetwork();
+    console.log('🌾 [FARM] Current network:', network.chainId.toString());
+
+    // If not on testnet, try using a direct RPC provider
+    if (network.chainId !== BigInt(NETWORK.chainId)) {
+      console.log('🌾 [FARM] Wrong network, using direct RPC...');
+      const rpcProvider = new ethers.JsonRpcProvider(NETWORK.rpcUrls[0]);
+      const contract = new ethers.Contract(validatedTokenAddress, ERC20_ABI, rpcProvider);
+      const balance = await contract.balanceOf(validatedAddress);
+      const decimals = await contract.decimals();
+      const formatted = ethers.formatUnits(balance, decimals);
+      console.log('🌾 [FARM] Balance (via RPC):', formatted);
+      return formatted;
+    }
+
+    const contract = new ethers.Contract(validatedTokenAddress, ERC20_ABI, provider);
+    const balance = await contract.balanceOf(validatedAddress);
     const decimals = await contract.decimals();
-    return ethers.formatUnits(balance, decimals);
+    const formatted = ethers.formatUnits(balance, decimals);
+    console.log('🌾 [FARM] Balance:', formatted);
+    return formatted;
   } catch (error) {
-    console.error('Failed to get FARM balance:', error);
+    console.error('🌾 [FARM] Failed to get balance:', error);
     return '0';
   }
 };
@@ -268,6 +300,7 @@ export const getBnbBalance = async (address: string): Promise<string> => {
 
 /**
  * Transfer FARM tokens
+ * Note: Uses ethers.getAddress() to prevent ENS resolution on BSC
  */
 export const transferFarm = async (
   toAddress: string,
@@ -283,13 +316,19 @@ export const transferFarm = async (
   }
 
   try {
-    const contract = new ethers.Contract(FARM_TOKEN_ADDRESS, ERC20_ABI, signer);
+    // Validate and checksum the addresses to prevent ENS resolution
+    const validatedTokenAddress = ethers.getAddress(FARM_TOKEN_ADDRESS);
+    const validatedToAddress = ethers.getAddress(toAddress);
+
+    const contract = new ethers.Contract(validatedTokenAddress, ERC20_ABI, signer);
     const decimals = await contract.decimals();
     const amountInWei = ethers.parseUnits(amount, decimals);
 
-    const tx = await contract.transfer(toAddress, amountInWei);
+    console.log('🌾 [Transfer] To:', validatedToAddress, 'Amount:', amount);
+    const tx = await contract.transfer(validatedToAddress, amountInWei);
     const receipt = await tx.wait();
 
+    console.log('🌾 [Transfer] Success:', receipt.hash);
     return receipt.hash;
   } catch (error) {
     console.error('Transfer failed:', error);
@@ -299,6 +338,7 @@ export const transferFarm = async (
 
 /**
  * Approve spending of FARM tokens (for future DEX integration)
+ * Note: Uses ethers.getAddress() to prevent ENS resolution on BSC
  */
 export const approveFarmSpending = async (
   spenderAddress: string,
@@ -314,11 +354,15 @@ export const approveFarmSpending = async (
   }
 
   try {
-    const contract = new ethers.Contract(FARM_TOKEN_ADDRESS, ERC20_ABI, signer);
+    // Validate and checksum addresses to prevent ENS resolution
+    const validatedTokenAddress = ethers.getAddress(FARM_TOKEN_ADDRESS);
+    const validatedSpenderAddress = ethers.getAddress(spenderAddress);
+
+    const contract = new ethers.Contract(validatedTokenAddress, ERC20_ABI, signer);
     const decimals = await contract.decimals();
     const amountInWei = ethers.parseUnits(amount, decimals);
 
-    const tx = await contract.approve(spenderAddress, amountInWei);
+    const tx = await contract.approve(validatedSpenderAddress, amountInWei);
     const receipt = await tx.wait();
 
     return receipt.hash;
