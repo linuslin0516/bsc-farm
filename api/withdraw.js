@@ -42,16 +42,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Verify API key (simple auth)
-  const apiKey = req.headers['x-api-key'];
-  if (apiKey !== process.env.WITHDRAWAL_API_KEY) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+  const { requestId, userId, walletAddress } = req.body;
 
-  const { requestId } = req.body;
-
-  if (!requestId) {
-    return res.status(400).json({ error: 'Missing requestId' });
+  if (!requestId || !userId || !walletAddress) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
@@ -64,7 +58,14 @@ export default async function handler(req, res) {
     }
 
     const data = requestDoc.data();
-    const { userId, walletAddress, farmAmount, tokenAddress, status } = data;
+    const { userId: storedUserId, walletAddress: storedWallet, farmAmount, tokenAddress, status } = data;
+
+    // Verify request data matches (security check)
+    if (storedUserId !== userId || storedWallet.toLowerCase() !== walletAddress.toLowerCase()) {
+      return res.status(403).json({
+        error: 'Request verification failed',
+      });
+    }
 
     // Check if already processed
     if (status !== 'pending') {
