@@ -128,6 +128,69 @@ export const disconnectWallet = (): Web3State => {
 };
 
 /**
+ * Switch to a different wallet account
+ * This will open MetaMask's account selection popup
+ */
+export const switchWalletAccount = async (): Promise<Web3State> => {
+  if (!isMetaMaskInstalled()) {
+    throw new Error('請安裝 MetaMask 錢包');
+  }
+
+  try {
+    // Request permissions again - this forces MetaMask to show account selection
+    await window.ethereum!.request({
+      method: 'wallet_requestPermissions',
+      params: [{ eth_accounts: {} }],
+    });
+
+    // After user selects account, get the new account
+    const accounts = await window.ethereum!.request({
+      method: 'eth_accounts',
+    }) as string[];
+
+    if (!accounts || accounts.length === 0) {
+      throw new Error('無法獲取錢包地址');
+    }
+
+    const address = accounts[0];
+
+    // Get chain ID
+    const chainIdHex = await window.ethereum!.request({
+      method: 'eth_chainId',
+    }) as string;
+    const chainId = parseInt(chainIdHex, 16);
+
+    // Check if on correct network
+    const isCorrectNetwork = chainId === NETWORK.chainId;
+
+    // Get balances
+    const provider = getProvider()!;
+    const bnbBalance = await provider.getBalance(address);
+
+    let farmBalance = '0';
+    if (FARM_TOKEN_ADDRESS && isCorrectNetwork) {
+      try {
+        farmBalance = await getFarmBalance(address);
+      } catch (error) {
+        console.warn('Failed to get FARM balance:', error);
+      }
+    }
+
+    return {
+      isConnected: true,
+      address,
+      chainId,
+      bnbBalance: ethers.formatEther(bnbBalance),
+      farmBalance,
+      isCorrectNetwork,
+    };
+  } catch (error) {
+    console.error('Failed to switch wallet:', error);
+    throw error;
+  }
+};
+
+/**
  * Switch to BSC network
  */
 export const switchToBSC = async (): Promise<boolean> => {

@@ -4,6 +4,7 @@ import {
   connectWallet,
   disconnectWallet,
   switchToBSC,
+  switchWalletAccount,
   getFarmBalance,
   getBnbBalance,
   onAccountsChanged,
@@ -21,6 +22,7 @@ interface Web3Store extends Web3State {
   // Actions
   connect: () => Promise<boolean>;
   disconnect: () => void;
+  switchWallet: () => Promise<boolean>;
   switchNetwork: () => Promise<boolean>;
   refreshBalances: () => Promise<void>;
   clearError: () => void;
@@ -87,6 +89,37 @@ export const useWeb3Store = create<Web3Store>()(
           ...state,
           error: null,
         });
+      },
+
+      // Switch to a different wallet account
+      switchWallet: async () => {
+        set({ isConnecting: true, error: null });
+
+        try {
+          const state = await switchWalletAccount();
+          set({
+            ...state,
+            isConnecting: false,
+            error: null,
+          });
+
+          // If not on correct network, prompt to switch
+          if (!state.isCorrectNetwork) {
+            const switched = await get().switchNetwork();
+            if (!switched) {
+              set({ error: '請切換到 BNB Smart Chain 網路' });
+            }
+          }
+
+          return true;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : '切換錢包失敗';
+          set({
+            isConnecting: false,
+            error: message,
+          });
+          return false;
+        }
       },
 
       // Switch to BSC network

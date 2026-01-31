@@ -17,6 +17,7 @@ export const WalletPanel: React.FC<WalletPanelProps> = ({ onNotify }) => {
     error,
     connect,
     disconnect,
+    switchWallet,
     switchNetwork,
     refreshBalances,
     initializeListeners,
@@ -61,6 +62,13 @@ export const WalletPanel: React.FC<WalletPanelProps> = ({ onNotify }) => {
   const handleDisconnect = () => {
     disconnect();
     onNotify('info', '錢包已斷開連接');
+  };
+
+  const handleSwitchWallet = async () => {
+    const success = await switchWallet();
+    if (success) {
+      onNotify('success', '已切換到新錢包！');
+    }
   };
 
   const handleSwitchNetwork = async () => {
@@ -154,12 +162,22 @@ export const WalletPanel: React.FC<WalletPanelProps> = ({ onNotify }) => {
           <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
           <span className="text-green-400 text-sm font-medium">已連接</span>
         </div>
-        <button
-          onClick={handleDisconnect}
-          className="text-gray-400 hover:text-red-400 text-sm transition-colors"
-        >
-          斷開連接
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSwitchWallet}
+            disabled={isConnecting}
+            className="text-gray-400 hover:text-blue-400 text-sm transition-colors disabled:opacity-50"
+          >
+            {isConnecting ? '切換中...' : '🔄 換錢包'}
+          </button>
+          <span className="text-gray-600">|</span>
+          <button
+            onClick={handleDisconnect}
+            className="text-gray-400 hover:text-red-400 text-sm transition-colors"
+          >
+            斷開連接
+          </button>
+        </div>
       </div>
 
       {/* Address */}
