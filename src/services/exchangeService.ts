@@ -36,7 +36,7 @@ const DEFAULT_EXCHANGE_RATE: ExchangeRate = {
   farmPerGold: 0.0001,       // 1 GOLD = 0.0001 FARM
   exchangeFee: 0.05,         // 5% fee
   lastUpdated: Date.now(),
-  dailyExchangeLimit: 100,   // Max 100 FARM per day
+  dailyExchangeLimit: 999999999,   // Essentially unlimited
 };
 
 /**

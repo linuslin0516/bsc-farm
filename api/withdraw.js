@@ -3,13 +3,23 @@ import admin from 'firebase-admin';
 
 // Initialize Firebase Admin (only once)
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  });
+  try {
+    // Handle private key - Vercel stores it with literal \n, need to convert to actual newlines
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY || '';
+    // Replace literal \n with actual newlines (handles both \\n and \n)
+    privateKey = privateKey.replace(/\\n/g, '\n');
+
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: privateKey,
+      }),
+    });
+    console.log('Firebase Admin initialized successfully');
+  } catch (initError) {
+    console.error('Firebase Admin initialization failed:', initError);
+  }
 }
 
 const db = admin.firestore();
@@ -37,6 +47,16 @@ const ERC20_ABI = [
 ];
 
 export default async function handler(req, res) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -48,8 +68,26 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
+  // Check environment variables
+  if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY) {
+    console.error('Missing Firebase environment variables');
+    return res.status(500).json({
+      success: false,
+      error: 'Server configuration error: Firebase not configured'
+    });
+  }
+
+  if (!process.env.TREASURY_PRIVATE_KEY) {
+    console.error('Missing TREASURY_PRIVATE_KEY');
+    return res.status(500).json({
+      success: false,
+      error: 'Server configuration error: Treasury not configured'
+    });
+  }
+
   try {
     // Get withdrawal request from Firestore
+    console.log('Fetching withdrawal request:', requestId);
     const requestRef = db.collection('withdrawal_requests').doc(requestId);
     const requestDoc = await requestRef.get();
 
@@ -83,9 +121,6 @@ export default async function handler(req, res) {
 
     // Get treasury private key
     const privateKey = process.env.TREASURY_PRIVATE_KEY;
-    if (!privateKey) {
-      throw new Error('Treasury private key not configured');
-    }
 
     // Connect to BSC
     const config = BSC_CONFIG[NETWORK];
@@ -111,8 +146,10 @@ export default async function handler(req, res) {
 
     // Check treasury balance
     const treasuryBalance = await contract.balanceOf(wallet.address);
+    console.log(`Treasury balance: ${ethers.formatUnits(treasuryBalance, decimals)} FARM`);
+
     if (treasuryBalance < amountInWei) {
-      throw new Error(`Insufficient treasury balance`);
+      throw new Error(`Insufficient treasury balance. Has: ${ethers.formatUnits(treasuryBalance, decimals)}, Needs: ${farmAmount}`);
     }
 
     // Send tokens
