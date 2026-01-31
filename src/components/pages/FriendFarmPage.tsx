@@ -213,14 +213,16 @@ export const FriendFarmPage: React.FC<FriendFarmPageProps> = ({
           </div>
 
           {/* Farm */}
-          <IsometricFarm
-            onNotify={handleNotify}
-            isVisiting={true}
-            visitingFarm={friendFarm}
-            visitingUserId={friendId}
-            stolenPositions={stolenPositions}
-            onSteal={handleSteal}
-          />
+          <div className="relative bg-gradient-to-b from-green-900/20 to-green-800/20 rounded-xl border-2 border-red-500/30 overflow-hidden" style={{ height: '600px' }}>
+            <IsometricFarm
+              onNotify={handleNotify}
+              isVisiting={true}
+              visitingFarm={friendFarm}
+              visitingUserId={friendId}
+              stolenPositions={stolenPositions}
+              onSteal={handleSteal}
+            />
+          </div>
 
           {/* Stats */}
           <div className="mt-4 flex justify-center gap-4 text-sm text-gray-400">

@@ -57,7 +57,18 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
   }, [updateCropStages]);
 
   const activeFarm = isVisiting && visitingFarm ? visitingFarm : farmCells;
-  const gridSize = player?.landSize || 3;
+
+  // Calculate grid size based on the farm being displayed
+  const gridSize = isVisiting && visitingFarm
+    ? Math.sqrt(visitingFarm.length)
+    : (player?.landSize || 3);
+
+  console.log('🎮 [IsometricFarm] Render info:', {
+    isVisiting,
+    farmCellsCount: activeFarm.length,
+    gridSize,
+    playerLandSize: player?.landSize,
+  });
 
   const handlePlant = useCallback(
     async (position: Position) => {
