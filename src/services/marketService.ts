@@ -11,14 +11,18 @@ import { getAllCrops, getCropById } from '../data/crops';
 const MARKET_COLLECTION = 'market';
 const MARKET_DOC_ID = 'global_prices';
 
-// Price fluctuation ranges based on rarity
-const FLUCTUATION_RANGES: Record<CropRarity, number> = {
-  common: 0.05,      // ±5%
-  uncommon: 0.10,    // ±10%
-  rare: 0.15,        // ±15%
-  epic: 0.20,        // ±20%
-  legendary: 0.30,   // ±30%
+// Price fluctuation ranges based on rarity (ONLY UPWARD - price protection)
+// Prices can go UP by this percentage, but never below base price
+const FLUCTUATION_RANGES: Record<CropRarity, { min: number; max: number }> = {
+  common: { min: 0, max: 0.10 },      // 0% to +10%
+  uncommon: { min: 0, max: 0.15 },    // 0% to +15%
+  rare: { min: 0, max: 0.20 },        // 0% to +20%
+  epic: { min: 0, max: 0.25 },        // 0% to +25%
+  legendary: { min: 0, max: 0.35 },   // 0% to +35%
 };
+
+// Minimum profit margin - ensures players always make profit
+const MIN_PROFIT_MARGIN = 0.1; // At least 10% profit on base sell price
 
 export interface CropMarketPrice {
   cropId: string;
@@ -37,6 +41,7 @@ export interface MarketData {
 /**
  * Generate price fluctuation using time-based sine wave
  * This creates natural-looking price cycles
+ * IMPORTANT: Prices only go UP, never below base price (price protection)
  */
 const generatePriceFluctuation = (
   cropId: string,
@@ -56,13 +61,28 @@ const generatePriceFluctuation = (
   const secondary = Math.sin(hourlyPhase * Math.PI * 2.3 + seed) * 0.5;
   const tertiary = Math.sin(hourlyPhase * Math.PI * 0.7 + seed * 1.3) * 0.3;
 
-  // Combine waves and scale to range
-  const combined = (primary + secondary + tertiary) / 1.8;
-  return 1 + (combined * range);
+  // Combine waves and normalize to 0-1 range (instead of -1 to 1)
+  const combined = ((primary + secondary + tertiary) / 1.8 + 1) / 2; // Now 0 to 1
+
+  // Scale to the allowed range (min to max)
+  const fluctuation = range.min + (combined * (range.max - range.min));
+
+  // Return multiplier (always >= 1.0, so price never drops below base)
+  return 1 + fluctuation;
+};
+
+/**
+ * Calculate minimum sell price with profit protection
+ * Ensures players always make at least MIN_PROFIT_MARGIN profit
+ */
+const getMinimumSellPrice = (cost: number, baseSellPrice: number): number => {
+  const minFromCost = cost * (1 + MIN_PROFIT_MARGIN); // At least 10% above cost
+  return Math.max(minFromCost, baseSellPrice); // Never below base sell price
 };
 
 /**
  * Initialize market data with base prices
+ * Includes price protection to ensure players always profit
  */
 export const initializeMarketData = async (): Promise<MarketData> => {
   const crops = getAllCrops();
@@ -72,13 +92,17 @@ export const initializeMarketData = async (): Promise<MarketData> => {
 
   crops.forEach(crop => {
     const multiplier = generatePriceFluctuation(crop.id, crop.rarity, now);
-    const currentPrice = Math.round(crop.sellPrice * multiplier);
+    const calculatedPrice = Math.round(crop.sellPrice * multiplier);
+
+    // Apply price protection: never sell below cost + profit margin
+    const minPrice = getMinimumSellPrice(crop.cost, crop.sellPrice);
+    const currentPrice = Math.max(calculatedPrice, minPrice);
 
     prices[crop.id] = {
       cropId: crop.id,
       basePrice: crop.sellPrice,
       currentPrice,
-      priceMultiplier: multiplier,
+      priceMultiplier: currentPrice / crop.sellPrice,
       trend: 'stable',
       lastUpdated: now,
     };
@@ -96,11 +120,22 @@ export const initializeMarketData = async (): Promise<MarketData> => {
     updatedAt: serverTimestamp(),
   });
 
+  console.log('💰 [Market] Initialized with price protection');
+
   return marketData;
 };
 
 /**
+ * Force reset market data (use when crop prices have been updated)
+ */
+export const forceResetMarketData = async (): Promise<MarketData> => {
+  console.log('💰 [Market] Force resetting market data...');
+  return await initializeMarketData();
+};
+
+/**
  * Get current market data
+ * Automatically resets if base prices have changed (after crop updates)
  */
 export const getMarketData = async (): Promise<MarketData> => {
   const docRef = doc(db, MARKET_COLLECTION, MARKET_DOC_ID);
@@ -112,6 +147,24 @@ export const getMarketData = async (): Promise<MarketData> => {
   }
 
   const data = docSnap.data();
+  const crops = getAllCrops();
+
+  // Check if base prices have changed (crop data was updated)
+  // If any crop's base price in Firebase doesn't match current definition, reset
+  let needsReset = false;
+  for (const crop of crops) {
+    const storedPrice = data.prices?.[crop.id];
+    if (!storedPrice || storedPrice.basePrice !== crop.sellPrice) {
+      console.log(`💰 [Market] Detected price change for ${crop.id}: ${storedPrice?.basePrice} -> ${crop.sellPrice}`);
+      needsReset = true;
+      break;
+    }
+  }
+
+  if (needsReset) {
+    console.log('💰 [Market] Base prices changed, resetting market data...');
+    return await initializeMarketData();
+  }
 
   // Check if needs update (update every hour)
   const lastUpdate = data.lastGlobalUpdate;
@@ -129,7 +182,7 @@ export const getMarketData = async (): Promise<MarketData> => {
 };
 
 /**
- * Update all market prices
+ * Update all market prices with price protection
  */
 export const updateMarketPrices = async (): Promise<MarketData> => {
   const crops = getAllCrops();
@@ -144,7 +197,11 @@ export const updateMarketPrices = async (): Promise<MarketData> => {
 
   crops.forEach(crop => {
     const newMultiplier = generatePriceFluctuation(crop.id, crop.rarity, now);
-    const newPrice = Math.round(crop.sellPrice * newMultiplier);
+    const calculatedPrice = Math.round(crop.sellPrice * newMultiplier);
+
+    // Apply price protection: never sell below cost + profit margin
+    const minPrice = getMinimumSellPrice(crop.cost, crop.sellPrice);
+    const newPrice = Math.max(calculatedPrice, minPrice);
 
     // Determine trend
     let trend: 'up' | 'down' | 'stable' = 'stable';
@@ -162,7 +219,7 @@ export const updateMarketPrices = async (): Promise<MarketData> => {
       cropId: crop.id,
       basePrice: crop.sellPrice,
       currentPrice: newPrice,
-      priceMultiplier: newMultiplier,
+      priceMultiplier: newPrice / crop.sellPrice,
       trend,
       lastUpdated: now,
     };
@@ -179,7 +236,7 @@ export const updateMarketPrices = async (): Promise<MarketData> => {
     updatedAt: serverTimestamp(),
   });
 
-  console.log('💰 [Market] Prices updated at', new Date(now).toLocaleTimeString());
+  console.log('💰 [Market] Prices updated with protection at', new Date(now).toLocaleTimeString());
 
   return marketData;
 };
