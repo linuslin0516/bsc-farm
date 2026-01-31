@@ -27,6 +27,10 @@ const WITHDRAWAL_REQUESTS_COLLECTION = 'withdrawal_requests';
 // Note: .trim() removes any whitespace/newlines from env variables
 export const TREASURY_WALLET = (import.meta.env.VITE_TREASURY_WALLET || '').trim();
 
+// Withdrawal API configuration
+const WITHDRAWAL_API_URL = '/api/withdraw';
+const WITHDRAWAL_API_KEY = (import.meta.env.VITE_WITHDRAWAL_API_KEY || '').trim();
+
 // Default exchange rate configuration
 const DEFAULT_EXCHANGE_RATE: ExchangeRate = {
   goldPerFarm: 10000,        // 1 FARM = 10,000 GOLD
@@ -243,9 +247,8 @@ export const exchangeGoldForFarm = async (
   const txId = txRef.id;
 
   try {
-    // Create withdrawal request for Cloud Function to process
-    // The Cloud Function (processWithdrawal) will automatically pick this up
-    await addDoc(collection(db, WITHDRAWAL_REQUESTS_COLLECTION), {
+    // Create withdrawal request for backend to process
+    const withdrawalRef = await addDoc(collection(db, WITHDRAWAL_REQUESTS_COLLECTION), {
       userId: oderId,
       walletAddress: walletAddress,
       farmAmount: netFarmAmount,
@@ -256,7 +259,35 @@ export const exchangeGoldForFarm = async (
       createdAt: serverTimestamp(),
     });
 
-    console.log('🌾 [Withdrawal] Request created, waiting for backend processing...');
+    console.log('🌾 [Withdrawal] Request created:', withdrawalRef.id);
+
+    // Call the withdrawal API to process immediately
+    if (WITHDRAWAL_API_KEY) {
+      try {
+        console.log('🌾 [Withdrawal] Calling withdrawal API...');
+        const apiResponse = await fetch(WITHDRAWAL_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': WITHDRAWAL_API_KEY,
+          },
+          body: JSON.stringify({ requestId: withdrawalRef.id }),
+        });
+
+        const result = await apiResponse.json();
+
+        if (result.success) {
+          console.log('🌾 [Withdrawal] Success! TxHash:', result.txHash);
+        } else {
+          console.warn('🌾 [Withdrawal] API returned error:', result.error);
+        }
+      } catch (apiError) {
+        console.warn('🌾 [Withdrawal] API call failed, will be processed later:', apiError);
+        // Don't throw - the request is saved and can be processed later
+      }
+    } else {
+      console.log('🌾 [Withdrawal] No API key configured, request saved for manual processing');
+    }
 
     // Update user's exchange data
     const userDocRef = doc(db, USER_EXCHANGE_COLLECTION, oderId);
