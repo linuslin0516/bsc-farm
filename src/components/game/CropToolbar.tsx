@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { getUnlockedCrops, getCropById } from '../../data/crops';
 import { CropShopIcon } from './CropIcon';
 import { RARITY_COLORS, RARITY_NAMES, CropRarity } from '../../types';
+import { getMarketData, CropMarketPrice } from '../../services/marketService';
 
 type SortMode = 'unlock' | 'price' | 'rarity' | 'profit';
 
@@ -17,6 +18,24 @@ const rarityOrder: Record<CropRarity, number> = {
 export const CropToolbar: React.FC = () => {
   const { player, selectedCrop, setSelectedCrop, demoBalance } = useGameStore();
   const [sortMode, setSortMode] = useState<SortMode>('unlock');
+  const [marketPrices, setMarketPrices] = useState<Record<string, CropMarketPrice>>({});
+
+  // Load market prices
+  useEffect(() => {
+    const loadPrices = async () => {
+      try {
+        const data = await getMarketData();
+        setMarketPrices(data.prices);
+      } catch (error) {
+        console.error('Failed to load market prices:', error);
+      }
+    };
+    loadPrices();
+
+    // Reload prices every 5 minutes
+    const interval = setInterval(loadPrices, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (!player) return null;
 
@@ -76,8 +95,16 @@ export const CropToolbar: React.FC = () => {
         {unlockedCrops.map((crop) => {
           const isSelected = selectedCrop === crop.id;
           const canAfford = demoBalance >= crop.cost;
+          const priceData = marketPrices[crop.id];
+          const currentPrice = priceData?.currentPrice || crop.sellPrice;
+          const trend = priceData?.trend || 'stable';
+          const priceChange = currentPrice - crop.sellPrice;
+          const priceChangePercent = Math.round((priceChange / crop.sellPrice) * 100);
 
           const rarityColors = RARITY_COLORS[crop.rarity];
+          const trendIcon = trend === 'up' ? '📈' : trend === 'down' ? '📉' : '';
+          const trendColor = trend === 'up' ? 'text-green-400' : trend === 'down' ? 'text-red-400' : 'text-gray-400';
+
           return (
             <button
               key={crop.id}
@@ -91,7 +118,7 @@ export const CropToolbar: React.FC = () => {
                 }
                 ${!canAfford ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}
               `}
-              title={`${crop.nameCn} (${RARITY_NAMES[crop.rarity]}) - 成本: ${crop.cost}, 賣出: ${crop.sellPrice}`}
+              title={`${crop.nameCn} (${RARITY_NAMES[crop.rarity]}) - 成本: ${crop.cost}, 市場價: ${currentPrice} (${priceChange > 0 ? '+' : ''}${priceChangePercent}%)`}
             >
               {/* Rarity indicator dot */}
               <div className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
@@ -101,14 +128,25 @@ export const CropToolbar: React.FC = () => {
                 crop.rarity === 'uncommon' ? 'bg-green-400' :
                 'bg-gray-400'
               }`} />
+
+              {/* Price trend indicator */}
+              {trendIcon && (
+                <div className={`absolute top-1 left-1 text-[10px] ${trendColor}`}>
+                  {trendIcon}
+                </div>
+              )}
+
               <div className={`transition-transform ${isSelected ? 'scale-110' : ''}`}>
                 <CropShopIcon cropId={crop.id} size="md" />
               </div>
               <span className={`text-xs mt-1 font-medium ${isSelected ? rarityColors.text : 'text-gray-300'}`}>
                 {crop.nameCn}
               </span>
-              <div className="flex items-center gap-1 mt-0.5">
+              <div className="flex flex-col items-center gap-0.5 mt-0.5">
                 <span className="text-[10px] text-binance-yellow">💰{crop.cost}</span>
+                <span className={`text-[9px] ${trendColor}`}>
+                  🏷️{currentPrice}
+                </span>
               </div>
             </button>
           );
@@ -122,17 +160,34 @@ export const CropToolbar: React.FC = () => {
             const crop = getCropById(selectedCrop);
             if (!crop) return null;
             const rarityColors = RARITY_COLORS[crop.rarity];
+            const priceData = marketPrices[selectedCrop];
+            const currentPrice = priceData?.currentPrice || crop.sellPrice;
+            const trend = priceData?.trend || 'stable';
+            const priceChange = currentPrice - crop.sellPrice;
+            const priceChangePercent = Math.round((priceChange / crop.sellPrice) * 100);
+            const trendIcon = trend === 'up' ? '📈' : trend === 'down' ? '📉' : '📊';
+            const trendColor = trend === 'up' ? 'text-green-400' : trend === 'down' ? 'text-red-400' : 'text-gray-400';
+
             return (
-              <div className="flex justify-between items-center text-xs px-1">
-                <span className="text-gray-300 flex items-center gap-2">
-                  已選：<strong className={rarityColors.text}>{crop.nameCn}</strong>
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] ${rarityColors.bg} ${rarityColors.text}`}>
-                    {RARITY_NAMES[crop.rarity]}
+              <div className="flex flex-col gap-1 text-xs px-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300 flex items-center gap-2">
+                    已選：<strong className={rarityColors.text}>{crop.nameCn}</strong>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] ${rarityColors.bg} ${rarityColors.text}`}>
+                      {RARITY_NAMES[crop.rarity]}
+                    </span>
                   </span>
-                </span>
-                <div className="flex gap-3 text-gray-400">
                   <span>⏱️ {crop.growthTime < 60 ? `${crop.growthTime}秒` : `${Math.floor(crop.growthTime / 60)}分鐘`}</span>
-                  <span className="text-farm-green">💰+{crop.sellPrice}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400">
+                    基礎價: <span className="text-gray-300">{crop.sellPrice}</span>
+                  </span>
+                  <span className={`flex items-center gap-1 ${trendColor}`}>
+                    <span>{trendIcon}</span>
+                    <span>市場價: <strong>{currentPrice}</strong></span>
+                    <span className="text-[10px]">({priceChange > 0 ? '+' : ''}{priceChangePercent}%)</span>
+                  </span>
                 </div>
               </div>
             );

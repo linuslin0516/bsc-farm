@@ -20,6 +20,7 @@ import { getCropById } from '../../data/crops';
 import { updateTaskProgress } from '../../services/dailyTaskService';
 import { updateAchievementProgress } from '../../services/achievementService';
 import { incrementStats } from '../../services/leaderboardService';
+import { getCropPrice } from '../../services/marketService';
 
 interface VisitingState {
   isVisiting: boolean;
@@ -205,7 +206,9 @@ export const GamePage: React.FC = () => {
       if (result) {
         const cropDef = getCropById(result.cropId);
         if (cropDef) {
-          totalEarnings += cropDef.sellPrice;
+          // Get current market price for this crop
+          const currentPrice = await getCropPrice(result.cropId);
+          totalEarnings += currentPrice;
           totalXP += cropDef.experience;
           harvested++;
 

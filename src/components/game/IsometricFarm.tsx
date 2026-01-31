@@ -7,6 +7,7 @@ import { Position, FarmCell } from '../../types';
 import { updateAchievementProgress } from '../../services/achievementService';
 import { updateTaskProgress } from '../../services/dailyTaskService';
 import { incrementStats } from '../../services/leaderboardService';
+import { getCropPrice } from '../../services/marketService';
 
 interface IsometricFarmProps {
   onNotify: (type: 'success' | 'error' | 'info' | 'warning', message: string) => void;
@@ -117,9 +118,18 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
       if (harvested) {
         const cropDef = getCropById(harvested.cropId);
         if (cropDef && player) {
-          addDemoBalance(cropDef.sellPrice);
+          // Get current market price
+          const currentPrice = await getCropPrice(harvested.cropId);
+          const priceChange = currentPrice - cropDef.sellPrice;
+          const priceChangePercent = Math.round((priceChange / cropDef.sellPrice) * 100);
+
+          addDemoBalance(currentPrice);
           addExperience(cropDef.experience);
-          onNotify('success', `收成了 ${cropDef.nameCn}！+${cropDef.sellPrice} $FARM`);
+
+          // Show price with trend indicator
+          const trendEmoji = priceChange > 0 ? '📈' : priceChange < 0 ? '📉' : '';
+          const priceChangeText = priceChange !== 0 ? ` (${priceChange > 0 ? '+' : ''}${priceChangePercent}%)` : '';
+          onNotify('success', `收成了 ${cropDef.nameCn}！${trendEmoji}+${currentPrice} $FARM${priceChangeText}`);
 
           // Update achievements, daily tasks, and leaderboard stats - mark crop as discovered
           try {
@@ -127,15 +137,15 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
               cropId: harvested.cropId,
             });
             await updateAchievementProgress(player.oderId, 'harvest', 1);
-            await updateAchievementProgress(player.oderId, 'earn', cropDef.sellPrice);
+            await updateAchievementProgress(player.oderId, 'earn', currentPrice);
 
             // Update daily tasks
             await updateTaskProgress(player.oderId, 'harvest', 1);
-            await updateTaskProgress(player.oderId, 'earn', cropDef.sellPrice);
+            await updateTaskProgress(player.oderId, 'earn', currentPrice);
 
             // Update leaderboard stats
             await incrementStats(player.oderId, 'harvest', 1, player.level);
-            await incrementStats(player.oderId, 'earn', cropDef.sellPrice, player.level);
+            await incrementStats(player.oderId, 'earn', currentPrice, player.level);
           } catch (error) {
             console.error('Failed to update achievements/tasks/stats:', error);
           }

@@ -279,21 +279,15 @@ export const useGameStore = create<GameStore>()(
         const crop = getCropById(cell.plantedCrop.cropId);
         if (!crop) return false;
 
-        // Get fertilizer effect
-        const fertilizerEffect = fertilizerId === 'super_fertilizer' ? 1 : 0.5;
+        // Get fertilizer effect (10% for normal, 20% for super)
+        const fertilizerEffect = fertilizerId === 'super_fertilizer' ? 0.2 : 0.1;
 
         // Calculate new planted time based on fertilizer effect
-        let newPlantedAt = cell.plantedCrop.plantedAt;
-        if (fertilizerEffect === 1) {
-          // Super fertilizer: instant mature
-          newPlantedAt = Date.now() - crop.growthTime * 1000;
-        } else {
-          // Regular fertilizer: 50% faster (reduce remaining time by 50%)
-          const elapsed = (Date.now() - cell.plantedCrop.plantedAt) / 1000;
-          const remaining = crop.growthTime - elapsed;
-          const reducedRemaining = remaining * (1 - fertilizerEffect);
-          newPlantedAt = Date.now() - (elapsed + crop.growthTime - reducedRemaining) * 1000;
-        }
+        // Reduce remaining time by the fertilizer percentage
+        const elapsed = (Date.now() - cell.plantedCrop.plantedAt) / 1000;
+        const remaining = Math.max(0, crop.growthTime - elapsed);
+        const reducedRemaining = remaining * (1 - fertilizerEffect);
+        const newPlantedAt = Date.now() - (elapsed + crop.growthTime - reducedRemaining) * 1000;
 
         set({
           farmCells: state.farmCells.map((c) =>
