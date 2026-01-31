@@ -1,8 +1,5 @@
 import { ethers } from 'ethers';
-import { BSC_TESTNET, ERC20_ABI } from '../config/constants';
-
-// Use testnet for development
-const NETWORK = BSC_TESTNET;
+import { NETWORK, USE_MAINNET, ERC20_ABI } from '../config/constants';
 
 // $FARM Token Contract Address (trim to remove any whitespace/newlines)
 export const FARM_TOKEN_ADDRESS = (import.meta.env.VITE_FARM_TOKEN_ADDRESS || '').trim();
@@ -10,6 +7,7 @@ export const FARM_TOKEN_ADDRESS = (import.meta.env.VITE_FARM_TOKEN_ADDRESS || ''
 // Debug: Log token configuration on load
 console.log('🌾 [Web3] FARM Token Address:', FARM_TOKEN_ADDRESS || '(not set)');
 console.log('🌾 [Web3] Network:', NETWORK.chainName, '(Chain ID:', NETWORK.chainId, ')');
+console.log('🌾 [Web3] Mode:', USE_MAINNET ? '🔴 MAINNET (Production)' : '🟡 TESTNET (Development)');
 
 // Extend Window interface for ethereum
 declare global {

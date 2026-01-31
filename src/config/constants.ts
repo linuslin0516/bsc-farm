@@ -26,7 +26,9 @@ export const BSC_TESTNET = {
 };
 
 // Use testnet for development, mainnet for production
-export const NETWORK = BSC_TESTNET;
+// Control via VITE_USE_MAINNET environment variable
+export const USE_MAINNET = import.meta.env.VITE_USE_MAINNET === 'true';
+export const NETWORK = USE_MAINNET ? BSC_MAINNET : BSC_TESTNET;
 
 // $FARM Token Configuration
 export const FARM_TOKEN = {
