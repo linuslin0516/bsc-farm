@@ -325,6 +325,8 @@ export const GamePage: React.FC = () => {
         onOpenDailyTasks={() => setIsDailyTasksPanelOpen(true)}
         onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
         onOpenCodex={() => setIsCodexOpen(true)}
+        onOpenWallet={() => setIsWalletPanelOpen(!isWalletPanelOpen)}
+        onOpenExchange={() => setIsExchangePanelOpen(true)}
       />
 
       {/* Character Stats Panel */}
@@ -351,30 +353,9 @@ export const GamePage: React.FC = () => {
         </button>
       </div>
 
-      {/* Wallet & Exchange Buttons - Top Right */}
-      <div className="fixed top-4 right-4 z-40 flex gap-2">
-        <button
-          onClick={() => setIsWalletPanelOpen(!isWalletPanelOpen)}
-          className="glass-panel px-4 py-2 rounded-xl hover:bg-white/20 transition-all flex items-center gap-2"
-          title="連接錢包"
-        >
-          <span className="text-xl">🦊</span>
-          <span className="text-white text-sm font-medium hidden sm:inline">錢包</span>
-        </button>
-        <button
-          onClick={() => setIsExchangePanelOpen(true)}
-          className="glass-panel px-4 py-2 rounded-xl hover:bg-white/20 transition-all flex items-center gap-2
-                   bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30"
-          title="代幣兌換"
-        >
-          <span className="text-xl">💱</span>
-          <span className="text-white text-sm font-medium hidden sm:inline">兌換</span>
-        </button>
-      </div>
-
-      {/* Wallet Panel - Floating */}
+      {/* Wallet Panel - Floating (appears below HUD on left side) */}
       {isWalletPanelOpen && (
-        <div className="fixed top-16 right-4 z-50 w-80">
+        <div className="fixed top-20 left-4 z-50 w-80">
           <WalletPanel onNotify={handleNotify} />
           <button
             onClick={() => setIsWalletPanelOpen(false)}
