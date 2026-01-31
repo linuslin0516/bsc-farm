@@ -41,3 +41,12 @@ Thumbs.db
 
 # TypeScript cache
 *.tsbuildinfo
+
+# Hardhat
+cache/
+artifacts/
+typechain-types/
+
+# Coverage
+coverage/
+coverage.json
