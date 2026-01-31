@@ -276,3 +276,71 @@ export interface PlayerStats {
   achievementCount: number;
   score: number; // Calculated: (level * 100) + (harvests * 10) + (steals * 5)
 }
+
+// ============ Dual Token System ============
+export interface DualTokenBalance {
+  gold: number;      // In-game soft currency (off-chain)
+  farm: string;      // On-chain hard currency (as string for BigNumber)
+}
+
+// Web3 Wallet State
+export interface Web3WalletState {
+  isConnected: boolean;
+  address: string | null;
+  chainId: number | null;
+  bnbBalance: string;
+  farmBalance: string;
+  isCorrectNetwork: boolean;
+  isConnecting: boolean;
+  error: string | null;
+}
+
+// Token Exchange
+export interface ExchangeRate {
+  goldPerFarm: number;       // How much GOLD you get for 1 FARM
+  farmPerGold: number;       // How much FARM you get for 1 GOLD (very small)
+  exchangeFee: number;       // Fee percentage (e.g., 0.05 = 5%)
+  lastUpdated: number;
+  dailyExchangeLimit: number; // Max FARM per day per user
+}
+
+export interface ExchangeTransaction {
+  id: string;
+  oderId: string;
+  type: 'gold_to_farm' | 'farm_to_gold';
+  goldAmount: number;
+  farmAmount: string;
+  txHash?: string;
+  status: 'pending' | 'completed' | 'failed';
+  createdAt: number;
+  completedAt?: number;
+}
+
+export interface UserExchangeData {
+  oderId: string;
+  dailyExchanged: number;      // FARM exchanged today
+  lastExchangeDate: string;    // YYYY-MM-DD
+  totalGoldExchanged: number;
+  totalFarmExchanged: string;
+  pendingTransactions: ExchangeTransaction[];
+}
+
+// ============ Supply/Demand Market System ============
+export interface CropSupplyDemand {
+  cropId: string;
+  plantedLast24h: number;
+  harvestedLast24h: number;
+  soldLast24h: number;
+  currentMultiplier: number;  // 0.7 to 1.3
+  trend: 'up' | 'down' | 'stable';
+  lastCalculated: number;
+}
+
+export interface GlobalMarketStats {
+  totalPlayers: number;
+  activePlayers24h: number;
+  totalGoldCirculating: number;
+  totalFarmCirculating: string;
+  cropStats: Record<string, CropSupplyDemand>;
+  lastUpdated: number;
+}

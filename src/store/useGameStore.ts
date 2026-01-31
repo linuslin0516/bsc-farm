@@ -46,7 +46,13 @@ interface GameStore {
   selectedTool: string | null;
   setSelectedTool: (toolId: string | null) => void;
 
-  // Demo mode balance (when no real token)
+  // GOLD balance (in-game soft currency)
+  goldBalance: number;
+  setGoldBalance: (balance: number) => void;
+  addGoldBalance: (amount: number) => void;
+  subtractGoldBalance: (amount: number) => boolean;
+
+  // Legacy aliases for backward compatibility
   demoBalance: number;
   setDemoBalance: (balance: number) => void;
   addDemoBalance: (amount: number) => void;
@@ -331,15 +337,39 @@ export const useGameStore = create<GameStore>()(
       selectedTool: null,
       setSelectedTool: (toolId) => set({ selectedTool: toolId }),
 
-      // Demo balance
+      // GOLD balance (in-game soft currency)
+      goldBalance: GAME_CONFIG.INITIAL_FARM_BALANCE,
+      setGoldBalance: (balance) => set({ goldBalance: balance, demoBalance: balance }),
+      addGoldBalance: (amount) =>
+        set((state) => ({
+          goldBalance: state.goldBalance + amount,
+          demoBalance: state.goldBalance + amount,
+        })),
+      subtractGoldBalance: (amount) => {
+        const state = get();
+        if (state.goldBalance < amount) return false;
+        set({
+          goldBalance: state.goldBalance - amount,
+          demoBalance: state.goldBalance - amount,
+        });
+        return true;
+      },
+
+      // Legacy aliases for backward compatibility (map to goldBalance)
       demoBalance: GAME_CONFIG.INITIAL_FARM_BALANCE,
-      setDemoBalance: (balance) => set({ demoBalance: balance }),
+      setDemoBalance: (balance) => set({ goldBalance: balance, demoBalance: balance }),
       addDemoBalance: (amount) =>
-        set((state) => ({ demoBalance: state.demoBalance + amount })),
+        set((state) => ({
+          goldBalance: state.goldBalance + amount,
+          demoBalance: state.goldBalance + amount,
+        })),
       subtractDemoBalance: (amount) => {
         const state = get();
-        if (state.demoBalance < amount) return false;
-        set({ demoBalance: state.demoBalance - amount });
+        if (state.goldBalance < amount) return false;
+        set({
+          goldBalance: state.goldBalance - amount,
+          demoBalance: state.goldBalance - amount,
+        });
         return true;
       },
 
@@ -352,6 +382,7 @@ export const useGameStore = create<GameStore>()(
           transactions: [],
           selectedCrop: null,
           selectedTool: null,
+          goldBalance: GAME_CONFIG.INITIAL_FARM_BALANCE,
           demoBalance: GAME_CONFIG.INITIAL_FARM_BALANCE,
         }),
     }),
@@ -362,7 +393,8 @@ export const useGameStore = create<GameStore>()(
         farmCells: state.farmCells,
         inventory: state.inventory,
         transactions: state.transactions,
-        demoBalance: state.demoBalance,
+        goldBalance: state.goldBalance,
+        demoBalance: state.goldBalance, // Keep in sync
       }),
     }
   )

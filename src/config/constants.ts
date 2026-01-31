@@ -55,9 +55,18 @@ export const ERC20_ABI = [
 export const GAME_CONFIG = {
   INITIAL_LAND_SIZE: 3,
   MAX_LAND_SIZE: 6,
-  INITIAL_FARM_BALANCE: 100, // Starting tokens for new players (demo mode)
+  INITIAL_FARM_BALANCE: 1000, // Starting GOLD for new players (enough to plant a few crops)
   EXP_PER_LEVEL: 100,
   MAX_LEVEL: 50,
+};
+
+// Exchange Configuration
+export const EXCHANGE_CONFIG = {
+  GOLD_PER_FARM: 10000,       // 1 FARM = 10,000 GOLD
+  EXCHANGE_FEE: 0.05,         // 5% fee
+  DAILY_LIMIT_FARM: 100,      // Max 100 FARM withdrawals per day
+  MIN_GOLD_EXCHANGE: 1000,    // Minimum GOLD to exchange
+  MIN_FARM_EXCHANGE: 0.1,     // Minimum FARM to exchange
 };
 
 // Experience required for each level

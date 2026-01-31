@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { AnimatedBackground } from '../game/AnimatedBackground';
 import { HUD } from '../game/HUD';
 import { CharacterStatsPanel } from '../game/CharacterStatsPanel';
@@ -14,7 +14,10 @@ import { DailyTasksPanel } from '../game/DailyTasksPanel';
 import { LeaderboardPanel } from '../game/LeaderboardPanel';
 import { CropCodex } from '../game/CropCodex';
 import { UnlockAnimation } from '../ui/UnlockAnimation';
+import { WalletPanel } from '../game/WalletPanel';
+import { TokenExchangePanel } from '../game/TokenExchangePanel';
 import { useGameStore } from '../../store/useGameStore';
+import { useWeb3Store } from '../../store/useWeb3Store';
 import { Notification as NotificationType, CropRarity } from '../../types';
 import { getCropById } from '../../data/crops';
 import { updateTaskProgress } from '../../services/dailyTaskService';
@@ -46,6 +49,14 @@ export const GamePage: React.FC = () => {
   const [isDailyTasksPanelOpen, setIsDailyTasksPanelOpen] = useState(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [isCodexOpen, setIsCodexOpen] = useState(false);
+  const [isWalletPanelOpen, setIsWalletPanelOpen] = useState(false);
+  const [isExchangePanelOpen, setIsExchangePanelOpen] = useState(false);
+
+  // Initialize Web3 listeners
+  const { initializeListeners } = useWeb3Store();
+  useEffect(() => {
+    initializeListeners();
+  }, [initializeListeners]);
 
   // Notification state
   const [notification, setNotification] = useState<NotificationType | null>(null);
@@ -340,6 +351,41 @@ export const GamePage: React.FC = () => {
         </button>
       </div>
 
+      {/* Wallet & Exchange Buttons - Top Right */}
+      <div className="fixed top-4 right-4 z-40 flex gap-2">
+        <button
+          onClick={() => setIsWalletPanelOpen(!isWalletPanelOpen)}
+          className="glass-panel px-4 py-2 rounded-xl hover:bg-white/20 transition-all flex items-center gap-2"
+          title="連接錢包"
+        >
+          <span className="text-xl">🦊</span>
+          <span className="text-white text-sm font-medium hidden sm:inline">錢包</span>
+        </button>
+        <button
+          onClick={() => setIsExchangePanelOpen(true)}
+          className="glass-panel px-4 py-2 rounded-xl hover:bg-white/20 transition-all flex items-center gap-2
+                   bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30"
+          title="代幣兌換"
+        >
+          <span className="text-xl">💱</span>
+          <span className="text-white text-sm font-medium hidden sm:inline">兌換</span>
+        </button>
+      </div>
+
+      {/* Wallet Panel - Floating */}
+      {isWalletPanelOpen && (
+        <div className="fixed top-16 right-4 z-50 w-80">
+          <WalletPanel onNotify={handleNotify} />
+          <button
+            onClick={() => setIsWalletPanelOpen(false)}
+            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full text-white text-xs
+                     flex items-center justify-center hover:bg-red-600 transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Shop Modal */}
       <Shop
         isOpen={isShopOpen}
@@ -379,6 +425,13 @@ export const GamePage: React.FC = () => {
       <CropCodex
         isOpen={isCodexOpen}
         onClose={() => setIsCodexOpen(false)}
+      />
+
+      {/* Token Exchange Panel */}
+      <TokenExchangePanel
+        isOpen={isExchangePanelOpen}
+        onClose={() => setIsExchangePanelOpen(false)}
+        onNotify={handleNotify}
       />
 
       {/* Unlock Animation */}

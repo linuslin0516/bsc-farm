@@ -1,16 +1,22 @@
 import { CropDefinition, CropRarity } from '../types';
 
+// Growth time multiplier - adjust this to slow down/speed up the game
+// Current: 30x slower than original (more realistic farming pace)
+// Note: This constant is kept for documentation purposes
+// const GROWTH_MULTIPLIER = 30;
+
 export const CROPS: CropDefinition[] = [
   // ============ Common (普通) - Gray ============
+  // Growth: 30-60 minutes, ROI: ~60%
   {
     id: 'carrot',
     name: 'Carrot',
     nameCn: '胡蘿蔔',
     description: '最基本的農作物，適合新手種植',
-    cost: 10,
-    growthTime: 60, // 1 minute
-    sellPrice: 15,
-    experience: 5,
+    cost: 50,
+    growthTime: 1800, // 30 minutes
+    sellPrice: 80,
+    experience: 10,
     unlockLevel: 1,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'common',
@@ -21,10 +27,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Tomato',
     nameCn: '番茄',
     description: '多汁的番茄，收益穩定',
-    cost: 20,
-    growthTime: 120, // 2 minutes
-    sellPrice: 35,
-    experience: 10,
+    cost: 100,
+    growthTime: 2700, // 45 minutes
+    sellPrice: 180,
+    experience: 20,
     unlockLevel: 1,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'common',
@@ -35,10 +41,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Cabbage',
     nameCn: '高麗菜',
     description: '耐寒的蔬菜，生長穩定',
-    cost: 15,
-    growthTime: 90,
-    sellPrice: 25,
-    experience: 8,
+    cost: 70,
+    growthTime: 2100, // 35 minutes
+    sellPrice: 120,
+    experience: 15,
     unlockLevel: 1,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'common',
@@ -49,10 +55,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Onion',
     nameCn: '洋蔥',
     description: '地下生長的調味蔬菜',
-    cost: 18,
-    growthTime: 100,
-    sellPrice: 30,
-    experience: 9,
+    cost: 80,
+    growthTime: 3600, // 60 minutes
+    sellPrice: 150,
+    experience: 18,
     unlockLevel: 2,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'common',
@@ -60,15 +66,16 @@ export const CROPS: CropDefinition[] = [
   },
 
   // ============ Uncommon (優良) - Green ============
+  // Growth: 2-4 hours, ROI: ~80%
   {
     id: 'corn',
     name: 'Corn',
     nameCn: '玉米',
     description: '金黃飽滿的玉米粒',
-    cost: 35,
-    growthTime: 180, // 3 minutes
-    sellPrice: 60,
-    experience: 15,
+    cost: 300,
+    growthTime: 7200, // 2 hours
+    sellPrice: 550,
+    experience: 35,
     unlockLevel: 2,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'uncommon',
@@ -79,10 +86,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Potato',
     nameCn: '馬鈴薯',
     description: '地下的金礦，產量豐富',
-    cost: 50,
-    growthTime: 240, // 4 minutes
-    sellPrice: 90,
-    experience: 20,
+    cost: 500,
+    growthTime: 10800, // 3 hours
+    sellPrice: 900,
+    experience: 50,
     unlockLevel: 3,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'uncommon',
@@ -93,10 +100,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Bell Pepper',
     nameCn: '彩椒',
     description: '色彩繽紛的健康蔬菜',
-    cost: 45,
-    growthTime: 200,
-    sellPrice: 80,
-    experience: 18,
+    cost: 400,
+    growthTime: 9000, // 2.5 hours
+    sellPrice: 720,
+    experience: 45,
     unlockLevel: 3,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'uncommon',
@@ -107,10 +114,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Eggplant',
     nameCn: '茄子',
     description: '紫色光澤的高級蔬菜',
-    cost: 55,
-    growthTime: 220,
-    sellPrice: 95,
-    experience: 22,
+    cost: 550,
+    growthTime: 12600, // 3.5 hours
+    sellPrice: 1000,
+    experience: 55,
     unlockLevel: 4,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'uncommon',
@@ -121,10 +128,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Broccoli',
     nameCn: '花椰菜',
     description: '營養價值極高的蔬菜',
-    cost: 60,
-    growthTime: 250,
-    sellPrice: 105,
-    experience: 25,
+    cost: 600,
+    growthTime: 14400, // 4 hours
+    sellPrice: 1100,
+    experience: 60,
     unlockLevel: 4,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'uncommon',
@@ -132,15 +139,16 @@ export const CROPS: CropDefinition[] = [
   },
 
   // ============ Rare (稀有) - Blue ============
+  // Growth: 6-12 hours, ROI: ~100%
   {
     id: 'strawberry',
     name: 'Strawberry',
     nameCn: '草莓',
     description: '甜蜜的紅寶石，廣受歡迎',
-    cost: 80,
-    growthTime: 300, // 5 minutes
-    sellPrice: 150,
-    experience: 30,
+    cost: 1000,
+    growthTime: 21600, // 6 hours
+    sellPrice: 2000,
+    experience: 80,
     unlockLevel: 5,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'rare',
@@ -151,10 +159,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Watermelon',
     nameCn: '西瓜',
     description: '夏日消暑的大型水果',
-    cost: 150,
-    growthTime: 420, // 7 minutes
-    sellPrice: 300,
-    experience: 50,
+    cost: 2000,
+    growthTime: 32400, // 9 hours
+    sellPrice: 4500,
+    experience: 120,
     unlockLevel: 5,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'rare',
@@ -165,10 +173,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Grapes',
     nameCn: '葡萄',
     description: '可釀造美酒的高級水果',
-    cost: 120,
-    growthTime: 360,
-    sellPrice: 240,
-    experience: 40,
+    cost: 1500,
+    growthTime: 25200, // 7 hours
+    sellPrice: 3200,
+    experience: 100,
     unlockLevel: 6,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'rare',
@@ -179,10 +187,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Peach',
     nameCn: '水蜜桃',
     description: '香甜多汁的仙桃',
-    cost: 140,
-    growthTime: 400,
-    sellPrice: 280,
-    experience: 45,
+    cost: 1800,
+    growthTime: 28800, // 8 hours
+    sellPrice: 3800,
+    experience: 110,
     unlockLevel: 6,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'rare',
@@ -193,10 +201,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Cherry',
     nameCn: '櫻桃',
     description: '小巧玲瓏的紅寶石',
-    cost: 100,
-    growthTime: 330,
-    sellPrice: 200,
-    experience: 35,
+    cost: 1200,
+    growthTime: 43200, // 12 hours
+    sellPrice: 2800,
+    experience: 90,
     unlockLevel: 7,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'rare',
@@ -204,15 +212,16 @@ export const CROPS: CropDefinition[] = [
   },
 
   // ============ Epic (史詩) - Purple ============
+  // Growth: 24-36 hours, ROI: ~140%
   {
     id: 'pumpkin',
     name: 'Pumpkin',
     nameCn: '南瓜',
     description: '巨大的萬聖節象徵',
-    cost: 200,
-    growthTime: 600, // 10 minutes
-    sellPrice: 450,
-    experience: 75,
+    cost: 5000,
+    growthTime: 86400, // 24 hours
+    sellPrice: 12000,
+    experience: 200,
     unlockLevel: 7,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'epic',
@@ -223,10 +232,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Golden Wheat',
     nameCn: '黃金小麥',
     description: '閃閃發光的神奇穀物',
-    cost: 500,
-    growthTime: 900, // 15 minutes
-    sellPrice: 1200,
-    experience: 150,
+    cost: 8000,
+    growthTime: 108000, // 30 hours
+    sellPrice: 20000,
+    experience: 300,
     unlockLevel: 8,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'epic',
@@ -237,10 +246,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Dragon Fruit',
     nameCn: '火龍果',
     description: '來自熱帶的神秘果實',
-    cost: 350,
-    growthTime: 720,
-    sellPrice: 800,
-    experience: 100,
+    cost: 6000,
+    growthTime: 93600, // 26 hours
+    sellPrice: 14500,
+    experience: 250,
     unlockLevel: 9,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'epic',
@@ -251,10 +260,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Star Fruit',
     nameCn: '楊桃',
     description: '形狀如星的奇特水果',
-    cost: 400,
-    growthTime: 780,
-    sellPrice: 950,
-    experience: 120,
+    cost: 7000,
+    growthTime: 100800, // 28 hours
+    sellPrice: 17000,
+    experience: 280,
     unlockLevel: 10,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'epic',
@@ -265,10 +274,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Crystal Melon',
     nameCn: '水晶瓜',
     description: '透明如水晶的神奇瓜果',
-    cost: 600,
-    growthTime: 840,
-    sellPrice: 1400,
-    experience: 180,
+    cost: 10000,
+    growthTime: 129600, // 36 hours
+    sellPrice: 25000,
+    experience: 350,
     unlockLevel: 12,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'epic',
@@ -276,15 +285,16 @@ export const CROPS: CropDefinition[] = [
   },
 
   // ============ Legendary (傳說) - Gold ============
+  // Growth: 48-72 hours, ROI: ~167-200%
   {
     id: 'rainbow_rose',
     name: 'Rainbow Rose',
     nameCn: '彩虹玫瑰',
     description: '傳說中的七彩花朵，據說能帶來好運',
-    cost: 1000,
-    growthTime: 1200, // 20 minutes
-    sellPrice: 2500,
-    experience: 300,
+    cost: 15000,
+    growthTime: 172800, // 48 hours
+    sellPrice: 40000,
+    experience: 500,
     unlockLevel: 15,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'legendary',
@@ -295,10 +305,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Golden Apple',
     nameCn: '黃金蘋果',
     description: '傳說中神仙吃的不老仙果',
-    cost: 1500,
-    growthTime: 1500, // 25 minutes
-    sellPrice: 4000,
-    experience: 400,
+    cost: 25000,
+    growthTime: 194400, // 54 hours
+    sellPrice: 65000,
+    experience: 700,
     unlockLevel: 18,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'legendary',
@@ -309,10 +319,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Phoenix Flower',
     nameCn: '鳳凰花',
     description: '浴火重生的不滅之花，傳說級作物',
-    cost: 2000,
-    growthTime: 1800, // 30 minutes
-    sellPrice: 5500,
-    experience: 500,
+    cost: 35000,
+    growthTime: 216000, // 60 hours
+    sellPrice: 90000,
+    experience: 900,
     unlockLevel: 20,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'legendary',
@@ -323,10 +333,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Moonlight Orchid',
     nameCn: '月光蘭',
     description: '只在月圓之夜綻放的神秘蘭花',
-    cost: 2500,
-    growthTime: 2100, // 35 minutes
-    sellPrice: 7000,
-    experience: 600,
+    cost: 45000,
+    growthTime: 237600, // 66 hours
+    sellPrice: 120000,
+    experience: 1100,
     unlockLevel: 25,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'legendary',
@@ -337,10 +347,10 @@ export const CROPS: CropDefinition[] = [
     name: 'Cosmic Fruit',
     nameCn: '宇宙果',
     description: '蘊含星辰之力的終極作物，據說是外星文明的禮物',
-    cost: 5000,
-    growthTime: 3600, // 60 minutes
-    sellPrice: 15000,
-    experience: 1000,
+    cost: 50000,
+    growthTime: 259200, // 72 hours
+    sellPrice: 150000,
+    experience: 1500,
     unlockLevel: 30,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'legendary',
