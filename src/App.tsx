@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { LoginPage } from './components/pages/LoginPage';
 import { SetupPage } from './components/pages/SetupPage';
 import { GamePage } from './components/pages/GamePage';
@@ -11,9 +11,9 @@ type Page = 'login' | 'setup' | 'game';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('login');
-  const { player } = useGameStore();
-  const { isConnected } = useWalletStore();
-  const { setFirebaseUser, setInitialized, isInitialized } = useAuthStore();
+  const { player, resetGame } = useGameStore();
+  const { isConnected, disconnect } = useWalletStore();
+  const { setFirebaseUser, setInitialized, isInitialized, signOut } = useAuthStore();
 
   // Initialize Firebase Auth listener
   useEffect(() => {
@@ -39,10 +39,6 @@ function App() {
     }
   }, [isConnected, player]);
 
-  const handleDemoMode = () => {
-    setCurrentPage('setup');
-  };
-
   const handleTwitterLogin = () => {
     setCurrentPage('setup');
   };
@@ -50,6 +46,22 @@ function App() {
   const handleSetupComplete = () => {
     setCurrentPage('game');
   };
+
+  // Handle logout - clear all state and return to login
+  const handleLogout = useCallback(async () => {
+    try {
+      // Sign out from Firebase (Twitter auth)
+      await signOut();
+      // Disconnect wallet
+      disconnect();
+      // Reset game state
+      resetGame();
+      // Return to login page
+      setCurrentPage('login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  }, [signOut, disconnect, resetGame]);
 
   // Show loading while initializing auth
   if (!isInitialized) {
@@ -66,10 +78,10 @@ function App() {
   return (
     <div className="min-h-screen">
       {currentPage === 'login' && (
-        <LoginPage onDemoMode={handleDemoMode} onTwitterLogin={handleTwitterLogin} />
+        <LoginPage onTwitterLogin={handleTwitterLogin} />
       )}
       {currentPage === 'setup' && <SetupPage onComplete={handleSetupComplete} />}
-      {currentPage === 'game' && <GamePage />}
+      {currentPage === 'game' && <GamePage onLogout={handleLogout} />}
     </div>
   );
 }

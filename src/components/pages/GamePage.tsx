@@ -26,6 +26,10 @@ import { updateAchievementProgress } from '../../services/achievementService';
 import { incrementStats } from '../../services/leaderboardService';
 import { getCropPrice } from '../../services/marketService';
 
+interface GamePageProps {
+  onLogout: () => void;
+}
+
 interface VisitingState {
   isVisiting: boolean;
   friendId: string;
@@ -42,7 +46,7 @@ interface UnlockState {
   rewards?: { xp?: number; tokens?: number };
 }
 
-export const GamePage: React.FC = () => {
+export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
   // Panel states
   const [isShopOpen, setIsShopOpen] = useState(false);
   const [isFriendPanelOpen, setIsFriendPanelOpen] = useState(false);
@@ -53,6 +57,8 @@ export const GamePage: React.FC = () => {
   const [isWalletPanelOpen, setIsWalletPanelOpen] = useState(false);
   const [isExchangePanelOpen, setIsExchangePanelOpen] = useState(false);
   const [isUpgradeShopOpen, setIsUpgradeShopOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Initialize Web3 listeners
   const { initializeListeners } = useWeb3Store();
@@ -362,16 +368,72 @@ export const GamePage: React.FC = () => {
         <ToolToolbar onNotify={handleNotify} onPlantAll={handlePlantAll} onHarvestAll={handleHarvestAll} />
       </div>
 
-      {/* Help Tooltip - Bottom Left */}
-      <div className="fixed bottom-4 left-4 z-30 pointer-events-auto">
+      {/* Help & Settings - Bottom Left */}
+      <div className="fixed bottom-4 left-4 z-30 pointer-events-auto flex gap-2">
         <button
           className="glass-panel p-3 rounded-full hover:bg-white/20 transition-all group"
           title="遊戲指南"
-          onClick={() => handleNotify('info', '🖱️ 拖曳移動視角 | 滾輪縮放 | 點擊種植/收成')}
+          onClick={() => handleNotify('info', '拖曳移動視角 | 滾輪縮放 | 點擊種植/收成')}
         >
           <span className="text-xl">❓</span>
         </button>
+        <button
+          className="glass-panel p-3 rounded-full hover:bg-white/20 transition-all group"
+          title="設定"
+          onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+        >
+          <span className="text-xl">⚙️</span>
+        </button>
       </div>
+
+      {/* Settings Menu */}
+      {isSettingsOpen && (
+        <div className="fixed bottom-20 left-4 z-40 pointer-events-auto">
+          <div className="glass-panel rounded-xl p-4 w-48">
+            <h3 className="text-white font-bold mb-3">設定</h3>
+            <button
+              onClick={() => {
+                setIsSettingsOpen(false);
+                setShowLogoutConfirm(true);
+              }}
+              className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-500/20 text-red-400 flex items-center gap-2"
+            >
+              <span>🚪</span>
+              <span>登出</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/70" onClick={() => setShowLogoutConfirm(false)} />
+          <div className="relative glass-panel rounded-xl p-6 w-80 text-center">
+            <h3 className="text-xl font-bold text-white mb-2">確定要登出嗎？</h3>
+            <p className="text-gray-400 text-sm mb-6">
+              你的遊戲進度已自動儲存，下次用相同錢包登入即可繼續遊玩。
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  onLogout();
+                }}
+                className="flex-1 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors"
+              >
+                登出
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Wallet Panel - Floating (appears below HUD on left side) */}
       {isWalletPanelOpen && (

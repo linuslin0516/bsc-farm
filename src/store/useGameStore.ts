@@ -26,6 +26,7 @@ interface GameStore {
 
   // Farm state
   farmCells: FarmCell[];
+  setFarmCells: (cells: FarmCell[]) => void;
   initializeFarm: (size: number) => void;
   plantCrop: (position: Position, cropId: string) => void;
   harvestCrop: (position: Position) => PlantedCrop | null;
@@ -164,6 +165,7 @@ export const useGameStore = create<GameStore>()(
 
       // Farm
       farmCells: [],
+      setFarmCells: (cells) => set({ farmCells: cells }),
       initializeFarm: (size) => set({ farmCells: createInitialFarmCells(size) }),
       plantCrop: (position, cropId) =>
         set((state) => {

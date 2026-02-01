@@ -6,7 +6,7 @@ import { useWalletStore } from '../../store/useWalletStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { GAME_CONFIG } from '../../config/constants';
 import { Player } from '../../types';
-import { createUser } from '../../services/userService';
+import { createUser, getUserByWalletAddress } from '../../services/userService';
 import { initializeFriendData } from '../../services/friendService';
 
 interface SetupPageProps {
@@ -24,9 +24,13 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatedId] = useState(() => generateUserId());
+  const [isCheckingExisting, setIsCheckingExisting] = useState(false);
 
-  const { setPlayer, initializeFarm, setDemoBalance } = useGameStore();
-  const { address, isConnected } = useWalletStore();
+  const { setPlayer, initializeFarm, setFarmCells, setDemoBalance, setGoldBalance } = useGameStore();
+  const { address, isConnected, connect, isConnecting, switchNetwork, isCorrectNetwork } = useWalletStore();
+
+  // Check if wallet is required (Twitter login without wallet)
+  const needsWalletBinding = twitterProfile && !isConnected;
 
   // Auto-fill name from Twitter profile
   useEffect(() => {
@@ -35,9 +39,80 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
     }
   }, [twitterProfile]);
 
+  // Check for existing user when wallet is connected
+  useEffect(() => {
+    const checkExistingUser = async () => {
+      if (!isConnected || !address) return;
+
+      setIsCheckingExisting(true);
+      try {
+        const existingUser = await getUserByWalletAddress(address);
+        if (existingUser) {
+          // User already exists, load their data
+          const player: Player = {
+            oderId: existingUser.oderId,
+            walletAddress: existingUser.walletAddress,
+            twitterUid: existingUser.twitterUid,
+            twitterHandle: existingUser.twitterHandle,
+            avatarUrl: existingUser.avatarUrl,
+            name: existingUser.name,
+            level: existingUser.level,
+            experience: existingUser.experience,
+            landSize: existingUser.landSize as 3 | 4 | 5 | 6,
+            createdAt: existingUser.createdAt || Date.now(),
+            farmBalance: existingUser.farmBalance || GAME_CONFIG.INITIAL_FARM_BALANCE,
+          };
+
+          setPlayer(player);
+          setGoldBalance(player.farmBalance);
+
+          // Load farm cells from Firebase (with planted crops)
+          if (existingUser.farmCells && existingUser.farmCells.length > 0) {
+            setFarmCells(existingUser.farmCells);
+          } else {
+            // No saved farm cells, initialize new ones
+            initializeFarm(player.landSize);
+          }
+
+          onComplete();
+          return;
+        }
+      } catch (error) {
+        console.error('Failed to check existing user:', error);
+      } finally {
+        setIsCheckingExisting(false);
+      }
+    };
+
+    checkExistingUser();
+  }, [isConnected, address]);
+
+  // Handle wallet connection
+  const handleConnectWallet = async () => {
+    setError(null);
+    const success = await connect();
+    if (!success) {
+      setError('錢包連接失敗，請重試');
+      return;
+    }
+
+    if (!isCorrectNetwork()) {
+      const switched = await switchNetwork();
+      if (!switched) {
+        setError('請在錢包中切換到 BSC 網路');
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // Wallet is required
+    if (!isConnected || !address) {
+      setError('請先連接錢包');
+      return;
+    }
 
     const trimmedName = name.trim();
 
@@ -56,7 +131,7 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
     // Create new player with generated ID
     const newPlayer: Player = {
       oderId: generatedId,
-      walletAddress: address || undefined,
+      walletAddress: address,
       twitterUid: twitterProfile?.uid,
       twitterHandle: twitterProfile?.handle || undefined,
       avatarUrl: twitterProfile?.photoURL || undefined,
@@ -80,7 +155,7 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
         trimmedName,
         GAME_CONFIG.INITIAL_LAND_SIZE,
         GAME_CONFIG.INITIAL_FARM_BALANCE,
-        address || undefined,
+        address,
         twitterProfile?.uid,
         twitterProfile?.handle || undefined,
         twitterProfile?.photoURL || undefined
@@ -99,6 +174,18 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
       onComplete();
     }, 500);
   };
+
+  // Show loading state while checking for existing user
+  if (isCheckingExisting) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <div className="card p-8 max-w-md w-full text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-binance-yellow border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-gray-400">正在載入你的農場資料...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
@@ -140,69 +227,106 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
           </div>
         )}
 
-        {/* Generated ID display */}
-        <div className="mb-6 p-4 bg-binance-gray rounded-lg text-center">
-          <span className="text-xs text-gray-400">你的專屬 ID</span>
-          <p className="text-3xl font-bold text-binance-yellow font-mono">
-            {generatedId}
-          </p>
-          <p className="text-xs text-gray-500 mt-2">
-            分享這個 ID 讓朋友加你好友！
-          </p>
-        </div>
+        {/* Wallet Connection Section - Required */}
+        {needsWalletBinding ? (
+          <div className="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">🦊</span>
+              <span className="text-orange-400 font-medium">需要綁定錢包</span>
+            </div>
+            <p className="text-sm text-gray-400 mb-4">
+              請連接 MetaMask 錢包以儲存你的遊戲進度。綁定後可在不同裝置上遊玩。
+            </p>
+            <Button
+              onClick={handleConnectWallet}
+              isLoading={isConnecting}
+              className="w-full"
+            >
+              連接 MetaMask 錢包
+            </Button>
+          </div>
+        ) : isConnected && address ? (
+          <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs text-gray-400">已連接錢包</span>
+                <p className="text-sm text-green-400 font-mono">
+                  {address.slice(0, 10)}...{address.slice(-8)}
+                </p>
+              </div>
+              <span className="text-green-400 text-xl">✓</span>
+            </div>
+          </div>
+        ) : null}
 
-        {isConnected && address && (
-          <div className="mb-4 p-3 bg-binance-gray rounded-lg text-center">
-            <span className="text-xs text-gray-400">已連接錢包</span>
-            <p className="text-sm text-binance-gold font-mono">
-              {address.slice(0, 10)}...{address.slice(-8)}
+        {/* Generated ID display - Only show when wallet is connected */}
+        {isConnected && (
+          <div className="mb-6 p-4 bg-binance-gray rounded-lg text-center">
+            <span className="text-xs text-gray-400">你的專屬 ID</span>
+            <p className="text-3xl font-bold text-binance-yellow font-mono">
+              {generatedId}
+            </p>
+            <p className="text-xs text-gray-500 mt-2">
+              分享這個 ID 讓朋友加你好友！
             </p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-6">
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-300 mb-2"
-            >
-              農場名稱
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="輸入你的農場名稱..."
-              className="input-field w-full text-lg"
-              maxLength={20}
-              autoFocus
-            />
-            {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+        {/* Only show form when wallet is connected */}
+        {isConnected && (
+          <>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-6">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
+                  農場名稱
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="輸入你的農場名稱..."
+                  className="input-field w-full text-lg"
+                  maxLength={20}
+                  autoFocus
+                />
+                {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+              </div>
+
+              <Button
+                type="submit"
+                isLoading={isSubmitting}
+                className="w-full text-lg py-3"
+                disabled={!name.trim()}
+              >
+                開始種田！
+              </Button>
+            </form>
+
+            {/* Starter pack info */}
+            <div className="mt-6 p-4 bg-binance-yellow/10 border border-binance-yellow/30 rounded-lg">
+              <h3 className="text-sm font-bold text-binance-yellow mb-2">
+                新手禮包
+              </h3>
+              <ul className="text-sm text-gray-300 space-y-1">
+                <li>• {GAME_CONFIG.INITIAL_LAND_SIZE}x{GAME_CONFIG.INITIAL_LAND_SIZE} 農地 ({GAME_CONFIG.INITIAL_LAND_SIZE * GAME_CONFIG.INITIAL_LAND_SIZE} 格)</li>
+                <li>• {GAME_CONFIG.INITIAL_FARM_BALANCE} GOLD</li>
+                <li>• 基本作物已解鎖</li>
+                <li>• 專屬 6 位數 ID</li>
+              </ul>
+            </div>
+          </>
+        )}
+
+        {/* Error display */}
+        {error && !isConnected && (
+          <div className="mt-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-300 text-sm text-center">
+            {error}
           </div>
-
-          <Button
-            type="submit"
-            isLoading={isSubmitting}
-            className="w-full text-lg py-3"
-            disabled={!name.trim()}
-          >
-            開始種田！🚀
-          </Button>
-        </form>
-
-        {/* Starter pack info */}
-        <div className="mt-6 p-4 bg-binance-yellow/10 border border-binance-yellow/30 rounded-lg">
-          <h3 className="text-sm font-bold text-binance-yellow mb-2">
-            🎁 新手禮包
-          </h3>
-          <ul className="text-sm text-gray-300 space-y-1">
-            <li>• {GAME_CONFIG.INITIAL_LAND_SIZE}x{GAME_CONFIG.INITIAL_LAND_SIZE} 農地 ({GAME_CONFIG.INITIAL_LAND_SIZE * GAME_CONFIG.INITIAL_LAND_SIZE} 格)</li>
-            <li>• {GAME_CONFIG.INITIAL_FARM_BALANCE} $FARM 代幣</li>
-            <li>• 基本作物已解鎖</li>
-            <li>• 專屬 6 位數 ID</li>
-          </ul>
-        </div>
+        )}
       </div>
     </div>
   );

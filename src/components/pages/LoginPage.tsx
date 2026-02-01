@@ -5,11 +5,10 @@ import { useWalletStore } from '../../store/useWalletStore';
 import { useAuthStore } from '../../store/useAuthStore';
 
 interface LoginPageProps {
-  onDemoMode: () => void;
   onTwitterLogin: () => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onDemoMode, onTwitterLogin }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
   const { connect, isConnecting, switchNetwork, isCorrectNetwork } = useWalletStore();
   const { signInWithTwitter, isAuthenticating, error: authError, clearError } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
@@ -117,15 +116,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onDemoMode, onTwitterLogin
           >
             🦊 連接 MetaMask 錢包
           </Button>
-
-          {/* Demo Mode */}
-          <Button onClick={onDemoMode} variant="secondary" className="w-full">
-            🎮 訪客模式 (無需登入)
-          </Button>
         </div>
 
         <p className="mt-6 text-xs text-gray-500">
-          使用 Twitter 登入可自動同步你的個人資料
+          連接錢包後，你的遊戲進度將會自動儲存
         </p>
       </div>
 

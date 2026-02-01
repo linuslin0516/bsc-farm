@@ -109,11 +109,24 @@ export const getUserById = async (oderId: string): Promise<FirebaseUser | null> 
 // Get user by wallet address
 export const getUserByWallet = async (walletAddress: string): Promise<FirebaseUser | null> => {
   const usersRef = collection(db, USERS_COLLECTION);
-  const q = query(usersRef, where('walletAddress', '==', walletAddress));
+  const q = query(usersRef, where('walletAddress', '==', walletAddress.toLowerCase()));
   const snapshot = await getDocs(q);
 
   if (snapshot.empty) {
-    return null;
+    // Try with original case
+    const q2 = query(usersRef, where('walletAddress', '==', walletAddress));
+    const snapshot2 = await getDocs(q2);
+    if (snapshot2.empty) {
+      return null;
+    }
+    const docSnap = snapshot2.docs[0];
+    const data = docSnap.data();
+    return {
+      ...data,
+      oderId: docSnap.id,
+      createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : data.createdAt,
+      lastOnline: data.lastOnline instanceof Timestamp ? data.lastOnline.toMillis() : data.lastOnline,
+    } as FirebaseUser;
   }
 
   const docSnap = snapshot.docs[0];
@@ -125,6 +138,9 @@ export const getUserByWallet = async (walletAddress: string): Promise<FirebaseUs
     lastOnline: data.lastOnline instanceof Timestamp ? data.lastOnline.toMillis() : data.lastOnline,
   } as FirebaseUser;
 };
+
+// Alias for getUserByWallet
+export const getUserByWalletAddress = getUserByWallet;
 
 // Helper: Clean undefined values from object (Firestore doesn't accept undefined)
 const cleanUndefined = (obj: unknown): unknown => {
