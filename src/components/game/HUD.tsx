@@ -13,6 +13,7 @@ interface HUDProps {
   onOpenCodex: () => void;
   onOpenWallet: () => void;
   onOpenExchange: () => void;
+  onOpenUpgrades: () => void;
 }
 
 export const HUD: React.FC<HUDProps> = ({
@@ -24,6 +25,7 @@ export const HUD: React.FC<HUDProps> = ({
   onOpenCodex,
   onOpenWallet,
   onOpenExchange,
+  onOpenUpgrades,
 }) => {
   const { player, goldBalance } = useGameStore();
   const { isConnected, address } = useWeb3Store();
@@ -152,6 +154,15 @@ export const HUD: React.FC<HUDProps> = ({
             title="商店"
           >
             <span className="text-2xl group-hover:scale-110 transition-transform inline-block">🏪</span>
+          </button>
+
+          {/* Upgrades */}
+          <button
+            onClick={onOpenUpgrades}
+            className="glass-panel p-3 rounded-xl hover:bg-white/20 transition-all group"
+            title="農場升級"
+          >
+            <span className="text-2xl group-hover:scale-110 transition-transform inline-block">🏗️</span>
           </button>
 
           {/* Friends */}

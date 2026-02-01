@@ -41,6 +41,7 @@ export const TokenExchangePanel: React.FC<TokenExchangePanelProps> = ({
   // Calculate output
   const [outputAmount, setOutputAmount] = useState(0);
   const [fee, setFee] = useState(0);
+  const [rateMultiplier, setRateMultiplier] = useState(1.0);
 
   // Load exchange rate and user data
   useEffect(() => {
@@ -72,6 +73,7 @@ export const TokenExchangePanel: React.FC<TokenExchangePanelProps> = ({
       if (numAmount <= 0) {
         setOutputAmount(0);
         setFee(0);
+        setRateMultiplier(1.0);
         return;
       }
 
@@ -80,10 +82,12 @@ export const TokenExchangePanel: React.FC<TokenExchangePanelProps> = ({
           const result = await calculateGoldToFarm(numAmount);
           setOutputAmount(result.netFarmAmount);
           setFee(result.fee);
+          setRateMultiplier(result.rateMultiplier);
         } else {
           const result = await calculateFarmToGold(numAmount);
           setOutputAmount(result.netGoldAmount);
           setFee(result.fee);
+          setRateMultiplier(result.rateMultiplier);
         }
       } catch (error) {
         console.error('Failed to calculate:', error);
@@ -226,13 +230,20 @@ export const TokenExchangePanel: React.FC<TokenExchangePanelProps> = ({
                     <span className="text-white font-bold">1 $FARM</span>
                     <span className="text-gray-400 mx-2">=</span>
                     <span className="text-yellow-400 font-bold">
-                      {formatGold(rate.goldPerFarm)} GOLD
+                      {formatGold(Math.floor(rate.goldPerFarm * rateMultiplier))} GOLD
                     </span>
                   </div>
                   <div className="text-gray-400 text-sm">
                     手續費: {(rate.exchangeFee * 100).toFixed(0)}%
                   </div>
                 </div>
+                {/* Dynamic Rate Indicator */}
+                {rateMultiplier !== 1.0 && (
+                  <div className={`mt-2 text-xs ${rateMultiplier > 1 ? 'text-green-400' : 'text-orange-400'}`}>
+                    {rateMultiplier > 1 ? '📈' : '📉'} 動態匯率: {(rateMultiplier * 100).toFixed(0)}%
+                    {rateMultiplier > 1 ? ' (國庫需要FARM)' : ' (國庫FARM不足)'}
+                  </div>
+                )}
               </div>
             )}
 

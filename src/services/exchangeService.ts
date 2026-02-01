@@ -39,6 +39,72 @@ const DEFAULT_EXCHANGE_RATE: ExchangeRate = {
   dailyExchangeLimit: 999999999,   // Essentially unlimited
 };
 
+// Treasury health thresholds (in FARM tokens)
+const TREASURY_THRESHOLDS = {
+  LOW: 1000,      // Below this, rate gets worse for withdrawals
+  TARGET: 5000,   // Ideal treasury balance
+  HIGH: 10000,    // Above this, rate gets better for deposits
+};
+
+// Rate adjustment factors
+const RATE_ADJUSTMENTS = {
+  MIN_MULTIPLIER: 0.5,   // Worst rate (50% of base)
+  MAX_MULTIPLIER: 1.2,   // Best rate (120% of base)
+};
+
+/**
+ * Get treasury FARM balance
+ */
+export const getTreasuryBalance = async (): Promise<number> => {
+  try {
+    if (!TREASURY_WALLET) return 0;
+    const balance = await getFarmBalance(TREASURY_WALLET);
+    return parseFloat(balance) || 0;
+  } catch (error) {
+    console.error('Failed to get treasury balance:', error);
+    return 0;
+  }
+};
+
+/**
+ * Calculate dynamic rate multiplier based on treasury health
+ * Returns a multiplier that adjusts the exchange rate
+ */
+export const calculateDynamicRateMultiplier = (treasuryBalance: number, isWithdrawal: boolean): number => {
+  // If withdrawing (GOLD → FARM), lower treasury = worse rate
+  // If depositing (FARM → GOLD), higher treasury = better rate
+
+  if (isWithdrawal) {
+    // GOLD → FARM: user wants to take FARM from treasury
+    if (treasuryBalance <= TREASURY_THRESHOLDS.LOW) {
+      // Treasury critically low - worst rate
+      return RATE_ADJUSTMENTS.MIN_MULTIPLIER;
+    } else if (treasuryBalance >= TREASURY_THRESHOLDS.TARGET) {
+      // Treasury healthy - normal rate
+      return 1.0;
+    } else {
+      // Linear interpolation between LOW and TARGET
+      const ratio = (treasuryBalance - TREASURY_THRESHOLDS.LOW) /
+                   (TREASURY_THRESHOLDS.TARGET - TREASURY_THRESHOLDS.LOW);
+      return RATE_ADJUSTMENTS.MIN_MULTIPLIER + ratio * (1.0 - RATE_ADJUSTMENTS.MIN_MULTIPLIER);
+    }
+  } else {
+    // FARM → GOLD: user is adding FARM to treasury
+    if (treasuryBalance >= TREASURY_THRESHOLDS.HIGH) {
+      // Treasury already full - normal rate
+      return 1.0;
+    } else if (treasuryBalance <= TREASURY_THRESHOLDS.LOW) {
+      // Treasury low - best rate to encourage deposits
+      return RATE_ADJUSTMENTS.MAX_MULTIPLIER;
+    } else {
+      // Linear interpolation between LOW and HIGH
+      const ratio = (treasuryBalance - TREASURY_THRESHOLDS.LOW) /
+                   (TREASURY_THRESHOLDS.HIGH - TREASURY_THRESHOLDS.LOW);
+      return RATE_ADJUSTMENTS.MAX_MULTIPLIER - ratio * (RATE_ADJUSTMENTS.MAX_MULTIPLIER - 1.0);
+    }
+  }
+};
+
 /**
  * Get current exchange rate
  */
@@ -128,7 +194,7 @@ export const getUserExchangeData = async (oderId: string): Promise<UserExchangeD
 };
 
 /**
- * Calculate GOLD to FARM conversion
+ * Calculate GOLD to FARM conversion (with dynamic rate)
  */
 export const calculateGoldToFarm = async (
   goldAmount: number
@@ -137,10 +203,18 @@ export const calculateGoldToFarm = async (
   fee: number;
   netFarmAmount: number;
   rate: ExchangeRate;
+  rateMultiplier: number;
 }> => {
   const rate = await getExchangeRate();
+  const treasuryBalance = await getTreasuryBalance();
 
-  const grossFarm = goldAmount * rate.farmPerGold;
+  // Get dynamic rate multiplier (withdrawal mode)
+  const rateMultiplier = calculateDynamicRateMultiplier(treasuryBalance, true);
+
+  // Apply multiplier to farmPerGold (lower multiplier = less FARM per GOLD)
+  const adjustedFarmPerGold = rate.farmPerGold * rateMultiplier;
+
+  const grossFarm = goldAmount * adjustedFarmPerGold;
   const fee = grossFarm * rate.exchangeFee;
   const netFarm = grossFarm - fee;
 
@@ -149,11 +223,12 @@ export const calculateGoldToFarm = async (
     fee,
     netFarmAmount: netFarm,
     rate,
+    rateMultiplier,
   };
 };
 
 /**
- * Calculate FARM to GOLD conversion
+ * Calculate FARM to GOLD conversion (with dynamic rate)
  */
 export const calculateFarmToGold = async (
   farmAmount: number
@@ -162,10 +237,18 @@ export const calculateFarmToGold = async (
   fee: number;
   netGoldAmount: number;
   rate: ExchangeRate;
+  rateMultiplier: number;
 }> => {
   const rate = await getExchangeRate();
+  const treasuryBalance = await getTreasuryBalance();
 
-  const grossGold = farmAmount * rate.goldPerFarm;
+  // Get dynamic rate multiplier (deposit mode)
+  const rateMultiplier = calculateDynamicRateMultiplier(treasuryBalance, false);
+
+  // Apply multiplier to goldPerFarm (higher multiplier = more GOLD per FARM)
+  const adjustedGoldPerFarm = rate.goldPerFarm * rateMultiplier;
+
+  const grossGold = farmAmount * adjustedGoldPerFarm;
   const fee = grossGold * rate.exchangeFee;
   const netGold = grossGold - fee;
 
@@ -174,6 +257,7 @@ export const calculateFarmToGold = async (
     fee,
     netGoldAmount: netGold,
     rate,
+    rateMultiplier,
   };
 };
 

@@ -8,8 +8,11 @@ import {
   Transaction,
   CropStage,
   Position,
+  PlayerUpgrades,
 } from '../types';
 import { getCropById } from '../data/crops';
+import { calculateUpgradeBonuses } from '../data/upgrades';
+import { UpgradeBonuses } from '../types';
 import { GAME_CONFIG, getExpForLevel, STORAGE_KEYS } from '../config/constants';
 import { updateFarmCells, updateUser } from '../services/userService';
 
@@ -58,6 +61,12 @@ interface GameStore {
   addDemoBalance: (amount: number) => void;
   subtractDemoBalance: (amount: number) => boolean;
 
+  // Upgrades
+  playerUpgrades: PlayerUpgrades;
+  purchaseUpgrade: (upgradeId: string, cost: number) => void;
+  getUpgradeLevel: (upgradeId: string) => number;
+  getUpgradeBonuses: () => UpgradeBonuses;
+
   // Reset
   resetGame: () => void;
 }
@@ -75,10 +84,12 @@ const createInitialFarmCells = (size: number): FarmCell[] => {
   return cells;
 };
 
-const getCropStage = (plantedAt: number, growthTime: number): CropStage => {
+const getCropStage = (plantedAt: number, growthTime: number, growthSpeedMultiplier: number = 1.0): CropStage => {
   const now = Date.now();
   const elapsed = (now - plantedAt) / 1000; // in seconds
-  const progress = elapsed / growthTime;
+  // Apply growth speed multiplier (lower = faster growth)
+  const adjustedGrowthTime = growthTime * growthSpeedMultiplier;
+  const progress = elapsed / adjustedGrowthTime;
 
   if (progress < 0.25) return 'seed';
   if (progress < 0.5) return 'sprout';
@@ -177,6 +188,7 @@ export const useGameStore = create<GameStore>()(
         }),
       harvestCrop: (position) => {
         const state = get();
+        const bonuses = state.getUpgradeBonuses();
         const cell = state.farmCells.find(
           (c) => c.position.x === position.x && c.position.y === position.y
         );
@@ -185,7 +197,7 @@ export const useGameStore = create<GameStore>()(
         const crop = getCropById(cell.plantedCrop.cropId);
         if (!crop) return null;
 
-        const stage = getCropStage(cell.plantedCrop.plantedAt, crop.growthTime);
+        const stage = getCropStage(cell.plantedCrop.plantedAt, crop.growthTime, bonuses.growthSpeedMultiplier);
         if (stage !== 'mature') return null;
 
         const harvestedCrop = cell.plantedCrop;
@@ -200,14 +212,15 @@ export const useGameStore = create<GameStore>()(
 
         return harvestedCrop;
       },
-      updateCropStages: () =>
+      updateCropStages: () => {
+        const bonuses = get().getUpgradeBonuses();
         set((state) => ({
           farmCells: state.farmCells.map((cell) => {
             if (!cell.plantedCrop) return cell;
             const crop = getCropById(cell.plantedCrop.cropId);
             if (!crop) return cell;
 
-            const newStage = getCropStage(cell.plantedCrop.plantedAt, crop.growthTime);
+            const newStage = getCropStage(cell.plantedCrop.plantedAt, crop.growthTime, bonuses.growthSpeedMultiplier);
             if (newStage === cell.plantedCrop.stage) return cell;
 
             return {
@@ -215,7 +228,8 @@ export const useGameStore = create<GameStore>()(
               plantedCrop: { ...cell.plantedCrop, stage: newStage },
             };
           }),
-        })),
+        }));
+      },
       syncFarmToFirebase: async () => {
         const state = get();
         if (state.player?.oderId) {
@@ -373,6 +387,37 @@ export const useGameStore = create<GameStore>()(
         return true;
       },
 
+      // Upgrades
+      playerUpgrades: {
+        oderId: '',
+        upgrades: {},
+        totalSpent: 0,
+      },
+      purchaseUpgrade: (upgradeId, cost) =>
+        set((state) => {
+          const currentLevel = state.playerUpgrades.upgrades[upgradeId] || 0;
+          return {
+            playerUpgrades: {
+              ...state.playerUpgrades,
+              oderId: state.player?.oderId || '',
+              upgrades: {
+                ...state.playerUpgrades.upgrades,
+                [upgradeId]: currentLevel + 1,
+              },
+              totalSpent: state.playerUpgrades.totalSpent + cost,
+              lastPurchase: Date.now(),
+            },
+          };
+        }),
+      getUpgradeLevel: (upgradeId) => {
+        const state = get();
+        return state.playerUpgrades.upgrades[upgradeId] || 0;
+      },
+      getUpgradeBonuses: () => {
+        const state = get();
+        return calculateUpgradeBonuses(state.playerUpgrades);
+      },
+
       // Reset
       resetGame: () =>
         set({
@@ -384,6 +429,11 @@ export const useGameStore = create<GameStore>()(
           selectedTool: null,
           goldBalance: GAME_CONFIG.INITIAL_FARM_BALANCE,
           demoBalance: GAME_CONFIG.INITIAL_FARM_BALANCE,
+          playerUpgrades: {
+            oderId: '',
+            upgrades: {},
+            totalSpent: 0,
+          },
         }),
     }),
     {
@@ -395,6 +445,7 @@ export const useGameStore = create<GameStore>()(
         transactions: state.transactions,
         goldBalance: state.goldBalance,
         demoBalance: state.goldBalance, // Keep in sync
+        playerUpgrades: state.playerUpgrades,
       }),
     }
   )

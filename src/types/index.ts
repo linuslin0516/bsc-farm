@@ -344,3 +344,43 @@ export interface GlobalMarketStats {
   cropStats: Record<string, CropSupplyDemand>;
   lastUpdated: number;
 }
+
+// ============ Farm Upgrade System ============
+export type UpgradeCategory = 'production' | 'protection' | 'expansion' | 'special';
+
+export interface FarmUpgrade {
+  id: string;
+  name: string;
+  nameCn: string;
+  description: string;
+  descriptionCn: string;
+  category: UpgradeCategory;
+  icon: string;
+  maxLevel: number;
+  baseCost: number;           // GOLD cost for level 1
+  costMultiplier: number;     // Cost multiplier per level
+  effects: UpgradeEffect[];
+  unlockLevel: number;        // Player level required
+}
+
+export interface UpgradeEffect {
+  type: 'growth_speed' | 'sell_bonus' | 'exp_bonus' | 'theft_protection' | 'land_slots' | 'rare_bonus';
+  valuePerLevel: number;      // Effect increase per level (e.g., 0.05 = 5%)
+}
+
+export interface PlayerUpgrades {
+  oderId: string;
+  upgrades: Record<string, number>;  // upgradeId -> level (0 = not purchased)
+  totalSpent: number;                // Total GOLD spent on upgrades
+  lastPurchase?: number;             // Timestamp
+}
+
+// Calculated bonuses from upgrades
+export interface UpgradeBonuses {
+  growthSpeedMultiplier: number;     // 1.0 = normal, 0.8 = 20% faster
+  sellPriceMultiplier: number;       // 1.0 = normal, 1.1 = 10% more
+  expMultiplier: number;             // 1.0 = normal, 1.2 = 20% more exp
+  theftProtection: number;           // 0.0 = none, 0.3 = 30% chance to block
+  extraLandSlots: number;            // Additional farm slots
+  rareBonusMultiplier: number;       // Bonus for rare+ crops
+}

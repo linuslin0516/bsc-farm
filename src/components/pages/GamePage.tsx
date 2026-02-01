@@ -16,6 +16,7 @@ import { CropCodex } from '../game/CropCodex';
 import { UnlockAnimation } from '../ui/UnlockAnimation';
 import { WalletPanel } from '../game/WalletPanel';
 import { TokenExchangePanel } from '../game/TokenExchangePanel';
+import { UpgradeShopPanel } from '../game/UpgradeShopPanel';
 import { useGameStore } from '../../store/useGameStore';
 import { useWeb3Store } from '../../store/useWeb3Store';
 import { Notification as NotificationType, CropRarity } from '../../types';
@@ -51,6 +52,7 @@ export const GamePage: React.FC = () => {
   const [isCodexOpen, setIsCodexOpen] = useState(false);
   const [isWalletPanelOpen, setIsWalletPanelOpen] = useState(false);
   const [isExchangePanelOpen, setIsExchangePanelOpen] = useState(false);
+  const [isUpgradeShopOpen, setIsUpgradeShopOpen] = useState(false);
 
   // Initialize Web3 listeners
   const { initializeListeners } = useWeb3Store();
@@ -88,6 +90,7 @@ export const GamePage: React.FC = () => {
     demoBalance,
     subtractDemoBalance,
     syncFarmToFirebase,
+    getUpgradeBonuses,
   } = useGameStore();
 
   const handleNotify = useCallback(
@@ -208,6 +211,9 @@ export const GamePage: React.FC = () => {
       return;
     }
 
+    // Get upgrade bonuses
+    const bonuses = getUpgradeBonuses();
+
     let totalEarnings = 0;
     let totalXP = 0;
     let harvested = 0;
@@ -218,9 +224,21 @@ export const GamePage: React.FC = () => {
         const cropDef = getCropById(result.cropId);
         if (cropDef) {
           // Get current market price for this crop
-          const currentPrice = await getCropPrice(result.cropId);
+          let currentPrice = await getCropPrice(result.cropId);
+
+          // Apply sell price bonus
+          currentPrice = Math.floor(currentPrice * bonuses.sellPriceMultiplier);
+
+          // Apply rare bonus for rare+ crops
+          const isRareOrAbove = ['rare', 'epic', 'legendary'].includes(cropDef.rarity);
+          if (isRareOrAbove) {
+            currentPrice = Math.floor(currentPrice * bonuses.rareBonusMultiplier);
+          }
+
           totalEarnings += currentPrice;
-          totalXP += cropDef.experience;
+
+          // Apply exp bonus
+          totalXP += Math.floor(cropDef.experience * bonuses.expMultiplier);
           harvested++;
 
           // Mark crop as discovered
@@ -265,6 +283,7 @@ export const GamePage: React.FC = () => {
     syncFarmToFirebase,
     handleNotify,
     player,
+    getUpgradeBonuses,
   ]);
 
   // Function to show unlock animation (exported for use by other components)
@@ -327,6 +346,7 @@ export const GamePage: React.FC = () => {
         onOpenCodex={() => setIsCodexOpen(true)}
         onOpenWallet={() => setIsWalletPanelOpen(!isWalletPanelOpen)}
         onOpenExchange={() => setIsExchangePanelOpen(true)}
+        onOpenUpgrades={() => setIsUpgradeShopOpen(true)}
       />
 
       {/* Character Stats Panel */}
@@ -412,6 +432,13 @@ export const GamePage: React.FC = () => {
       <TokenExchangePanel
         isOpen={isExchangePanelOpen}
         onClose={() => setIsExchangePanelOpen(false)}
+        onNotify={handleNotify}
+      />
+
+      {/* Upgrade Shop Panel */}
+      <UpgradeShopPanel
+        isOpen={isUpgradeShopOpen}
+        onClose={() => setIsUpgradeShopOpen(false)}
         onNotify={handleNotify}
       />
 
