@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { getExpForLevel } from '../../config/constants';
 import { getTimeGreeting } from '../../utils/timeOfDay';
+import { ActiveBonusesPanel } from './ActiveBonusesPanel';
 
 export const CharacterStatsPanel: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -108,6 +109,9 @@ export const CharacterStatsPanel: React.FC = () => {
                 <span className="text-binance-yellow">{matureCells}</span>
               </div>
             </div>
+
+            {/* Active Bonuses */}
+            <ActiveBonusesPanel />
 
             {/* Quick Actions */}
             <div className="pt-2 border-t border-binance-gray-light">

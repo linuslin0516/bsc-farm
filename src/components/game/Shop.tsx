@@ -18,19 +18,26 @@ export const Shop: React.FC<ShopProps> = ({ isOpen, onClose, onNotify }) => {
 
   const handleBuyLand = (newSize: 4 | 5 | 6) => {
     const price = LAND_PRICES[newSize];
-    if (demoBalance < price) {
-      onNotify('error', `Not enough $FARM! Need ${price}`);
+
+    // Must upgrade step by step: 3→4→5→6
+    const expectedSize = player.landSize + 1;
+    if (newSize !== expectedSize) {
+      if (newSize < expectedSize) {
+        onNotify('info', '你已經擁有這個或更大的農地了！');
+      } else {
+        onNotify('error', `必須先升級到 ${expectedSize}×${expectedSize}！`);
+      }
       return;
     }
 
-    if (player.landSize >= newSize) {
-      onNotify('info', 'You already have this land size or larger!');
+    if (demoBalance < price) {
+      onNotify('error', `GOLD 不足！需要 ${price}`);
       return;
     }
 
     if (subtractDemoBalance(price)) {
       upgradeLand(newSize);
-      onNotify('success', `Upgraded to ${newSize}x${newSize} land!`);
+      onNotify('success', `成功升級到 ${newSize}×${newSize} 農地！`);
     }
   };
 
@@ -70,26 +77,40 @@ export const Shop: React.FC<ShopProps> = ({ isOpen, onClose, onNotify }) => {
             {landItems.map((item) => {
               const size = parseInt(item.id.split('_')[1]) as 4 | 5 | 6;
               const isOwned = player.landSize >= size;
+              const isNextLevel = size === player.landSize + 1;
+              const isLocked = size > player.landSize + 1;
               const canAfford = demoBalance >= item.price;
 
               return (
                 <div
                   key={item.id}
-                  className={`card-hover p-4 text-center ${isOwned ? 'opacity-50' : ''}`}
+                  className={`card-hover p-4 text-center relative ${isOwned ? 'opacity-50' : ''} ${isLocked ? 'opacity-40' : ''}`}
                 >
+                  {isNextLevel && (
+                    <div className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] px-2 py-0.5 rounded-full">
+                      可升級
+                    </div>
+                  )}
+                  {isLocked && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
+                      <span className="text-gray-400 text-sm">🔒 先升級 {player.landSize + 1}×{player.landSize + 1}</span>
+                    </div>
+                  )}
                   <span className="text-3xl">{item.icon}</span>
                   <h4 className="font-bold mt-2">{item.nameCn}</h4>
                   <p className="text-xs text-gray-400 mt-1">{item.description}</p>
                   <div className="mt-3">
                     {isOwned ? (
-                      <span className="text-green-400 text-sm">Owned</span>
+                      <span className="text-green-400 text-sm">✓ 已擁有</span>
+                    ) : isLocked ? (
+                      <span className="text-gray-500 text-sm">{item.price} GOLD</span>
                     ) : (
                       <Button
                         size="sm"
                         disabled={!canAfford}
                         onClick={() => handleBuyLand(size)}
                       >
-                        {item.price} $FARM
+                        {item.price} GOLD
                       </Button>
                     )}
                   </div>

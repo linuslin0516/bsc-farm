@@ -4,6 +4,7 @@ import {
   getUpgradesByCategory,
   getUpgradeCost,
   formatUpgradeEffect,
+  UPGRADE_DETAILS,
 } from '../../data/upgrades';
 import { FarmUpgrade, UpgradeCategory } from '../../types';
 import { Modal } from '../ui/Modal';
@@ -202,21 +203,29 @@ export const UpgradeShopPanel: React.FC<UpgradeShopPanelProps> = ({
                     Lv.{getUpgradeLevel(selectedUpgrade.id)} / {selectedUpgrade.maxLevel}
                   </span>
                 </div>
-                <p className="text-gray-400 text-sm mb-3">{selectedUpgrade.descriptionCn}</p>
+                <p className="text-gray-400 text-sm mb-2">{selectedUpgrade.descriptionCn}</p>
+
+                {/* Detailed Explanation */}
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-3">
+                  <p className="text-blue-300 text-xs leading-relaxed">
+                    💡 {UPGRADE_DETAILS[selectedUpgrade.id]}
+                  </p>
+                </div>
 
                 {/* Current Effects */}
-                <div className="space-y-1 mb-3">
+                <div className="bg-black/30 rounded-lg p-2 mb-3">
+                  <div className="text-xs text-gray-500 mb-1">效果預覽：</div>
                   {selectedUpgrade.effects.map((effect, i) => {
                     const currentLevel = getUpgradeLevel(selectedUpgrade.id);
                     const nextLevel = Math.min(currentLevel + 1, selectedUpgrade.maxLevel);
                     return (
-                      <div key={i} className="flex items-center justify-between text-sm">
-                        <span className="text-gray-400">
-                          {currentLevel > 0 ? formatUpgradeEffect(effect, currentLevel) : formatUpgradeEffect(effect, 1)}
+                      <div key={i} className="flex items-center justify-between text-sm py-1">
+                        <span className={currentLevel > 0 ? 'text-green-400' : 'text-gray-400'}>
+                          {currentLevel > 0 ? `✓ ${formatUpgradeEffect(effect, currentLevel)}` : formatUpgradeEffect(effect, 1)}
                         </span>
-                        {currentLevel > 0 && !isUpgradeMaxed(selectedUpgrade) && (
-                          <span className="text-green-400">
-                            → {formatUpgradeEffect(effect, nextLevel)}
+                        {!isUpgradeMaxed(selectedUpgrade) && (
+                          <span className="text-yellow-400 text-xs">
+                            下一級: {formatUpgradeEffect(effect, nextLevel)}
                           </span>
                         )}
                       </div>

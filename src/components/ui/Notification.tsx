@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Notification as NotificationType } from '../../types';
 
 interface NotificationProps {
@@ -11,16 +11,29 @@ export const Notification: React.FC<NotificationProps> = ({
   onClose,
 }) => {
   const [isVisible, setIsVisible] = useState(true);
+  const onCloseRef = useRef(onClose);
+
+  // Keep the ref updated
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  const handleClose = useCallback(() => {
+    setIsVisible(false);
+    setTimeout(() => onCloseRef.current(), 300);
+  }, []);
 
   useEffect(() => {
+    // Reset visibility when notification changes
+    setIsVisible(true);
+
     const duration = notification.duration || 3000;
     const timer = setTimeout(() => {
-      setIsVisible(false);
-      setTimeout(onClose, 300); // Wait for fade out animation
+      handleClose();
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [notification.duration, onClose]);
+  }, [notification, handleClose]);
 
   const icons = {
     success: '✅',
@@ -45,10 +58,7 @@ export const Notification: React.FC<NotificationProps> = ({
       <span className="text-xl">{icons[notification.type]}</span>
       <span className="text-white font-medium">{notification.message}</span>
       <button
-        onClick={() => {
-          setIsVisible(false);
-          setTimeout(onClose, 300);
-        }}
+        onClick={handleClose}
         className="ml-2 text-gray-400 hover:text-white"
       >
         ✕
