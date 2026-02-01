@@ -227,10 +227,10 @@ export const TokenExchangePanel: React.FC<TokenExchangePanelProps> = ({
                 <div className="text-gray-400 text-sm mb-2">當前匯率</div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-white font-bold">1 $FARM</span>
+                    <span className="text-white font-bold">1,000,000 $FARM</span>
                     <span className="text-gray-400 mx-2">=</span>
                     <span className="text-yellow-400 font-bold">
-                      {formatGold(Math.floor(rate.goldPerFarm * rateMultiplier))} GOLD
+                      {formatGold(Math.floor(rate.goldPerFarm * 1000000 * rateMultiplier))} GOLD
                     </span>
                   </div>
                   <div className="text-gray-400 text-sm">
@@ -384,10 +384,9 @@ export const TokenExchangePanel: React.FC<TokenExchangePanelProps> = ({
 
             {/* Info */}
             <div className="text-gray-400 text-xs space-y-1">
-              <p>• GOLD → FARM: 將遊戲金幣兌換成鏈上代幣</p>
-              <p>• FARM → GOLD: 將鏈上代幣充值到遊戲中使用</p>
+              <p>• GOLD → FARM: 將遊戲金幣兌換成鏈上代幣 (最少 100 GOLD)</p>
+              <p>• FARM → GOLD: 將鏈上代幣充值到遊戲中使用 (最少 100,000 FARM)</p>
               <p>• 兌換需要支付 {rate ? (rate.exchangeFee * 100).toFixed(0) : 5}% 手續費</p>
-              <p>• 每日兌換上限: {rate?.dailyExchangeLimit || 100} FARM</p>
             </div>
           </>
         )}

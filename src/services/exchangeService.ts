@@ -31,9 +31,10 @@ export const TREASURY_WALLET = (import.meta.env.VITE_TREASURY_WALLET || '').trim
 const WITHDRAWAL_API_URL = '/api/withdraw';
 
 // Default exchange rate configuration
+// 目標：50,000,000 FARM ≈ 1,000 GOLD（早期投資者用 0.2 BNB 買的量）
 const DEFAULT_EXCHANGE_RATE: ExchangeRate = {
-  goldPerFarm: 10000,        // 1 FARM = 10,000 GOLD
-  farmPerGold: 0.0001,       // 1 GOLD = 0.0001 FARM
+  goldPerFarm: 0.00002,      // 1 FARM = 0.00002 GOLD
+  farmPerGold: 50000,        // 1 GOLD = 50,000 FARM
   exchangeFee: 0.05,         // 5% fee
   lastUpdated: Date.now(),
   dailyExchangeLimit: 999999999,   // Essentially unlimited
@@ -301,8 +302,8 @@ export const exchangeGoldForFarm = async (
   goldAmount: number
 ): Promise<ExchangeTransaction> => {
   // Validate
-  if (goldAmount < 1000) {
-    throw new Error('最小兌換金額為 1,000 GOLD');
+  if (goldAmount < 100) {
+    throw new Error('最小兌換金額為 100 GOLD');
   }
 
   if (!walletAddress) {
@@ -423,9 +424,9 @@ export const exchangeFarmForGold = async (
   walletAddress: string,
   farmAmount: number
 ): Promise<ExchangeTransaction> => {
-  // Validate
-  if (farmAmount < 0.1) {
-    throw new Error('最小兌換金額為 0.1 FARM');
+  // Validate - 最小 100,000 FARM = 2 GOLD (扣費前)
+  if (farmAmount < 100000) {
+    throw new Error('最小兌換金額為 100,000 FARM');
   }
 
   if (!TREASURY_WALLET) {
@@ -564,6 +565,15 @@ export const formatGold = (amount: number): string => {
 export const formatFarm = (amount: number | string): string => {
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
   if (isNaN(num)) return '0';
+  if (num >= 1000000000) {
+    return (num / 1000000000).toFixed(2) + 'B';
+  }
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(2) + 'M';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
   if (num < 0.0001) return '< 0.0001';
-  return num.toFixed(4);
+  return num.toLocaleString();
 };

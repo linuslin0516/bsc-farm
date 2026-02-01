@@ -63,12 +63,13 @@ export const GAME_CONFIG = {
 };
 
 // Exchange Configuration
+// 目標：50,000,000 FARM ≈ 1,000 GOLD
 export const EXCHANGE_CONFIG = {
-  GOLD_PER_FARM: 10000,       // 1 FARM = 10,000 GOLD
+  GOLD_PER_FARM: 0.00002,     // 1 FARM = 0.00002 GOLD
   EXCHANGE_FEE: 0.05,         // 5% fee
-  DAILY_LIMIT_FARM: 100,      // Max 100 FARM withdrawals per day
-  MIN_GOLD_EXCHANGE: 1000,    // Minimum GOLD to exchange
-  MIN_FARM_EXCHANGE: 0.1,     // Minimum FARM to exchange
+  DAILY_LIMIT_FARM: 999999999,// Essentially unlimited
+  MIN_GOLD_EXCHANGE: 100,     // Minimum GOLD to exchange
+  MIN_FARM_EXCHANGE: 100000,  // Minimum 100,000 FARM to exchange (= 2 GOLD before fee)
 };
 
 // Experience required for each level
