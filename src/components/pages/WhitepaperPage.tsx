@@ -565,8 +565,8 @@ Player ROI (Return on Investment) comes from:
             <div className="glass-panel rounded-xl p-6">
               <div className="prose prose-invert max-w-none">
                 {section.content.split('\n').map((paragraph, idx) => {
-                  // Helper to strip ** markers
-                  const stripBold = (text: string) => text.replace(/\*\*/g, '');
+                  // Helper to strip all asterisks used by markdown
+                  const stripStars = (text: string) => text.replace(/\*/g, '');
 
                   // Handle code blocks
                   if (paragraph.trim().startsWith('```')) {
@@ -576,7 +576,7 @@ Player ROI (Return on Investment) comes from:
                   if (paragraph.startsWith('**') && paragraph.endsWith('**') && !paragraph.slice(2, -2).includes('**')) {
                     return (
                       <h3 key={idx} className="text-lg font-bold text-white mt-6 mb-3">
-                        {stripBold(paragraph)}
+                        {stripStars(paragraph)}
                       </h3>
                     );
                   }
@@ -584,7 +584,7 @@ Player ROI (Return on Investment) comes from:
                   if (paragraph.trim().startsWith('-')) {
                     return (
                       <p key={idx} className="text-gray-300 ml-4">
-                        {stripBold(paragraph)}
+                        {stripStars(paragraph)}
                       </p>
                     );
                   }
@@ -592,7 +592,7 @@ Player ROI (Return on Investment) comes from:
                   if (paragraph.includes('|')) {
                     return (
                       <p key={idx} className="text-gray-300 font-mono text-sm">
-                        {paragraph}
+                        {stripStars(paragraph)}
                       </p>
                     );
                   }
@@ -600,7 +600,7 @@ Player ROI (Return on Investment) comes from:
                   if (paragraph.trim()) {
                     return (
                       <p key={idx} className="text-gray-300 mb-4">
-                        {stripBold(paragraph)}
+                        {stripStars(paragraph)}
                       </p>
                     );
                   }
