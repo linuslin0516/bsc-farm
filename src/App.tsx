@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { LoginPage } from './components/pages/LoginPage';
 import { SetupPage } from './components/pages/SetupPage';
 import { GamePage } from './components/pages/GamePage';
@@ -7,10 +8,50 @@ import { useWalletStore } from './store/useWalletStore';
 import { useAuthStore } from './store/useAuthStore';
 import { onAuthStateChanged } from './services/authService';
 
-type Page = 'login' | 'setup' | 'game';
+// Protected Route wrapper - redirects to login if not authenticated
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { player } = useGameStore();
 
-function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('login');
+  if (!player) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// Setup Route wrapper - redirects based on auth state
+const SetupRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { player } = useGameStore();
+  const { isConnected } = useWalletStore();
+  const { twitterProfile } = useAuthStore();
+
+  // If player exists, go to game
+  if (player) {
+    return <Navigate to="/game" replace />;
+  }
+
+  // If not connected and no Twitter profile, go to login
+  if (!isConnected && !twitterProfile) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// Login Route wrapper - redirects if already logged in
+const LoginRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { player } = useGameStore();
+
+  if (player) {
+    return <Navigate to="/game" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// Main App content with routing logic
+function AppContent() {
+  const navigate = useNavigate();
   const { player, resetGame } = useGameStore();
   const { isConnected, disconnect } = useWalletStore();
   const { setFirebaseUser, setInitialized, isInitialized, signOut } = useAuthStore();
@@ -25,43 +66,34 @@ function App() {
     return () => unsubscribe();
   }, [setFirebaseUser, setInitialized]);
 
-  // Check for existing player on mount
-  useEffect(() => {
-    if (player) {
-      setCurrentPage('game');
-    }
-  }, [player]);
-
-  // Handle wallet connection changes
+  // Handle wallet connection changes - navigate to setup
   useEffect(() => {
     if (isConnected && !player) {
-      setCurrentPage('setup');
+      navigate('/setup');
     }
-  }, [isConnected, player]);
+  }, [isConnected, player, navigate]);
 
-  const handleTwitterLogin = () => {
-    setCurrentPage('setup');
-  };
+  // Handle Twitter login - navigate to setup
+  const handleTwitterLogin = useCallback(() => {
+    navigate('/setup');
+  }, [navigate]);
 
-  const handleSetupComplete = () => {
-    setCurrentPage('game');
-  };
+  // Handle setup complete - navigate to game
+  const handleSetupComplete = useCallback(() => {
+    navigate('/game');
+  }, [navigate]);
 
   // Handle logout - clear all state and return to login
   const handleLogout = useCallback(async () => {
     try {
-      // Sign out from Firebase (Twitter auth)
       await signOut();
-      // Disconnect wallet
       disconnect();
-      // Reset game state
       resetGame();
-      // Return to login page
-      setCurrentPage('login');
+      navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
     }
-  }, [signOut, disconnect, resetGame]);
+  }, [signOut, disconnect, resetGame, navigate]);
 
   // Show loading while initializing auth
   if (!isInitialized) {
@@ -77,12 +109,57 @@ function App() {
 
   return (
     <div className="min-h-screen">
-      {currentPage === 'login' && (
-        <LoginPage onTwitterLogin={handleTwitterLogin} />
-      )}
-      {currentPage === 'setup' && <SetupPage onComplete={handleSetupComplete} />}
-      {currentPage === 'game' && <GamePage onLogout={handleLogout} />}
+      <Routes>
+        {/* Login page */}
+        <Route
+          path="/login"
+          element={
+            <LoginRoute>
+              <LoginPage onTwitterLogin={handleTwitterLogin} />
+            </LoginRoute>
+          }
+        />
+
+        {/* Setup page */}
+        <Route
+          path="/setup"
+          element={
+            <SetupRoute>
+              <SetupPage onComplete={handleSetupComplete} />
+            </SetupRoute>
+          }
+        />
+
+        {/* Game page (protected) */}
+        <Route
+          path="/game"
+          element={
+            <ProtectedRoute>
+              <GamePage onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Default redirect */}
+        <Route
+          path="/"
+          element={
+            player ? <Navigate to="/game" replace /> : <Navigate to="/login" replace />
+          }
+        />
+
+        {/* Catch all - redirect to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
 
