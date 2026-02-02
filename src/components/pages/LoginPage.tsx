@@ -3,6 +3,7 @@ import { Logo } from '../game/Logo';
 import { Button } from '../ui/Button';
 import { useWalletStore } from '../../store/useWalletStore';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useT } from '../../translations';
 
 interface LoginPageProps {
   onTwitterLogin: () => void;
@@ -12,13 +13,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
   const { connect, isConnecting, switchNetwork, isCorrectNetwork } = useWalletStore();
   const { signInWithTwitter, isAuthenticating, error: authError, clearError } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
+  const { t } = useT();
 
   const handleConnect = async () => {
     setError(null);
 
     const success = await connect();
     if (!success) {
-      setError('Failed to connect wallet. Please try again.');
+      setError(t.login.errors.walletFailed);
       return;
     }
 
@@ -26,7 +28,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
     if (!isCorrectNetwork()) {
       const switched = await switchNetwork();
       if (!switched) {
-        setError('Please switch to BSC network in your wallet.');
+        setError(t.login.errors.switchNetwork);
       }
     }
   };
@@ -74,7 +76,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
         </div>
 
         <p className="text-gray-300 mb-8">
-          開始你的農場之旅，種植作物賺取 <strong className="text-binance-yellow">$FARM</strong> 代幣！
+          {t.login.subtitle} <strong className="text-binance-yellow">{t.login.tokenName}</strong> {t.login.tokens}
         </p>
 
         {(error || authError) && (
@@ -94,7 +96,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
               </svg>
-              使用 X (Twitter) 登入
+              {t.login.twitterLogin}
             </span>
           </Button>
 
@@ -103,7 +105,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
               <div className="w-full border-t border-binance-gray-light"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-binance-gray text-gray-400">或</span>
+              <span className="px-4 bg-binance-gray text-gray-400">{t.login.or}</span>
             </div>
           </div>
 
@@ -114,12 +116,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
             variant="secondary"
             className="w-full"
           >
-            🦊 連接 MetaMask 錢包
+            🦊 {t.login.walletLogin}
           </Button>
         </div>
 
         <p className="mt-6 text-xs text-gray-500">
-          連接錢包後，你的遊戲進度將會自動儲存
+          {t.login.saveHint}
         </p>
       </div>
 
@@ -127,15 +129,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
       <div className="mt-8 grid grid-cols-3 gap-4 max-w-md w-full">
         <div className="card p-4 text-center">
           <span className="text-3xl">🌱</span>
-          <p className="text-sm text-gray-300 mt-2">種植作物</p>
+          <p className="text-sm text-gray-300 mt-2">{t.login.features.plant}</p>
         </div>
         <div className="card p-4 text-center">
           <span className="text-3xl">💰</span>
-          <p className="text-sm text-gray-300 mt-2">賺取 $FARM</p>
+          <p className="text-sm text-gray-300 mt-2">{t.login.features.earn}</p>
         </div>
         <div className="card p-4 text-center">
           <span className="text-3xl">🏆</span>
-          <p className="text-sm text-gray-300 mt-2">升級成長</p>
+          <p className="text-sm text-gray-300 mt-2">{t.login.features.grow}</p>
         </div>
       </div>
     </div>

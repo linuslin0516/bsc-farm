@@ -8,6 +8,7 @@ import { GAME_CONFIG } from '../../config/constants';
 import { Player } from '../../types';
 import { createUser, getUserByWalletAddress } from '../../services/userService';
 import { initializeFriendData } from '../../services/friendService';
+import { useT } from '../../translations';
 
 interface SetupPageProps {
   onComplete: () => void;
@@ -25,6 +26,7 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
   const [error, setError] = useState<string | null>(null);
   const [generatedId] = useState(() => generateUserId());
   const [isCheckingExisting, setIsCheckingExisting] = useState(false);
+  const { t } = useT();
 
   const { setPlayer, initializeFarm, setFarmCells, setDemoBalance, setGoldBalance } = useGameStore();
   const { address, isConnected, connect, isConnecting, switchNetwork, isCorrectNetwork } = useWalletStore();
@@ -98,7 +100,7 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
         }
       } catch (error) {
         console.error('❌ Failed to check existing user:', error);
-        setError('無法連接伺服器，請重新整理頁面');
+        setError(t.setup.errors.loadError);
       } finally {
         clearTimeout(timeoutId);
         if (isMounted) {
@@ -121,14 +123,14 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
     setError(null);
     const success = await connect();
     if (!success) {
-      setError('錢包連接失敗，請重試');
+      setError(t.setup.errors.walletFailed);
       return;
     }
 
     if (!isCorrectNetwork()) {
       const switched = await switchNetwork();
       if (!switched) {
-        setError('請在錢包中切換到 BSC 網路');
+        setError(t.setup.errors.switchNetwork);
       }
     }
   };
@@ -139,19 +141,19 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
 
     // Wallet is required
     if (!isConnected || !address) {
-      setError('請先連接錢包');
+      setError(t.setup.errors.connectWallet);
       return;
     }
 
     const trimmedName = name.trim();
 
     if (trimmedName.length < 2) {
-      setError('名稱至少需要 2 個字元');
+      setError(t.setup.errors.nameTooShort);
       return;
     }
 
     if (trimmedName.length > 20) {
-      setError('名稱不能超過 20 個字元');
+      setError(t.setup.errors.nameTooLong);
       return;
     }
 
@@ -192,7 +194,7 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
       await initializeFriendData(generatedId);
     } catch (error) {
       console.error('Failed to save to Firebase:', error);
-      setError('無法連接伺服器，請稍後再試');
+      setError(t.setup.errors.serverError);
       setIsSubmitting(false);
       return;
     }
@@ -210,7 +212,7 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <div className="card p-8 max-w-md w-full text-center">
           <div className="animate-spin w-12 h-12 border-4 border-binance-yellow border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-gray-400">正在載入你的農場資料...</p>
+          <p className="text-gray-400">{t.setup.loadingData}</p>
         </div>
       </div>
     );
@@ -224,10 +226,10 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
         </div>
 
         <h2 className="text-2xl font-bold text-center text-binance-yellow mb-2">
-          歡迎，農夫！
+          {t.setup.welcome}
         </h2>
         <p className="text-gray-400 text-center mb-6">
-          設定你的資料，開始你的農場之旅
+          {t.setup.subtitle}
         </p>
 
         {/* Twitter Profile Display */}
@@ -247,7 +249,7 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
               </div>
             )}
             <div>
-              <p className="text-sm text-gray-400">已連接 X (Twitter)</p>
+              <p className="text-sm text-gray-400">{t.setup.twitterConnected}</p>
               <p className="text-white font-medium">{twitterProfile.displayName}</p>
               {twitterProfile.handle && (
                 <p className="text-xs text-[#1DA1F2]">@{twitterProfile.handle}</p>
@@ -261,24 +263,24 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
           <div className="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-xl">🦊</span>
-              <span className="text-orange-400 font-medium">需要綁定錢包</span>
+              <span className="text-orange-400 font-medium">{t.setup.needsWallet}</span>
             </div>
             <p className="text-sm text-gray-400 mb-4">
-              請連接 MetaMask 錢包以儲存你的遊戲進度。綁定後可在不同裝置上遊玩。
+              {t.setup.needsWalletDesc}
             </p>
             <Button
               onClick={handleConnectWallet}
               isLoading={isConnecting}
               className="w-full"
             >
-              連接 MetaMask 錢包
+              {t.setup.connectWallet}
             </Button>
           </div>
         ) : isConnected && address ? (
           <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-xs text-gray-400">已連接錢包</span>
+                <span className="text-xs text-gray-400">{t.setup.walletConnected}</span>
                 <p className="text-sm text-green-400 font-mono">
                   {address.slice(0, 10)}...{address.slice(-8)}
                 </p>
@@ -291,12 +293,12 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
         {/* Generated ID display - Only show when wallet is connected */}
         {isConnected && (
           <div className="mb-6 p-4 bg-binance-gray rounded-lg text-center">
-            <span className="text-xs text-gray-400">你的專屬 ID</span>
+            <span className="text-xs text-gray-400">{t.setup.yourId}</span>
             <p className="text-3xl font-bold text-binance-yellow font-mono">
               {generatedId}
             </p>
             <p className="text-xs text-gray-500 mt-2">
-              分享這個 ID 讓朋友加你好友！
+              {t.setup.shareIdHint}
             </p>
           </div>
         )}
@@ -310,14 +312,14 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
                   htmlFor="name"
                   className="block text-sm font-medium text-gray-300 mb-2"
                 >
-                  農場名稱
+                  {t.setup.farmName}
                 </label>
                 <input
                   type="text"
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="輸入你的農場名稱..."
+                  placeholder={t.setup.farmNamePlaceholder}
                   className="input-field w-full text-lg"
                   maxLength={20}
                   autoFocus
@@ -331,20 +333,20 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
                 className="w-full text-lg py-3"
                 disabled={!name.trim()}
               >
-                開始種田！
+                {t.setup.startFarming}
               </Button>
             </form>
 
             {/* Starter pack info */}
             <div className="mt-6 p-4 bg-binance-yellow/10 border border-binance-yellow/30 rounded-lg">
               <h3 className="text-sm font-bold text-binance-yellow mb-2">
-                新手禮包
+                {t.setup.starterPack}
               </h3>
               <ul className="text-sm text-gray-300 space-y-1">
-                <li>• {GAME_CONFIG.INITIAL_LAND_SIZE}x{GAME_CONFIG.INITIAL_LAND_SIZE} 農地 ({GAME_CONFIG.INITIAL_LAND_SIZE * GAME_CONFIG.INITIAL_LAND_SIZE} 格)</li>
-                <li>• {GAME_CONFIG.INITIAL_FARM_BALANCE} GOLD</li>
-                <li>• 基本作物已解鎖</li>
-                <li>• 專屬 6 位數 ID</li>
+                <li>• {GAME_CONFIG.INITIAL_LAND_SIZE}x{GAME_CONFIG.INITIAL_LAND_SIZE} {t.setup.starterPackItems.land} ({GAME_CONFIG.INITIAL_LAND_SIZE * GAME_CONFIG.INITIAL_LAND_SIZE} {t.setup.starterPackItems.plots})</li>
+                <li>• {GAME_CONFIG.INITIAL_FARM_BALANCE} {t.setup.starterPackItems.gold}</li>
+                <li>• {t.setup.starterPackItems.cropsUnlocked}</li>
+                <li>• {t.setup.starterPackItems.uniqueId}</li>
               </ul>
             </div>
           </>
