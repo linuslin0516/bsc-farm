@@ -93,7 +93,7 @@ BSC Farm 采用双代币模型：
 
 **3.6 兑换汇率**
 
-- 基准汇率: 1,000,000 $FARM = 20 GOLD
+- 基准汇率: 100,000 $FARM = 100 GOLD（即 1,000 FARM = 1 GOLD）
 - 兑换手续费: 5%
 - 汇率会根据金库健康度动态调整`,
         },
@@ -397,7 +397,7 @@ BSC Farm uses a dual token model:
 
 **3.6 Exchange Rate**
 
-- Base rate: 1,000,000 $FARM = 20 GOLD
+- Base rate: 100,000 $FARM = 100 GOLD (i.e., 1,000 FARM = 1 GOLD)
 - Exchange fee: 5%
 - Rate adjusts dynamically based on treasury health`,
         },

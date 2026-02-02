@@ -31,10 +31,10 @@ export const TREASURY_WALLET = (import.meta.env.VITE_TREASURY_WALLET || '').trim
 const WITHDRAWAL_API_URL = '/api/withdraw';
 
 // Default exchange rate configuration
-// 目標：50,000,000 FARM ≈ 1,000 GOLD（早期投資者用 0.2 BNB 買的量）
+// 目標：100,000 FARM = 100 GOLD
 const DEFAULT_EXCHANGE_RATE: ExchangeRate = {
-  goldPerFarm: 0.00002,      // 1 FARM = 0.00002 GOLD
-  farmPerGold: 50000,        // 1 GOLD = 50,000 FARM
+  goldPerFarm: 0.001,        // 1 FARM = 0.001 GOLD (100,000 FARM = 100 GOLD)
+  farmPerGold: 1000,         // 1 GOLD = 1,000 FARM
   exchangeFee: 0.05,         // 5% fee
   lastUpdated: Date.now(),
   dailyExchangeLimit: 999999999,   // Essentially unlimited
