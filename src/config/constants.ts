@@ -57,7 +57,7 @@ export const ERC20_ABI = [
 export const GAME_CONFIG = {
   INITIAL_LAND_SIZE: 3,
   MAX_LAND_SIZE: 6,
-  INITIAL_FARM_BALANCE: 1000, // Starting GOLD for new players (enough to plant a few crops)
+  INITIAL_FARM_BALANCE: 0, // Starting GOLD for new players (must deposit FARM to play)
   EXP_PER_LEVEL: 100,
   MAX_LEVEL: 50,
 };
