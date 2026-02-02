@@ -10,7 +10,7 @@ console.log('🌾 [Web3] Network:', NETWORK.chainName, '(Chain ID:', NETWORK.cha
 console.log('🌾 [Web3] Mode:', USE_MAINNET ? '🔴 MAINNET (Production)' : '🟡 TESTNET (Development)');
 
 // Wallet provider types
-export type WalletType = 'metamask' | 'okx' | 'trust' | 'coinbase' | 'generic';
+export type WalletType = 'metamask' | 'okx' | 'trust' | 'coinbase' | 'gmgn' | 'generic';
 
 export interface WalletInfo {
   type: WalletType;
@@ -26,6 +26,7 @@ interface EthereumProvider {
   isOkxWallet?: boolean;
   isTrust?: boolean;
   isCoinbaseWallet?: boolean;
+  isGmgn?: boolean;
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
   on: (event: string, callback: (...args: unknown[]) => void) => void;
   removeListener: (event: string, callback: (...args: unknown[]) => void) => void;
@@ -38,6 +39,7 @@ declare global {
     okxwallet?: EthereumProvider;
     trustwallet?: EthereumProvider;
     coinbaseWalletExtension?: EthereumProvider;
+    gmgn?: EthereumProvider;
   }
 }
 
@@ -118,6 +120,25 @@ export const detectWallets = (): WalletInfo[] => {
     });
   }
 
+  // GMGN Wallet
+  if (window.gmgn) {
+    wallets.push({
+      type: 'gmgn',
+      name: 'GMGN Wallet',
+      icon: '🟢',
+      provider: window.gmgn,
+      installed: true,
+    });
+  } else if (window.ethereum?.isGmgn) {
+    wallets.push({
+      type: 'gmgn',
+      name: 'GMGN Wallet',
+      icon: '🟢',
+      provider: window.ethereum,
+      installed: true,
+    });
+  }
+
   // Generic Web3 provider (fallback if no specific wallet detected)
   if (window.ethereum && wallets.length === 0) {
     wallets.push({
@@ -172,6 +193,16 @@ export const getWalletOptions = (): WalletInfo[] => {
     });
   }
 
+  if (!detectedTypes.has('gmgn')) {
+    options.push({
+      type: 'gmgn',
+      name: 'GMGN Wallet',
+      icon: '🟢',
+      provider: null,
+      installed: false,
+    });
+  }
+
   return options;
 };
 
@@ -218,6 +249,8 @@ export const getWalletDownloadUrl = (walletType: WalletType): string => {
       return 'https://trustwallet.com/download';
     case 'coinbase':
       return 'https://www.coinbase.com/wallet';
+    case 'gmgn':
+      return 'https://gmgn.ai/';
     default:
       return '';
   }

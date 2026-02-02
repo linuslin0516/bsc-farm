@@ -229,6 +229,32 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
                 )}
               </button>
 
+              {/* GMGN Wallet */}
+              <button
+                onClick={() => {
+                  const wallet = availableWallets.find(w => w.type === 'gmgn');
+                  if (wallet?.installed) {
+                    handleConnectWallet('gmgn');
+                  } else {
+                    handleWalletDownload('gmgn');
+                  }
+                }}
+                disabled={connectingWallet === 'gmgn'}
+                className="w-full flex items-center justify-between p-3 rounded-lg bg-[#00FF88]/10 border border-[#00FF88]/30 hover:bg-[#00FF88]/20 transition-all disabled:opacity-50"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="text-2xl">🟢</span>
+                  <span className="text-white font-medium">GMGN Wallet</span>
+                </span>
+                {connectingWallet === 'gmgn' ? (
+                  <span className="text-sm text-gray-400">連接中...</span>
+                ) : availableWallets.find(w => w.type === 'gmgn')?.installed ? (
+                  <span className="text-sm text-green-400">已安裝</span>
+                ) : (
+                  <span className="text-sm text-yellow-400">下載 →</span>
+                )}
+              </button>
+
               {/* Back button */}
               <button
                 onClick={() => setShowWalletOptions(false)}
