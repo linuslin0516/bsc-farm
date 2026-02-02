@@ -28,7 +28,8 @@ export const zhCN = {
     tokenName: '$FARM',
     tokens: '代币！',
     twitterLogin: '使用 X (Twitter) 登入',
-    walletLogin: '连接 MetaMask 钱包',
+    walletLogin: '连接 Web3 钱包',
+    selectWallet: '选择钱包',
     or: '或',
     saveHint: '连接钱包后，你的游戏进度将会自动储存',
     features: {

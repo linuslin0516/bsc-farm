@@ -9,7 +9,7 @@ import { useGameStore } from './store/useGameStore';
 import { useWalletStore } from './store/useWalletStore';
 import { useAuthStore } from './store/useAuthStore';
 import { useLanguageStore } from './store/useLanguageStore';
-import { onAuthStateChanged } from './services/authService';
+import { onAuthStateChanged, checkRedirectResult } from './services/authService';
 import { COMING_SOON_MODE } from './config/constants';
 import { localizeText } from './utils/i18n';
 
@@ -62,15 +62,23 @@ function AppContent() {
   const { isConnected, disconnect } = useWalletStore();
   const { setFirebaseUser, setInitialized, isInitialized, signOut } = useAuthStore();
 
-  // Initialize Firebase Auth listener
+  // Initialize Firebase Auth listener and check for redirect result
   useEffect(() => {
+    // Check if user is returning from Twitter redirect login
+    checkRedirectResult().then((result) => {
+      if (result) {
+        console.log('✅ User returned from Twitter redirect login');
+        navigate('/setup');
+      }
+    });
+
     const unsubscribe = onAuthStateChanged((user) => {
       setFirebaseUser(user);
       setInitialized(true);
     });
 
     return () => unsubscribe();
-  }, [setFirebaseUser, setInitialized]);
+  }, [setFirebaseUser, setInitialized, navigate]);
 
   // Handle wallet connection changes - navigate to setup
   useEffect(() => {

@@ -30,7 +30,8 @@ export const en: Translations = {
     tokenName: '$FARM',
     tokens: 'tokens!',
     twitterLogin: 'Login with X (Twitter)',
-    walletLogin: 'Connect MetaMask Wallet',
+    walletLogin: 'Connect Web3 Wallet',
+    selectWallet: 'Select Wallet',
     or: 'or',
     saveHint: 'Your game progress will be automatically saved after connecting wallet',
     features: {

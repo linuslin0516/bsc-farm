@@ -30,7 +30,8 @@ export const zhTW: Translations = {
     tokenName: '$FARM',
     tokens: '代幣！',
     twitterLogin: '使用 X (Twitter) 登入',
-    walletLogin: '連接 MetaMask 錢包',
+    walletLogin: '連接 Web3 錢包',
+    selectWallet: '選擇錢包',
     or: '或',
     saveHint: '連接錢包後，你的遊戲進度將會自動儲存',
     features: {

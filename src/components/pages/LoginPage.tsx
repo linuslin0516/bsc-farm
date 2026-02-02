@@ -1,26 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Logo } from '../game/Logo';
 import { Button } from '../ui/Button';
 import { useWalletStore } from '../../store/useWalletStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useT } from '../../translations';
+import { WalletType, WalletInfo } from '../../services/web3Service';
 
 interface LoginPageProps {
   onTwitterLogin: () => void;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
-  const { connect, isConnecting, switchNetwork, isCorrectNetwork } = useWalletStore();
+  const {
+    connect,
+    isConnecting,
+    switchNetwork,
+    isCorrectNetwork,
+    detectAvailableWallets,
+    getDownloadUrl,
+  } = useWalletStore();
   const { signInWithTwitter, isAuthenticating, error: authError, clearError } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
+  const [showWalletOptions, setShowWalletOptions] = useState(false);
+  const [availableWallets, setAvailableWallets] = useState<WalletInfo[]>([]);
+  const [connectingWallet, setConnectingWallet] = useState<WalletType | null>(null);
   const { t } = useT();
 
-  const handleConnect = async () => {
-    setError(null);
+  // Detect available wallets on mount
+  useEffect(() => {
+    const wallets = detectAvailableWallets();
+    setAvailableWallets(wallets);
+  }, [detectAvailableWallets]);
 
-    const success = await connect();
+  const handleConnectWallet = async (walletType: WalletType) => {
+    setError(null);
+    setConnectingWallet(walletType);
+
+    const success = await connect(walletType);
     if (!success) {
       setError(t.login.errors.walletFailed);
+      setConnectingWallet(null);
       return;
     }
 
@@ -31,6 +50,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
         setError(t.login.errors.switchNetwork);
       }
     }
+    setConnectingWallet(null);
+    setShowWalletOptions(false);
   };
 
   const handleTwitterLogin = async () => {
@@ -39,6 +60,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
     const success = await signInWithTwitter();
     if (success) {
       onTwitterLogin();
+    }
+  };
+
+  const handleWalletDownload = (walletType: WalletType) => {
+    const url = getDownloadUrl(walletType);
+    if (url) {
+      window.open(url, '_blank');
     }
   };
 
@@ -109,15 +137,107 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onTwitterLogin }) => {
             </div>
           </div>
 
-          {/* Wallet Connect */}
-          <Button
-            onClick={handleConnect}
-            isLoading={isConnecting}
-            variant="secondary"
-            className="w-full"
-          >
-            🦊 {t.login.walletLogin}
-          </Button>
+          {/* Wallet Connect - Show options or button */}
+          {!showWalletOptions ? (
+            <Button
+              onClick={() => setShowWalletOptions(true)}
+              isLoading={isConnecting}
+              variant="secondary"
+              className="w-full"
+            >
+              🔗 {t.login.walletLogin}
+            </Button>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm text-gray-400 mb-3">{t.login.selectWallet || '選擇錢包'}</p>
+
+              {/* MetaMask */}
+              <button
+                onClick={() => {
+                  const wallet = availableWallets.find(w => w.type === 'metamask');
+                  if (wallet?.installed) {
+                    handleConnectWallet('metamask');
+                  } else {
+                    handleWalletDownload('metamask');
+                  }
+                }}
+                disabled={connectingWallet === 'metamask'}
+                className="w-full flex items-center justify-between p-3 rounded-lg bg-[#F6851B]/10 border border-[#F6851B]/30 hover:bg-[#F6851B]/20 transition-all disabled:opacity-50"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="text-2xl">🦊</span>
+                  <span className="text-white font-medium">MetaMask</span>
+                </span>
+                {connectingWallet === 'metamask' ? (
+                  <span className="text-sm text-gray-400">連接中...</span>
+                ) : availableWallets.find(w => w.type === 'metamask')?.installed ? (
+                  <span className="text-sm text-green-400">已安裝</span>
+                ) : (
+                  <span className="text-sm text-yellow-400">下載 →</span>
+                )}
+              </button>
+
+              {/* OKX Wallet */}
+              <button
+                onClick={() => {
+                  const wallet = availableWallets.find(w => w.type === 'okx');
+                  if (wallet?.installed) {
+                    handleConnectWallet('okx');
+                  } else {
+                    handleWalletDownload('okx');
+                  }
+                }}
+                disabled={connectingWallet === 'okx'}
+                className="w-full flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all disabled:opacity-50"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="text-2xl">⭕</span>
+                  <span className="text-white font-medium">OKX Wallet</span>
+                </span>
+                {connectingWallet === 'okx' ? (
+                  <span className="text-sm text-gray-400">連接中...</span>
+                ) : availableWallets.find(w => w.type === 'okx')?.installed ? (
+                  <span className="text-sm text-green-400">已安裝</span>
+                ) : (
+                  <span className="text-sm text-yellow-400">下載 →</span>
+                )}
+              </button>
+
+              {/* Trust Wallet */}
+              <button
+                onClick={() => {
+                  const wallet = availableWallets.find(w => w.type === 'trust');
+                  if (wallet?.installed) {
+                    handleConnectWallet('trust');
+                  } else {
+                    handleWalletDownload('trust');
+                  }
+                }}
+                disabled={connectingWallet === 'trust'}
+                className="w-full flex items-center justify-between p-3 rounded-lg bg-[#0500FF]/10 border border-[#0500FF]/30 hover:bg-[#0500FF]/20 transition-all disabled:opacity-50"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="text-2xl">🛡️</span>
+                  <span className="text-white font-medium">Trust Wallet</span>
+                </span>
+                {connectingWallet === 'trust' ? (
+                  <span className="text-sm text-gray-400">連接中...</span>
+                ) : availableWallets.find(w => w.type === 'trust')?.installed ? (
+                  <span className="text-sm text-green-400">已安裝</span>
+                ) : (
+                  <span className="text-sm text-yellow-400">下載 →</span>
+                )}
+              </button>
+
+              {/* Back button */}
+              <button
+                onClick={() => setShowWalletOptions(false)}
+                className="w-full text-sm text-gray-400 hover:text-gray-300 py-2"
+              >
+                ← 返回
+              </button>
+            </div>
+          )}
         </div>
 
         <p className="mt-6 text-xs text-gray-500">

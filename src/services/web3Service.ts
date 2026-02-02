@@ -9,17 +9,219 @@ console.log('🌾 [Web3] FARM Token Address:', FARM_TOKEN_ADDRESS || '(not set)'
 console.log('🌾 [Web3] Network:', NETWORK.chainName, '(Chain ID:', NETWORK.chainId, ')');
 console.log('🌾 [Web3] Mode:', USE_MAINNET ? '🔴 MAINNET (Production)' : '🟡 TESTNET (Development)');
 
-// Extend Window interface for ethereum
+// Wallet provider types
+export type WalletType = 'metamask' | 'okx' | 'trust' | 'coinbase' | 'generic';
+
+export interface WalletInfo {
+  type: WalletType;
+  name: string;
+  icon: string;
+  provider: EthereumProvider | null;
+  installed: boolean;
+}
+
+// EIP-1193 Provider interface
+interface EthereumProvider {
+  isMetaMask?: boolean;
+  isOkxWallet?: boolean;
+  isTrust?: boolean;
+  isCoinbaseWallet?: boolean;
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+  on: (event: string, callback: (...args: unknown[]) => void) => void;
+  removeListener: (event: string, callback: (...args: unknown[]) => void) => void;
+}
+
+// Extend Window interface for multiple wallets
 declare global {
   interface Window {
-    ethereum?: {
-      isMetaMask?: boolean;
-      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-      on: (event: string, callback: (...args: unknown[]) => void) => void;
-      removeListener: (event: string, callback: (...args: unknown[]) => void) => void;
-    };
+    ethereum?: EthereumProvider;
+    okxwallet?: EthereumProvider;
+    trustwallet?: EthereumProvider;
+    coinbaseWalletExtension?: EthereumProvider;
   }
 }
+
+// Current active provider (set when user selects a wallet)
+let activeProvider: EthereumProvider | null = null;
+
+/**
+ * Detect all available wallet providers
+ */
+export const detectWallets = (): WalletInfo[] => {
+  const wallets: WalletInfo[] = [];
+
+  // MetaMask
+  if (window.ethereum?.isMetaMask) {
+    wallets.push({
+      type: 'metamask',
+      name: 'MetaMask',
+      icon: '🦊',
+      provider: window.ethereum,
+      installed: true,
+    });
+  }
+
+  // OKX Wallet
+  if (window.okxwallet) {
+    wallets.push({
+      type: 'okx',
+      name: 'OKX Wallet',
+      icon: '⭕',
+      provider: window.okxwallet,
+      installed: true,
+    });
+  } else if (window.ethereum?.isOkxWallet) {
+    wallets.push({
+      type: 'okx',
+      name: 'OKX Wallet',
+      icon: '⭕',
+      provider: window.ethereum,
+      installed: true,
+    });
+  }
+
+  // Trust Wallet
+  if (window.trustwallet) {
+    wallets.push({
+      type: 'trust',
+      name: 'Trust Wallet',
+      icon: '🛡️',
+      provider: window.trustwallet,
+      installed: true,
+    });
+  } else if (window.ethereum?.isTrust) {
+    wallets.push({
+      type: 'trust',
+      name: 'Trust Wallet',
+      icon: '🛡️',
+      provider: window.ethereum,
+      installed: true,
+    });
+  }
+
+  // Coinbase Wallet
+  if (window.coinbaseWalletExtension) {
+    wallets.push({
+      type: 'coinbase',
+      name: 'Coinbase Wallet',
+      icon: '🔵',
+      provider: window.coinbaseWalletExtension,
+      installed: true,
+    });
+  } else if (window.ethereum?.isCoinbaseWallet) {
+    wallets.push({
+      type: 'coinbase',
+      name: 'Coinbase Wallet',
+      icon: '🔵',
+      provider: window.ethereum,
+      installed: true,
+    });
+  }
+
+  // Generic Web3 provider (fallback if no specific wallet detected)
+  if (window.ethereum && wallets.length === 0) {
+    wallets.push({
+      type: 'generic',
+      name: 'Web3 Wallet',
+      icon: '🔗',
+      provider: window.ethereum,
+      installed: true,
+    });
+  }
+
+  return wallets;
+};
+
+/**
+ * Get available wallet options (including not installed for UI)
+ */
+export const getWalletOptions = (): WalletInfo[] => {
+  const detected = detectWallets();
+  const detectedTypes = new Set(detected.map(w => w.type));
+
+  const options: WalletInfo[] = [...detected];
+
+  // Add not-installed options for download links
+  if (!detectedTypes.has('metamask')) {
+    options.push({
+      type: 'metamask',
+      name: 'MetaMask',
+      icon: '🦊',
+      provider: null,
+      installed: false,
+    });
+  }
+
+  if (!detectedTypes.has('okx')) {
+    options.push({
+      type: 'okx',
+      name: 'OKX Wallet',
+      icon: '⭕',
+      provider: null,
+      installed: false,
+    });
+  }
+
+  if (!detectedTypes.has('trust')) {
+    options.push({
+      type: 'trust',
+      name: 'Trust Wallet',
+      icon: '🛡️',
+      provider: null,
+      installed: false,
+    });
+  }
+
+  return options;
+};
+
+/**
+ * Set active wallet provider
+ */
+export const setActiveWallet = (walletType: WalletType): boolean => {
+  const wallets = detectWallets();
+  const wallet = wallets.find(w => w.type === walletType);
+
+  if (wallet?.provider) {
+    activeProvider = wallet.provider;
+    console.log(`🔗 Active wallet set to: ${wallet.name}`);
+    return true;
+  }
+
+  // Fallback to default ethereum provider
+  if (window.ethereum) {
+    activeProvider = window.ethereum;
+    console.log('🔗 Fallback to default Web3 provider');
+    return true;
+  }
+
+  return false;
+};
+
+/**
+ * Get active provider
+ */
+export const getActiveProvider = (): EthereumProvider | null => {
+  return activeProvider || window.ethereum || null;
+};
+
+/**
+ * Get wallet download URL
+ */
+export const getWalletDownloadUrl = (walletType: WalletType): string => {
+  switch (walletType) {
+    case 'metamask':
+      return 'https://metamask.io/download/';
+    case 'okx':
+      return 'https://www.okx.com/web3';
+    case 'trust':
+      return 'https://trustwallet.com/download';
+    case 'coinbase':
+      return 'https://www.coinbase.com/wallet';
+    default:
+      return '';
+  }
+};
 
 export interface Web3State {
   isConnected: boolean;
@@ -31,7 +233,14 @@ export interface Web3State {
 }
 
 /**
- * Check if MetaMask is installed
+ * Check if any Web3 wallet is installed
+ */
+export const isWalletInstalled = (): boolean => {
+  return detectWallets().length > 0;
+};
+
+/**
+ * Check if MetaMask is installed (legacy support)
  */
 export const isMetaMaskInstalled = (): boolean => {
   return typeof window !== 'undefined' && typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask === true;
@@ -41,8 +250,9 @@ export const isMetaMaskInstalled = (): boolean => {
  * Get the current provider
  */
 export const getProvider = (): ethers.BrowserProvider | null => {
-  if (!isMetaMaskInstalled()) return null;
-  return new ethers.BrowserProvider(window.ethereum!);
+  const provider = getActiveProvider();
+  if (!provider) return null;
+  return new ethers.BrowserProvider(provider as ethers.Eip1193Provider);
 };
 
 /**
@@ -59,16 +269,22 @@ export const getSigner = async (): Promise<ethers.Signer | null> => {
 };
 
 /**
- * Connect to MetaMask
+ * Connect to Web3 wallet
  */
-export const connectWallet = async (): Promise<Web3State> => {
-  if (!isMetaMaskInstalled()) {
-    throw new Error('請安裝 MetaMask 錢包');
+export const connectWallet = async (walletType?: WalletType): Promise<Web3State> => {
+  // Set active wallet if specified
+  if (walletType) {
+    setActiveWallet(walletType);
+  }
+
+  const provider = getActiveProvider();
+  if (!provider) {
+    throw new Error('請安裝 Web3 錢包（MetaMask、OKX 或 Trust Wallet）');
   }
 
   try {
     // Request account access
-    const accounts = await window.ethereum!.request({
+    const accounts = await provider.request({
       method: 'eth_requestAccounts',
     }) as string[];
 
@@ -79,7 +295,7 @@ export const connectWallet = async (): Promise<Web3State> => {
     const address = accounts[0];
 
     // Get chain ID
-    const chainIdHex = await window.ethereum!.request({
+    const chainIdHex = await provider.request({
       method: 'eth_chainId',
     }) as string;
     const chainId = parseInt(chainIdHex, 16);
@@ -88,8 +304,8 @@ export const connectWallet = async (): Promise<Web3State> => {
     const isCorrectNetwork = chainId === NETWORK.chainId;
 
     // Get balances
-    const provider = getProvider()!;
-    const bnbBalance = await provider.getBalance(address);
+    const ethersProvider = getProvider()!;
+    const bnbBalance = await ethersProvider.getBalance(address);
 
     let farmBalance = '0';
     if (FARM_TOKEN_ADDRESS && isCorrectNetwork) {
@@ -130,22 +346,23 @@ export const disconnectWallet = (): Web3State => {
 
 /**
  * Switch to a different wallet account
- * This will open MetaMask's account selection popup
+ * This will open wallet's account selection popup
  */
 export const switchWalletAccount = async (): Promise<Web3State> => {
-  if (!isMetaMaskInstalled()) {
-    throw new Error('請安裝 MetaMask 錢包');
+  const provider = getActiveProvider();
+  if (!provider) {
+    throw new Error('請安裝 Web3 錢包');
   }
 
   try {
-    // Request permissions again - this forces MetaMask to show account selection
-    await window.ethereum!.request({
+    // Request permissions again - this forces wallet to show account selection
+    await provider.request({
       method: 'wallet_requestPermissions',
       params: [{ eth_accounts: {} }],
     });
 
     // After user selects account, get the new account
-    const accounts = await window.ethereum!.request({
+    const accounts = await provider.request({
       method: 'eth_accounts',
     }) as string[];
 
@@ -156,7 +373,7 @@ export const switchWalletAccount = async (): Promise<Web3State> => {
     const address = accounts[0];
 
     // Get chain ID
-    const chainIdHex = await window.ethereum!.request({
+    const chainIdHex = await provider.request({
       method: 'eth_chainId',
     }) as string;
     const chainId = parseInt(chainIdHex, 16);
@@ -165,8 +382,8 @@ export const switchWalletAccount = async (): Promise<Web3State> => {
     const isCorrectNetwork = chainId === NETWORK.chainId;
 
     // Get balances
-    const provider = getProvider()!;
-    const bnbBalance = await provider.getBalance(address);
+    const ethersProvider = getProvider()!;
+    const bnbBalance = await ethersProvider.getBalance(address);
 
     let farmBalance = '0';
     if (FARM_TOKEN_ADDRESS && isCorrectNetwork) {
@@ -195,19 +412,20 @@ export const switchWalletAccount = async (): Promise<Web3State> => {
  * Switch to BSC network
  */
 export const switchToBSC = async (): Promise<boolean> => {
-  if (!isMetaMaskInstalled()) return false;
+  const provider = getActiveProvider();
+  if (!provider) return false;
 
   try {
-    await window.ethereum!.request({
+    await provider.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: NETWORK.chainIdHex }],
     });
     return true;
   } catch (switchError: unknown) {
-    // This error code indicates that the chain has not been added to MetaMask
+    // This error code indicates that the chain has not been added to wallet
     if ((switchError as { code?: number }).code === 4902) {
       try {
-        await window.ethereum!.request({
+        await provider.request({
           method: 'wallet_addEthereumChain',
           params: [
             {
@@ -374,32 +592,36 @@ export const approveFarmSpending = async (
  * Listen for account changes
  */
 export const onAccountsChanged = (callback: (accounts: string[]) => void): void => {
-  if (!isMetaMaskInstalled()) return;
-  window.ethereum!.on('accountsChanged', callback as (...args: unknown[]) => void);
+  const provider = getActiveProvider();
+  if (!provider) return;
+  provider.on('accountsChanged', callback as (...args: unknown[]) => void);
 };
 
 /**
  * Listen for chain changes
  */
 export const onChainChanged = (callback: (chainId: string) => void): void => {
-  if (!isMetaMaskInstalled()) return;
-  window.ethereum!.on('chainChanged', callback as (...args: unknown[]) => void);
+  const provider = getActiveProvider();
+  if (!provider) return;
+  provider.on('chainChanged', callback as (...args: unknown[]) => void);
 };
 
 /**
  * Remove account change listener
  */
 export const removeAccountsChangedListener = (callback: (accounts: string[]) => void): void => {
-  if (!isMetaMaskInstalled()) return;
-  window.ethereum!.removeListener('accountsChanged', callback as (...args: unknown[]) => void);
+  const provider = getActiveProvider();
+  if (!provider) return;
+  provider.removeListener('accountsChanged', callback as (...args: unknown[]) => void);
 };
 
 /**
  * Remove chain change listener
  */
 export const removeChainChangedListener = (callback: (chainId: string) => void): void => {
-  if (!isMetaMaskInstalled()) return;
-  window.ethereum!.removeListener('chainChanged', callback as (...args: unknown[]) => void);
+  const provider = getActiveProvider();
+  if (!provider) return;
+  provider.removeListener('chainChanged', callback as (...args: unknown[]) => void);
 };
 
 /**

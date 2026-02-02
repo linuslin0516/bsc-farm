@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import { BrowserProvider, Contract, formatEther, parseEther } from 'ethers';
 import { NETWORK, FARM_TOKEN, ERC20_ABI } from '../config/constants';
+import {
+  WalletType,
+  WalletInfo,
+  detectWallets,
+  getWalletOptions,
+  setActiveWallet,
+  getActiveProvider,
+  getWalletDownloadUrl,
+} from '../services/web3Service';
 
 interface WalletStore {
   // Connection state
@@ -8,6 +17,7 @@ interface WalletStore {
   isConnecting: boolean;
   address: string | null;
   chainId: number | null;
+  walletType: WalletType | null;
 
   // Balances
   bnbBalance: string;
@@ -16,8 +26,12 @@ interface WalletStore {
   // Provider
   provider: BrowserProvider | null;
 
+  // Wallet detection
+  availableWallets: WalletInfo[];
+  detectAvailableWallets: () => WalletInfo[];
+
   // Actions
-  connect: () => Promise<boolean>;
+  connect: (walletType?: WalletType) => Promise<boolean>;
   disconnect: () => void;
   switchNetwork: () => Promise<boolean>;
   refreshBalances: () => Promise<void>;
@@ -27,17 +41,7 @@ interface WalletStore {
 
   // Helpers
   isCorrectNetwork: () => boolean;
-}
-
-declare global {
-  interface Window {
-    ethereum?: {
-      isMetaMask?: boolean;
-      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-      on: (event: string, callback: (...args: unknown[]) => void) => void;
-      removeListener: (event: string, callback: (...args: unknown[]) => void) => void;
-    };
-  }
+  getDownloadUrl: (walletType: WalletType) => string;
 }
 
 export const useWalletStore = create<WalletStore>((set, get) => ({
@@ -45,20 +49,50 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   isConnecting: false,
   address: null,
   chainId: null,
+  walletType: null,
   bnbBalance: '0',
   farmBalance: '0',
   provider: null,
+  availableWallets: [],
 
-  connect: async () => {
-    if (!window.ethereum) {
-      alert('Please install MetaMask to use this application!');
+  detectAvailableWallets: () => {
+    const wallets = getWalletOptions();
+    set({ availableWallets: wallets });
+    return wallets;
+  },
+
+  connect: async (walletType?: WalletType) => {
+    // Detect available wallets
+    const wallets = detectWallets();
+
+    if (wallets.length === 0) {
+      alert('請安裝 Web3 錢包（MetaMask、OKX Wallet 或 Trust Wallet）');
+      return false;
+    }
+
+    // Set the wallet type
+    if (walletType) {
+      const success = setActiveWallet(walletType);
+      if (!success) {
+        console.error('Failed to set wallet:', walletType);
+        return false;
+      }
+    } else {
+      // Use first available wallet
+      setActiveWallet(wallets[0].type);
+      walletType = wallets[0].type;
+    }
+
+    const activeProvider = getActiveProvider();
+    if (!activeProvider) {
+      alert('無法連接錢包');
       return false;
     }
 
     set({ isConnecting: true });
 
     try {
-      const provider = new BrowserProvider(window.ethereum);
+      const provider = new BrowserProvider(activeProvider as import('ethers').Eip1193Provider);
       const accounts = await provider.send('eth_requestAccounts', []);
 
       if (accounts.length === 0) {
@@ -75,11 +109,12 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
         isConnecting: false,
         address,
         chainId,
+        walletType,
         provider,
       });
 
       // Setup event listeners
-      window.ethereum.on('accountsChanged', (newAccounts: unknown) => {
+      activeProvider.on('accountsChanged', (newAccounts: unknown) => {
         const accounts = newAccounts as string[];
         if (accounts.length === 0) {
           get().disconnect();
@@ -89,7 +124,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
         }
       });
 
-      window.ethereum.on('chainChanged', () => {
+      activeProvider.on('chainChanged', () => {
         window.location.reload();
       });
 
@@ -109,6 +144,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       isConnected: false,
       address: null,
       chainId: null,
+      walletType: null,
       bnbBalance: '0',
       farmBalance: '0',
       provider: null,
@@ -116,10 +152,11 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   },
 
   switchNetwork: async () => {
-    if (!window.ethereum) return false;
+    const activeProvider = getActiveProvider();
+    if (!activeProvider) return false;
 
     try {
-      await window.ethereum.request({
+      await activeProvider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: NETWORK.chainIdHex }],
       });
@@ -129,7 +166,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       // Chain not added, try to add it
       if (error.code === 4902) {
         try {
-          await window.ethereum.request({
+          await activeProvider.request({
             method: 'wallet_addEthereumChain',
             params: [
               {
@@ -197,5 +234,9 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   isCorrectNetwork: () => {
     const { chainId } = get();
     return chainId === NETWORK.chainId;
+  },
+
+  getDownloadUrl: (walletType: WalletType) => {
+    return getWalletDownloadUrl(walletType);
   },
 }));
