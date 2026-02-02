@@ -56,6 +56,9 @@ const SettingsMenu: React.FC<{ onClose: () => void; onLogout: () => void }> = ({
 
   const languages: Language[] = ['zh-CN', 'zh-TW', 'en'];
 
+  // Localize whitepaper text based on language
+  const whitepaperText = language === 'en' ? 'Whitepaper' : '白皮書';
+
   return (
     <div className="fixed bottom-20 left-4 z-40 pointer-events-auto">
       <div className="glass-panel rounded-xl p-4 w-56">
@@ -95,6 +98,17 @@ const SettingsMenu: React.FC<{ onClose: () => void; onLogout: () => void }> = ({
             </div>
           )}
         </div>
+
+        {/* Whitepaper Link */}
+        <a
+          href="/whitepaper"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full text-left px-3 py-2 rounded-lg hover:bg-blue-500/20 text-blue-400 flex items-center gap-2 mb-2"
+        >
+          <span>📄</span>
+          <span>{whitepaperText}</span>
+        </a>
 
         {/* Logout Button */}
         <button
