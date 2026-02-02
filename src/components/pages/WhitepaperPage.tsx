@@ -73,7 +73,17 @@ BSC Farm 采用双代币模型：
   - 从游戏提现获得 $FARM
   - DEX 自由交易
 
-**3.3 GOLD 游戏币**
+**3.3 代币分配**
+
+- Dev 初始购买: 20%（全部转入金库钱包）
+- 公开流通: 80%
+
+**3.4 交易税收分配**
+
+- 金库收益: 用于玩家提现和生态建设
+- Dev 钱包: 3%（用于回购代币、稳定金库）
+
+**3.5 GOLD 游戏币**
 
 - 中心化管理，存储在游戏服务器
 - 用途:
@@ -81,7 +91,7 @@ BSC Farm 采用双代币模型：
   - 升级农地
   - 兑换 $FARM 提现
 
-**3.4 兑换汇率**
+**3.6 兑换汇率**
 
 - 基准汇率: 1,000,000 $FARM = 20 GOLD
 - 兑换手续费: 5%
@@ -97,30 +107,39 @@ BSC Farm 采用双代币模型：
          ↑                    ↓
     玩家提现 ←── 金库 ←── 玩家赚取 GOLD
                   ↑
-            Flap 交易税收
-            Dev 钱包补充
+            交易税收 (3% → Dev)
+            Dev 回购代币 → 金库
 \`\`\`
 
-**4.2 收益来源**
+**4.2 Dev 金库策略**
+
+- Dev 在发售时购买 20% 代币，全部转入金库钱包
+- 交易税收的 3% 进入 Dev 钱包
+- Dev 使用税收收益回购 $FARM 代币
+- 回购的代币注入金库，稳定金库储备
+
+**4.3 收益来源**
 
 玩家在游戏中的 ROI（投资回报）来源于：
 
-1. **交易税收**: Flap 等 DEX 的交易税收自动注入金库
-2. **生态补贴**: 项目方定期向金库注入 $FARM
+1. **交易税收**: DEX 交易税收自动分配（3% 进 Dev 钱包用于回购）
+2. **Dev 回购**: Dev 使用税收收益持续回购代币注入金库
 3. **新玩家充值**: 新玩家的充值增加金库储备
 
-**4.3 金库健康机制**
+**4.4 金库健康机制**
 
 - 金库 $FARM 储备量影响兑换汇率
 - 储备充足时，玩家获得更好的提现汇率
 - 储备不足时，汇率会自动调整以保护金库
 - 透明公开的金库地址可供查验
+- Dev 持续回购机制确保金库长期稳定
 
-**4.4 防通胀机制**
+**4.5 防通胀机制**
 
 - 作物售价设计确保合理的 ROI
 - 兑换手续费作为系统收入
-- 动态汇率防止金库枯竭`,
+- 动态汇率防止金库枯竭
+- Dev 回购形成代币正向循环`,
         },
         {
           id: 'crops',
@@ -358,7 +377,17 @@ BSC Farm uses a dual token model:
   - Withdraw from game as $FARM
   - Free trading on DEX
 
-**3.3 GOLD In-game Currency**
+**3.3 Token Allocation**
+
+- Dev Initial Purchase: 20% (all transferred to treasury wallet)
+- Public Circulation: 80%
+
+**3.4 Transaction Tax Distribution**
+
+- Treasury Revenue: For player withdrawals and ecosystem development
+- Dev Wallet: 3% (used for token buyback and treasury stabilization)
+
+**3.5 GOLD In-game Currency**
 
 - Centrally managed, stored on game servers
 - Uses:
@@ -366,7 +395,7 @@ BSC Farm uses a dual token model:
   - Upgrade farmland
   - Exchange for $FARM withdrawal
 
-**3.4 Exchange Rate**
+**3.6 Exchange Rate**
 
 - Base rate: 1,000,000 $FARM = 20 GOLD
 - Exchange fee: 5%
@@ -382,30 +411,39 @@ Player deposits $FARM → Treasury → Converts to GOLD
          ↑                              ↓
     Player withdraws ←── Treasury ←── Player earns GOLD
                            ↑
-                    Flap trading tax
-                    Dev wallet funding
+                    Trading Tax (3% → Dev)
+                    Dev buyback → Treasury
 \`\`\`
 
-**4.2 Revenue Sources**
+**4.2 Dev Treasury Strategy**
+
+- Dev purchases 20% of tokens at launch, all transferred to treasury wallet
+- 3% of transaction tax goes to Dev wallet
+- Dev uses tax revenue to buy back $FARM tokens
+- Bought-back tokens are injected into treasury to stabilize reserves
+
+**4.3 Revenue Sources**
 
 Player ROI (Return on Investment) comes from:
 
-1. **Trading Tax**: DEX trading taxes automatically inject into treasury
-2. **Ecosystem Subsidy**: Project team periodically adds $FARM to treasury
+1. **Trading Tax**: DEX trading taxes auto-distributed (3% to Dev wallet for buyback)
+2. **Dev Buyback**: Dev continuously buys back tokens using tax revenue to inject into treasury
 3. **New Player Deposits**: New player deposits increase treasury reserves
 
-**4.3 Treasury Health Mechanism**
+**4.4 Treasury Health Mechanism**
 
 - Treasury $FARM reserves affect exchange rate
 - Sufficient reserves = better withdrawal rate for players
 - Insufficient reserves = automatic rate adjustment to protect treasury
 - Transparent, publicly viewable treasury address
+- Continuous Dev buyback mechanism ensures long-term treasury stability
 
-**4.4 Anti-inflation Mechanism**
+**4.5 Anti-inflation Mechanism**
 
 - Crop prices designed for reasonable ROI
 - Exchange fees as system revenue
-- Dynamic rates prevent treasury depletion`,
+- Dynamic rates prevent treasury depletion
+- Dev buyback creates positive token cycle`,
         },
         {
           id: 'technical',
