@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useGameStore } from '../../store/useGameStore';
+import { useLanguageStore } from '../../store/useLanguageStore';
+import { localizeText } from '../../utils/i18n';
 import {
   getUpgradesByCategory,
   getUpgradeCost,
@@ -35,6 +37,8 @@ export const UpgradeShopPanel: React.FC<UpgradeShopPanelProps> = ({
   onNotify,
 }) => {
   const { player, goldBalance, subtractGoldBalance, playerUpgrades, purchaseUpgrade } = useGameStore();
+  const { language } = useLanguageStore();
+  const l = (en: string, zh: string) => localizeText(language, en, zh);
   const [selectedCategory, setSelectedCategory] = useState<UpgradeCategory>('production');
   const [selectedUpgrade, setSelectedUpgrade] = useState<FarmUpgrade | null>(null);
 
@@ -64,29 +68,30 @@ export const UpgradeShopPanel: React.FC<UpgradeShopPanelProps> = ({
   const handlePurchase = (upgrade: FarmUpgrade) => {
     const currentLevel = getUpgradeLevel(upgrade.id);
     const cost = getUpgradeCost(upgrade, currentLevel);
+    const upgradeName = language === 'en' ? upgrade.name : upgrade.nameCn;
 
     if (!isUpgradeUnlocked(upgrade)) {
-      onNotify('error', `需要達到等級 ${upgrade.unlockLevel} 才能購買`, 3000);
+      onNotify('error', l(`Requires level ${upgrade.unlockLevel} to purchase`, `需要達到等級 ${upgrade.unlockLevel} 才能購買`), 3000);
       return;
     }
 
     if (isUpgradeMaxed(upgrade)) {
-      onNotify('info', '此升級已達到最高等級', 3000);
+      onNotify('info', l('This upgrade is already at max level', '此升級已達到最高等級'), 3000);
       return;
     }
 
     if (goldBalance < cost) {
-      onNotify('error', `GOLD 不足！需要 ${cost.toLocaleString()} GOLD`, 3000);
+      onNotify('error', l(`Not enough GOLD! Need ${cost.toLocaleString()} GOLD`, `GOLD 不足！需要 ${cost.toLocaleString()} GOLD`), 3000);
       return;
     }
 
     // Deduct gold and purchase upgrade
     if (subtractGoldBalance(cost)) {
       purchaseUpgrade(upgrade.id, cost);
-      onNotify('success', `成功購買 ${upgrade.nameCn} Lv.${currentLevel + 1}！`, 3000);
+      onNotify('success', l(`Successfully purchased ${upgradeName} Lv.${currentLevel + 1}!`, `成功購買 ${upgradeName} Lv.${currentLevel + 1}！`), 3000);
       setSelectedUpgrade(null);
     } else {
-      onNotify('error', '購買失敗，請稍後再試', 3000);
+      onNotify('error', l('Purchase failed, please try again', '購買失敗，請稍後再試'), 3000);
     }
   };
 
@@ -104,11 +109,11 @@ export const UpgradeShopPanel: React.FC<UpgradeShopPanelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="🏗️ 農場升級">
+    <Modal isOpen={isOpen} onClose={onClose} title={l('🏗️ Farm Upgrades', '🏗️ 農場升級')}>
       <div className="space-y-4">
         {/* Gold Balance */}
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 flex items-center justify-between">
-          <span className="text-yellow-400">💰 GOLD 餘額</span>
+          <span className="text-yellow-400">💰 {l('GOLD Balance', 'GOLD 餘額')}</span>
           <span className="text-yellow-400 font-bold text-lg">
             {formatGold(goldBalance)}
           </span>
@@ -127,7 +132,7 @@ export const UpgradeShopPanel: React.FC<UpgradeShopPanelProps> = ({
               }`}
             >
               <span>{CATEGORY_INFO[category].icon}</span>
-              <span>{CATEGORY_INFO[category].nameCn}</span>
+              <span>{language === 'en' ? CATEGORY_INFO[category].name : CATEGORY_INFO[category].nameCn}</span>
             </button>
           ))}
         </div>
@@ -155,8 +160,8 @@ export const UpgradeShopPanel: React.FC<UpgradeShopPanelProps> = ({
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">{upgrade.icon}</span>
                   <div>
-                    <div className="text-white font-bold text-sm">{upgrade.nameCn}</div>
-                    <div className="text-gray-400 text-xs">{upgrade.name}</div>
+                    <div className="text-white font-bold text-sm">{language === 'en' ? upgrade.name : upgrade.nameCn}</div>
+                    <div className="text-gray-400 text-xs">{language === 'en' ? upgrade.nameCn : upgrade.name}</div>
                   </div>
                 </div>
 
@@ -175,11 +180,11 @@ export const UpgradeShopPanel: React.FC<UpgradeShopPanelProps> = ({
                 {/* Status */}
                 {!isUnlocked ? (
                   <div className="text-gray-500 text-xs">
-                    🔒 需要等級 {upgrade.unlockLevel}
+                    🔒 {l(`Requires level ${upgrade.unlockLevel}`, `需要等級 ${upgrade.unlockLevel}`)}
                   </div>
                 ) : isMaxed ? (
                   <div className="text-purple-400 text-xs font-bold">
-                    ✨ 已滿級
+                    ✨ {l('Max Level', '已滿級')}
                   </div>
                 ) : (
                   <div className="text-yellow-400 text-xs">
@@ -198,12 +203,12 @@ export const UpgradeShopPanel: React.FC<UpgradeShopPanelProps> = ({
               <span className="text-4xl">{selectedUpgrade.icon}</span>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-white font-bold text-lg">{selectedUpgrade.nameCn}</h3>
+                  <h3 className="text-white font-bold text-lg">{language === 'en' ? selectedUpgrade.name : selectedUpgrade.nameCn}</h3>
                   <span className="text-gray-400 text-sm">
                     Lv.{getUpgradeLevel(selectedUpgrade.id)} / {selectedUpgrade.maxLevel}
                   </span>
                 </div>
-                <p className="text-gray-400 text-sm mb-2">{selectedUpgrade.descriptionCn}</p>
+                <p className="text-gray-400 text-sm mb-2">{language === 'en' ? selectedUpgrade.description : selectedUpgrade.descriptionCn}</p>
 
                 {/* Detailed Explanation */}
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-3">
@@ -214,7 +219,7 @@ export const UpgradeShopPanel: React.FC<UpgradeShopPanelProps> = ({
 
                 {/* Current Effects */}
                 <div className="bg-black/30 rounded-lg p-2 mb-3">
-                  <div className="text-xs text-gray-500 mb-1">效果預覽：</div>
+                  <div className="text-xs text-gray-500 mb-1">{l('Effect Preview:', '效果預覽：')}</div>
                   {selectedUpgrade.effects.map((effect, i) => {
                     const currentLevel = getUpgradeLevel(selectedUpgrade.id);
                     const nextLevel = Math.min(currentLevel + 1, selectedUpgrade.maxLevel);
@@ -225,7 +230,7 @@ export const UpgradeShopPanel: React.FC<UpgradeShopPanelProps> = ({
                         </span>
                         {!isUpgradeMaxed(selectedUpgrade) && (
                           <span className="text-yellow-400 text-xs">
-                            下一級: {formatUpgradeEffect(effect, nextLevel)}
+                            {l('Next:', '下一級:')} {formatUpgradeEffect(effect, nextLevel)}
                           </span>
                         )}
                       </div>
@@ -244,19 +249,19 @@ export const UpgradeShopPanel: React.FC<UpgradeShopPanelProps> = ({
                         : 'bg-gray-700 text-gray-400 cursor-not-allowed'
                     }`}
                   >
-                    升級到 Lv.{getUpgradeLevel(selectedUpgrade.id) + 1} - 💰 {formatGold(getUpgradeCost(selectedUpgrade, getUpgradeLevel(selectedUpgrade.id)))} GOLD
+                    {l(`Upgrade to Lv.${getUpgradeLevel(selectedUpgrade.id) + 1}`, `升級到 Lv.${getUpgradeLevel(selectedUpgrade.id) + 1}`)} - 💰 {formatGold(getUpgradeCost(selectedUpgrade, getUpgradeLevel(selectedUpgrade.id)))} GOLD
                   </button>
                 )}
 
                 {isUpgradeMaxed(selectedUpgrade) && (
                   <div className="w-full py-3 rounded-lg bg-purple-500/20 text-purple-400 font-bold text-center">
-                    ✨ 已達到最高等級
+                    ✨ {l('Max level reached', '已達到最高等級')}
                   </div>
                 )}
 
                 {!isUpgradeUnlocked(selectedUpgrade) && (
                   <div className="w-full py-3 rounded-lg bg-gray-700 text-gray-400 font-bold text-center">
-                    🔒 需要達到等級 {selectedUpgrade.unlockLevel}
+                    🔒 {l(`Requires level ${selectedUpgrade.unlockLevel}`, `需要達到等級 ${selectedUpgrade.unlockLevel}`)}
                   </div>
                 )}
               </div>
@@ -267,7 +272,7 @@ export const UpgradeShopPanel: React.FC<UpgradeShopPanelProps> = ({
         {/* Total Spent */}
         {playerUpgrades && playerUpgrades.totalSpent > 0 && (
           <div className="text-center text-gray-500 text-sm">
-            累計投資: {formatGold(playerUpgrades.totalSpent)} GOLD
+            {l('Total invested:', '累計投資:')} {formatGold(playerUpgrades.totalSpent)} GOLD
           </div>
         )}
       </div>

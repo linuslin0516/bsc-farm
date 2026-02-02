@@ -1,21 +1,26 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { FriendInfo } from '../../types';
+import { Language } from '../../store/useLanguageStore';
 import { getFriendListWithDetails, removeFriend } from '../../services/friendService';
+import { localizeText } from '../../utils/i18n';
 
 interface FriendListProps {
   myUserId: string;
   onVisitFriend: (friendId: string, friendName: string) => void;
   onNotify: (type: 'success' | 'error' | 'info' | 'warning', message: string) => void;
+  language: Language;
 }
 
 export const FriendList: React.FC<FriendListProps> = ({
   myUserId,
   onVisitFriend,
   onNotify,
+  language,
 }) => {
   const [friends, setFriends] = useState<FriendInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const l = (en: string, zh: string) => localizeText(language, en, zh);
 
   useEffect(() => {
     loadFriends();
@@ -28,22 +33,22 @@ export const FriendList: React.FC<FriendListProps> = ({
       setFriends(friendList);
     } catch (error) {
       console.error('Failed to load friends:', error);
-      onNotify('error', '載入好友列表失敗');
+      onNotify('error', l('Failed to load friend list', '載入好友列表失敗'));
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleRemoveFriend = async (friendId: string, friendName: string) => {
-    if (!confirm(`確定要刪除好友 ${friendName} 嗎？`)) return;
+    if (!confirm(l(`Are you sure you want to remove ${friendName}?`, `確定要刪除好友 ${friendName} 嗎？`))) return;
 
     try {
       await removeFriend(myUserId, friendId);
       setFriends((prev) => prev.filter((f) => f.oderId !== friendId));
-      onNotify('success', `已刪除好友 ${friendName}`);
+      onNotify('success', l(`Removed friend ${friendName}`, `已刪除好友 ${friendName}`));
     } catch (error) {
       console.error('Failed to remove friend:', error);
-      onNotify('error', '刪除好友失敗');
+      onNotify('error', l('Failed to remove friend', '刪除好友失敗'));
     }
   };
 
@@ -54,10 +59,10 @@ export const FriendList: React.FC<FriendListProps> = ({
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 5) return '剛剛在線';
-    if (minutes < 60) return `${minutes} 分鐘前`;
-    if (hours < 24) return `${hours} 小時前`;
-    return `${days} 天前`;
+    if (minutes < 5) return l('Just now', '剛剛在線');
+    if (minutes < 60) return l(`${minutes} min ago`, `${minutes} 分鐘前`);
+    if (hours < 24) return l(`${hours} hours ago`, `${hours} 小時前`);
+    return l(`${days} days ago`, `${days} 天前`);
   };
 
   if (isLoading) {
@@ -72,8 +77,8 @@ export const FriendList: React.FC<FriendListProps> = ({
     return (
       <div className="text-center py-12 text-gray-400">
         <p className="text-4xl mb-4">👥</p>
-        <p>還沒有好友</p>
-        <p className="text-sm mt-2">點擊「加好友」分享你的 ID 給朋友吧！</p>
+        <p>{l('No friends yet', '還沒有好友')}</p>
+        <p className="text-sm mt-2">{l('Click "Add Friend" to share your ID with friends!', '點擊「加好友」分享你的 ID 給朋友吧！')}</p>
       </div>
     );
   }
@@ -101,7 +106,7 @@ export const FriendList: React.FC<FriendListProps> = ({
               <div className="text-xs text-gray-400">
                 ID: {friend.oderId} ·{' '}
                 {friend.isOnline ? (
-                  <span className="text-green-400">在線</span>
+                  <span className="text-green-400">{l('Online', '在線')}</span>
                 ) : (
                   formatLastOnline(friend.lastOnline)
                 )}
@@ -114,12 +119,12 @@ export const FriendList: React.FC<FriendListProps> = ({
               size="sm"
               onClick={() => onVisitFriend(friend.oderId, friend.name)}
             >
-              🏠 訪問
+              🏠 {l('Visit', '訪問')}
             </Button>
             <button
               onClick={() => handleRemoveFriend(friend.oderId, friend.name)}
               className="p-2 text-gray-400 hover:text-red-400 transition-colors"
-              title="刪除好友"
+              title={l('Remove friend', '刪除好友')}
             >
               🗑️
             </button>

@@ -4,6 +4,8 @@ import { Button } from '../ui/Button';
 import { FriendList } from './FriendList';
 import { AddFriend } from './AddFriend';
 import { FriendRequests } from './FriendRequests';
+import { useLanguageStore } from '../../store/useLanguageStore';
+import { localizeText } from '../../utils/i18n';
 
 interface FriendPanelProps {
   isOpen: boolean;
@@ -23,19 +25,21 @@ export const FriendPanel: React.FC<FriendPanelProps> = ({
   onNotify,
 }) => {
   const [activeTab, setActiveTab] = useState<Tab>('friends');
+  const { language } = useLanguageStore();
+  const l = (en: string, zh: string) => localizeText(language, en, zh);
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
-    { id: 'friends', label: '好友', icon: '👥' },
-    { id: 'add', label: '加好友', icon: '➕' },
-    { id: 'requests', label: '請求', icon: '📩' },
+    { id: 'friends', label: l('Friends', '好友'), icon: '👥' },
+    { id: 'add', label: l('Add Friend', '加好友'), icon: '➕' },
+    { id: 'requests', label: l('Requests', '請求'), icon: '📩' },
   ];
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="好友系統" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={l('Friend System', '好友系統')} size="lg">
       {/* My ID display */}
       <div className="mb-4 p-3 bg-binance-gray rounded-lg flex items-center justify-between">
         <div>
-          <span className="text-xs text-gray-400">我的 ID</span>
+          <span className="text-xs text-gray-400">{l('My ID', '我的 ID')}</span>
           <p className="text-xl font-bold text-binance-yellow font-mono">
             {myUserId}
           </p>
@@ -44,10 +48,10 @@ export const FriendPanel: React.FC<FriendPanelProps> = ({
           size="sm"
           onClick={() => {
             navigator.clipboard.writeText(myUserId);
-            onNotify('success', 'ID 已複製！');
+            onNotify('success', l('ID copied!', 'ID 已複製！'));
           }}
         >
-          複製
+          {l('Copy', '複製')}
         </Button>
       </div>
 
@@ -78,13 +82,14 @@ export const FriendPanel: React.FC<FriendPanelProps> = ({
             myUserId={myUserId}
             onVisitFriend={onVisitFriend}
             onNotify={onNotify}
+            language={language}
           />
         )}
         {activeTab === 'add' && (
-          <AddFriend myUserId={myUserId} onNotify={onNotify} />
+          <AddFriend myUserId={myUserId} onNotify={onNotify} language={language} />
         )}
         {activeTab === 'requests' && (
-          <FriendRequests myUserId={myUserId} onNotify={onNotify} />
+          <FriendRequests myUserId={myUserId} onNotify={onNotify} language={language} />
         )}
       </div>
     </Modal>

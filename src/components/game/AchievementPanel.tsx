@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Achievement, AchievementCategory, RARITY_COLORS, RARITY_NAMES } from '../../types';
+import { Achievement, AchievementCategory, RARITY_COLORS } from '../../types';
 import { getAchievementsWithProgress } from '../../services/achievementService';
 import { useGameStore } from '../../store/useGameStore';
+import { useLanguageStore } from '../../store/useLanguageStore';
+import { localizeText, getRarityLabel } from '../../utils/i18n';
 
 interface AchievementPanelProps {
   isOpen: boolean;
@@ -21,6 +23,8 @@ export const AchievementPanel: React.FC<AchievementPanelProps> = ({ isOpen, onCl
   const [achievementsData, setAchievementsData] = useState<AchievementWithProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { player } = useGameStore();
+  const { language } = useLanguageStore();
+  const l = (en: string, zh: string) => localizeText(language, en, zh);
 
   useEffect(() => {
     const loadAchievements = async () => {
@@ -43,11 +47,11 @@ export const AchievementPanel: React.FC<AchievementPanelProps> = ({ isOpen, onCl
   if (!isOpen) return null;
 
   const categories: { id: CategoryFilter; label: string; icon: string }[] = [
-    { id: 'all', label: '全部', icon: '📋' },
-    { id: 'farming', label: '農耕', icon: '🌾' },
-    { id: 'social', label: '社交', icon: '👥' },
-    { id: 'collection', label: '收集', icon: '📚' },
-    { id: 'milestone', label: '里程碑', icon: '🏆' },
+    { id: 'all', label: l('All', '全部'), icon: '📋' },
+    { id: 'farming', label: l('Farming', '農耕'), icon: '🌾' },
+    { id: 'social', label: l('Social', '社交'), icon: '👥' },
+    { id: 'collection', label: l('Collection', '收集'), icon: '📚' },
+    { id: 'milestone', label: l('Milestone', '里程碑'), icon: '🏆' },
   ];
 
   const filteredAchievements = selectedCategory === 'all'
@@ -70,9 +74,9 @@ export const AchievementPanel: React.FC<AchievementPanelProps> = ({ isOpen, onCl
             <div className="flex items-center gap-3">
               <span className="text-3xl">🏆</span>
               <div>
-                <h2 className="text-2xl font-bold text-binance-yellow">成就系統</h2>
+                <h2 className="text-2xl font-bold text-binance-yellow">{l('Achievements', '成就系統')}</h2>
                 <p className="text-sm text-gray-400">
-                  已解鎖 {unlockedCount}/{totalCount} 個成就
+                  {l(`Unlocked ${unlockedCount}/${totalCount} achievements`, `已解鎖 ${unlockedCount}/${totalCount} 個成就`)}
                 </p>
               </div>
             </div>
@@ -115,7 +119,7 @@ export const AchievementPanel: React.FC<AchievementPanelProps> = ({ isOpen, onCl
         <div className="flex-1 overflow-y-auto p-4">
           {isLoading ? (
             <div className="flex items-center justify-center h-40">
-              <div className="text-gray-400">載入中...</div>
+              <div className="text-gray-400">{l('Loading...', '載入中...')}</div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -125,6 +129,7 @@ export const AchievementPanel: React.FC<AchievementPanelProps> = ({ isOpen, onCl
                   achievement={achievement}
                   progress={progress}
                   unlocked={unlocked}
+                  language={language}
                 />
               ))}
             </div>
@@ -140,15 +145,23 @@ interface AchievementCardProps {
   achievement: Achievement;
   progress: number;
   unlocked: boolean;
+  language: string;
 }
 
 const AchievementCard: React.FC<AchievementCardProps> = ({
   achievement,
   progress,
   unlocked,
+  language,
 }) => {
+  const l = (en: string, zh: string) => localizeText(language as 'zh-CN' | 'zh-TW' | 'en', en, zh);
   const colors = RARITY_COLORS[achievement.rarity];
   const progressPercent = Math.min((progress / achievement.requirement) * 100, 100);
+  const rarityLabel = getRarityLabel(achievement.rarity, language as 'zh-CN' | 'zh-TW' | 'en');
+
+  // Use English or Chinese based on language
+  const achievementName = language === 'en' ? achievement.name : l(achievement.name, achievement.nameCn);
+  const achievementDesc = language === 'en' ? achievement.description : l(achievement.description, achievement.descriptionCn);
 
   return (
     <div
@@ -180,22 +193,22 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className={`font-bold ${unlocked ? colors.text : 'text-gray-400'}`}>
-              {achievement.nameCn}
+              {achievementName}
             </h3>
             <span className={`text-xs px-2 py-0.5 rounded-full ${colors.bg} ${colors.text}`}>
-              {RARITY_NAMES[achievement.rarity]}
+              {rarityLabel}
             </span>
           </div>
 
           <p className="text-sm text-gray-400 mt-1">
-            {achievement.descriptionCn}
+            {achievementDesc}
           </p>
 
           {/* Progress bar */}
           {!unlocked && (
             <div className="mt-2">
               <div className="flex justify-between text-xs text-gray-500 mb-1">
-                <span>進度</span>
+                <span>{l('Progress', '進度')}</span>
                 <span>{progress}/{achievement.requirement}</span>
               </div>
               <div className="h-2 bg-binance-dark rounded-full overflow-hidden">
