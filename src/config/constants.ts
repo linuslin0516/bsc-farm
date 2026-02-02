@@ -2,9 +2,6 @@
 // Set VITE_COMING_SOON=true to show coming soon page instead of game
 export const COMING_SOON_MODE = import.meta.env.VITE_COMING_SOON === 'true';
 
-// Launch date for countdown (optional)
-export const LAUNCH_DATE = import.meta.env.VITE_LAUNCH_DATE || '2025-03-01T00:00:00Z';
-
 // BSC Network Configuration
 export const BSC_MAINNET = {
   chainId: 56,

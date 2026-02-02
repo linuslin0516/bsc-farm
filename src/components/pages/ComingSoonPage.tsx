@@ -1,42 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Logo } from '../game/Logo';
-import { LAUNCH_DATE } from '../../config/constants';
 import { useLanguageStore, LANGUAGE_NAMES, Language } from '../../store/useLanguageStore';
 
-interface TimeLeft {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-}
-
-const calculateTimeLeft = (): TimeLeft | null => {
-  const difference = new Date(LAUNCH_DATE).getTime() - new Date().getTime();
-
-  if (difference <= 0) {
-    return null;
-  }
-
-  return {
-    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-    minutes: Math.floor((difference / 1000 / 60) % 60),
-    seconds: Math.floor((difference / 1000) % 60),
-  };
-};
-
 export const ComingSoonPage: React.FC = () => {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(calculateTimeLeft());
   const { language, setLanguage } = useLanguageStore();
   const [showLangMenu, setShowLangMenu] = useState(false);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const languages: Language[] = ['zh-CN', 'zh-TW', 'en'];
 
@@ -48,12 +17,6 @@ export const ComingSoonPage: React.FC = () => {
       description: '种植作物，收获$FARM代币，与好友互动，开启你的链上农场之旅！',
       whitepaper: '查看白皮书',
       followUs: '关注我们',
-      countdown: {
-        days: '天',
-        hours: '时',
-        minutes: '分',
-        seconds: '秒',
-      },
       features: {
         plant: '种植作物',
         plantDesc: '多种作物可选择，不同生长周期和收益',
@@ -71,12 +34,6 @@ export const ComingSoonPage: React.FC = () => {
       description: '種植作物，收穫$FARM代幣，與好友互動，開啟你的鏈上農場之旅！',
       whitepaper: '查看白皮書',
       followUs: '關注我們',
-      countdown: {
-        days: '天',
-        hours: '時',
-        minutes: '分',
-        seconds: '秒',
-      },
       features: {
         plant: '種植作物',
         plantDesc: '多種作物可選擇，不同生長週期和收益',
@@ -94,12 +51,6 @@ export const ComingSoonPage: React.FC = () => {
       description: 'Plant crops, harvest $FARM tokens, interact with friends, and start your on-chain farming journey!',
       whitepaper: 'Read Whitepaper',
       followUs: 'Follow Us',
-      countdown: {
-        days: 'days',
-        hours: 'hrs',
-        minutes: 'min',
-        seconds: 'sec',
-      },
       features: {
         plant: 'Plant Crops',
         plantDesc: 'Various crops with different growth cycles and yields',
@@ -184,36 +135,14 @@ export const ComingSoonPage: React.FC = () => {
         <p className="text-xl md:text-2xl text-gray-300 mb-2 text-center">
           {text.subtitle}
         </p>
-        <p className="text-gray-400 mb-8 max-w-xl text-center">
+        <p className="text-gray-400 mb-12 max-w-xl text-center">
           {text.description}
         </p>
-
-        {/* Countdown Timer */}
-        {timeLeft && (
-          <div className="flex gap-4 mb-12">
-            <div className="glass-panel p-4 rounded-xl text-center min-w-[80px]">
-              <div className="text-3xl md:text-4xl font-bold text-binance-yellow">{timeLeft.days}</div>
-              <div className="text-xs text-gray-400">{text.countdown.days}</div>
-            </div>
-            <div className="glass-panel p-4 rounded-xl text-center min-w-[80px]">
-              <div className="text-3xl md:text-4xl font-bold text-binance-yellow">{timeLeft.hours}</div>
-              <div className="text-xs text-gray-400">{text.countdown.hours}</div>
-            </div>
-            <div className="glass-panel p-4 rounded-xl text-center min-w-[80px]">
-              <div className="text-3xl md:text-4xl font-bold text-binance-yellow">{timeLeft.minutes}</div>
-              <div className="text-xs text-gray-400">{text.countdown.minutes}</div>
-            </div>
-            <div className="glass-panel p-4 rounded-xl text-center min-w-[80px]">
-              <div className="text-3xl md:text-4xl font-bold text-binance-yellow">{timeLeft.seconds}</div>
-              <div className="text-xs text-gray-400">{text.countdown.seconds}</div>
-            </div>
-          </div>
-        )}
 
         {/* Whitepaper Button */}
         <Link
           to="/whitepaper"
-          className="mb-8 px-8 py-3 bg-binance-yellow text-binance-dark font-bold rounded-xl hover:bg-binance-yellow/90 transition-colors text-lg"
+          className="mb-12 px-8 py-3 bg-binance-yellow text-binance-dark font-bold rounded-xl hover:bg-binance-yellow/90 transition-colors text-lg"
         >
           {text.whitepaper}
         </Link>
