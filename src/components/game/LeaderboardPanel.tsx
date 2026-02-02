@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { LeaderboardEntry } from '../../types';
 import { getLeaderboard, getPlayerRank } from '../../services/leaderboardService';
 import { useGameStore } from '../../store/useGameStore';
+import { useLanguageStore } from '../../store/useLanguageStore';
+import { localizeText } from '../../utils/i18n';
 
 interface LeaderboardPanelProps {
   isOpen: boolean;
@@ -16,6 +18,8 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
   const [myRank, setMyRank] = useState<{ rank: number; total: number; score: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { player } = useGameStore();
+  const { language } = useLanguageStore();
+  const l = (en: string, zh: string) => localizeText(language, en, zh);
 
   useEffect(() => {
     const loadLeaderboard = async () => {
@@ -43,9 +47,9 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
   if (!isOpen) return null;
 
   const tabs: { id: LeaderboardType; label: string; icon: string }[] = [
-    { id: 'score', label: '積分', icon: '🏆' },
-    { id: 'level', label: '等級', icon: '⭐' },
-    { id: 'harvests', label: '收成', icon: '🌾' },
+    { id: 'score', label: l('Score', '積分'), icon: '🏆' },
+    { id: 'level', label: l('Level', '等級'), icon: '⭐' },
+    { id: 'harvests', label: l('Harvests', '收成'), icon: '🌾' },
   ];
 
   const getRankStyle = (rank: number): string => {
@@ -77,11 +81,11 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
   const getScoreLabel = (): string => {
     switch (selectedType) {
       case 'level':
-        return '等級';
+        return l('Level', '等級');
       case 'harvests':
-        return '收成數';
+        return l('Harvests', '收成數');
       default:
-        return '積分';
+        return l('Score', '積分');
     }
   };
 
@@ -98,9 +102,9 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
             <div className="flex items-center gap-3">
               <span className="text-3xl">🏆</span>
               <div>
-                <h2 className="text-xl font-bold text-binance-yellow">排行榜</h2>
+                <h2 className="text-xl font-bold text-binance-yellow">{l('Leaderboard', '排行榜')}</h2>
                 <p className="text-sm text-gray-400">
-                  與其他農夫一較高下
+                  {l('Compete with other farmers', '與其他農夫一較高下')}
                 </p>
               </div>
             </div>
@@ -145,7 +149,7 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
                 </div>
                 <div>
                   <div className="font-bold text-white">{player.name}</div>
-                  <div className="text-sm text-gray-400">我的排名</div>
+                  <div className="text-sm text-gray-400">{l('My Rank', '我的排名')}</div>
                 </div>
               </div>
               <div className="text-right">
@@ -167,12 +171,12 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
             <div className="flex items-center justify-center h-40">
-              <div className="text-gray-400">載入中...</div>
+              <div className="text-gray-400">{l('Loading...', '載入中...')}</div>
             </div>
           ) : entries.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-gray-400">
               <span className="text-4xl mb-2">🏜️</span>
-              <span>暫無排行資料</span>
+              <span>{l('No data yet', '暫無排行資料')}</span>
             </div>
           ) : (
             <div className="p-4 space-y-2">
@@ -215,7 +219,7 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
                     <div className="flex-1 min-w-0">
                       <div className={`font-bold truncate ${isMe ? 'text-binance-yellow' : 'text-white'}`}>
                         {entry.name}
-                        {isMe && <span className="ml-2 text-xs text-binance-yellow">(你)</span>}
+                        {isMe && <span className="ml-2 text-xs text-binance-yellow">({l('You', '你')})</span>}
                       </div>
                       <div className="text-xs text-gray-400">
                         Lv.{entry.level}
@@ -244,7 +248,7 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
         {/* Footer */}
         <div className="p-4 border-t border-binance-yellow/20 bg-binance-dark/30">
           <div className="text-center text-xs text-gray-500">
-            積分計算: (等級 × 100) + (收成數 × 10) + (偷菜數 × 5)
+            {l('Score = (Level × 100) + (Harvests × 10) + (Steals × 5)', '積分計算: (等級 × 100) + (收成數 × 10) + (偷菜數 × 5)')}
           </div>
         </div>
       </div>

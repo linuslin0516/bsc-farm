@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { DailyTask } from '../../types';
 import { getDailyTasksWithProgress, claimTaskReward, getTimeUntilReset } from '../../services/dailyTaskService';
 import { useGameStore } from '../../store/useGameStore';
+import { useLanguageStore } from '../../store/useLanguageStore';
+import { localizeText } from '../../utils/i18n';
 
 interface DailyTasksPanelProps {
   isOpen: boolean;
@@ -25,6 +27,8 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [timeUntilReset, setTimeUntilReset] = useState(0);
   const { player, addExperience, addDemoBalance } = useGameStore();
+  const { language } = useLanguageStore();
+  const l = (en: string, zh: string) => localizeText(language, en, zh);
 
   const loadTasks = useCallback(async () => {
     if (player?.oderId) {
@@ -78,11 +82,11 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
           )
         );
 
-        onNotify?.('success', `獲得 ${reward.xp} XP 和 ${reward.tokens} $FARM！`);
+        onNotify?.('success', l(`Got ${reward.xp} XP and ${reward.tokens} $FARM!`, `獲得 ${reward.xp} XP 和 ${reward.tokens} $FARM！`));
       }
     } catch (error) {
       console.error('Failed to claim reward:', error);
-      onNotify?.('error', '領取獎勵失敗');
+      onNotify?.('error', l('Failed to claim reward', '領取獎勵失敗'));
     }
   };
 
@@ -111,9 +115,9 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
             <div className="flex items-center gap-3">
               <span className="text-3xl">📋</span>
               <div>
-                <h2 className="text-xl font-bold text-binance-yellow">每日任務</h2>
+                <h2 className="text-xl font-bold text-binance-yellow">{l('Daily Tasks', '每日任務')}</h2>
                 <p className="text-sm text-gray-400">
-                  完成任務獲得獎勵
+                  {l('Complete tasks to earn rewards', '完成任務獲得獎勵')}
                 </p>
               </div>
             </div>
@@ -127,7 +131,7 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
 
           {/* Reset timer */}
           <div className="mt-3 flex items-center justify-between text-sm">
-            <span className="text-gray-400">重置倒計時</span>
+            <span className="text-gray-400">{l('Reset countdown', '重置倒計時')}</span>
             <span className="text-binance-yellow font-mono font-bold">
               {formatTimeRemaining(timeUntilReset)}
             </span>
@@ -149,11 +153,11 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
         <div className="p-4 space-y-3">
           {isLoading ? (
             <div className="flex items-center justify-center h-40">
-              <div className="text-gray-400">載入中...</div>
+              <div className="text-gray-400">{l('Loading...', '載入中...')}</div>
             </div>
           ) : tasks.length === 0 ? (
             <div className="text-center text-gray-400 py-8">
-              今日任務載入失敗，請稍後再試
+              {l('Failed to load tasks, please try again later', '今日任務載入失敗，請稍後再試')}
             </div>
           ) : (
             tasks.map(({ task, progress, completed, claimed }) => (
@@ -164,6 +168,7 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
                 completed={completed}
                 claimed={claimed}
                 onClaim={() => handleClaim(task.id)}
+                language={language}
               />
             ))
           )}
@@ -175,8 +180,8 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
             <div className="flex items-center gap-2">
               <span className="text-2xl">🎁</span>
               <div>
-                <div className="text-sm font-bold text-white">全部完成獎勵</div>
-                <div className="text-xs text-gray-400">完成所有每日任務</div>
+                <div className="text-sm font-bold text-white">{l('Complete All Bonus', '全部完成獎勵')}</div>
+                <div className="text-xs text-gray-400">{l('Complete all daily tasks', '完成所有每日任務')}</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -186,7 +191,7 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
               </div>
               {completedCount === 3 && claimedCount < 3 ? (
                 <button className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-400 text-white font-bold rounded-lg hover:opacity-90 transition-opacity">
-                  領取
+                  {l('Claim', '領取')}
                 </button>
               ) : (
                 <div className={`px-4 py-2 rounded-lg ${
@@ -194,7 +199,7 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
                     ? 'bg-green-500/20 text-green-400'
                     : 'bg-binance-gray-light text-gray-500'
                 }`}>
-                  {claimedCount === 3 ? '已領取' : `${completedCount}/3`}
+                  {claimedCount === 3 ? l('Claimed', '已領取') : `${completedCount}/3`}
                 </div>
               )}
             </div>
@@ -212,6 +217,7 @@ interface TaskCardProps {
   completed: boolean;
   claimed: boolean;
   onClaim: () => void;
+  language: string;
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({
@@ -220,8 +226,14 @@ const TaskCard: React.FC<TaskCardProps> = ({
   completed,
   claimed,
   onClaim,
+  language,
 }) => {
+  const l = (en: string, zh: string) => localizeText(language as 'zh-CN' | 'zh-TW' | 'en', en, zh);
   const progressPercent = Math.min((progress / task.requirement) * 100, 100);
+
+  // Use English or Chinese based on language
+  const taskName = language === 'en' ? task.name : l(task.name, task.nameCn);
+  const taskDesc = language === 'en' ? task.description : l(task.description, task.descriptionCn);
 
   return (
     <div
@@ -241,13 +253,13 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-white">{task.nameCn}</h3>
-          <p className="text-sm text-gray-400">{task.descriptionCn}</p>
+          <h3 className="font-bold text-white">{taskName}</h3>
+          <p className="text-sm text-gray-400">{taskDesc}</p>
 
           {/* Progress bar */}
           <div className="mt-2">
             <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>進度</span>
+              <span>{l('Progress', '進度')}</span>
               <span>{Math.min(progress, task.requirement)}/{task.requirement}</span>
             </div>
             <div className="h-2 bg-binance-dark rounded-full overflow-hidden">
@@ -277,18 +289,18 @@ const TaskCard: React.FC<TaskCardProps> = ({
         <div>
           {claimed ? (
             <div className="px-3 py-2 bg-green-500/20 text-green-400 rounded-lg text-sm">
-              ✓ 已領取
+              ✓ {l('Claimed', '已領取')}
             </div>
           ) : completed ? (
             <button
               onClick={onClaim}
               className="px-4 py-2 bg-gradient-to-r from-binance-yellow to-binance-gold text-black font-bold rounded-lg hover:opacity-90 transition-opacity animate-pulse"
             >
-              領取
+              {l('Claim', '領取')}
             </button>
           ) : (
             <div className="px-3 py-2 bg-binance-gray-light text-gray-500 rounded-lg text-sm">
-              進行中
+              {l('In Progress', '進行中')}
             </div>
           )}
         </div>
