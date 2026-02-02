@@ -117,13 +117,25 @@ export const getExchangeRate = async (): Promise<ExchangeRate> => {
     if (docSnap.exists()) {
       const data = docSnap.data() as ExchangeRate;
 
-      // Auto-update if daily limit is the old value (100)
-      if (data.dailyExchangeLimit === 100) {
+      // Auto-update if exchange rate is outdated
+      // 新匯率：1 FARM = 0.001 GOLD (100,000 FARM = 100 GOLD)
+      // 舊匯率可能是 goldPerFarm > 0.01 或其他錯誤值
+      const needsUpdate =
+        data.dailyExchangeLimit === 100 ||
+        data.goldPerFarm !== DEFAULT_EXCHANGE_RATE.goldPerFarm ||
+        data.farmPerGold !== DEFAULT_EXCHANGE_RATE.farmPerGold;
+
+      if (needsUpdate) {
+        console.log('🔄 Auto-updating exchange rate to:', DEFAULT_EXCHANGE_RATE);
         await updateDoc(docRef, {
+          goldPerFarm: DEFAULT_EXCHANGE_RATE.goldPerFarm,
+          farmPerGold: DEFAULT_EXCHANGE_RATE.farmPerGold,
           dailyExchangeLimit: DEFAULT_EXCHANGE_RATE.dailyExchangeLimit,
+          exchangeFee: DEFAULT_EXCHANGE_RATE.exchangeFee,
+          lastUpdated: Date.now(),
           updatedAt: serverTimestamp(),
         });
-        return { ...data, dailyExchangeLimit: DEFAULT_EXCHANGE_RATE.dailyExchangeLimit };
+        return DEFAULT_EXCHANGE_RATE;
       }
 
       return data;
