@@ -3,10 +3,13 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-route
 import { LoginPage } from './components/pages/LoginPage';
 import { SetupPage } from './components/pages/SetupPage';
 import { GamePage } from './components/pages/GamePage';
+import { ComingSoonPage } from './components/pages/ComingSoonPage';
+import { WhitepaperPage } from './components/pages/WhitepaperPage';
 import { useGameStore } from './store/useGameStore';
 import { useWalletStore } from './store/useWalletStore';
 import { useAuthStore } from './store/useAuthStore';
 import { onAuthStateChanged } from './services/authService';
+import { COMING_SOON_MODE } from './config/constants';
 
 // Protected Route wrapper - redirects to login if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -107,9 +110,27 @@ function AppContent() {
     );
   }
 
+  // If coming soon mode is enabled, show limited routes
+  if (COMING_SOON_MODE) {
+    return (
+      <div className="min-h-screen">
+        <Routes>
+          {/* Whitepaper - always accessible */}
+          <Route path="/whitepaper" element={<WhitepaperPage />} />
+
+          {/* All other routes show Coming Soon page */}
+          <Route path="*" element={<ComingSoonPage />} />
+        </Routes>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <Routes>
+        {/* Whitepaper - always accessible */}
+        <Route path="/whitepaper" element={<WhitepaperPage />} />
+
         {/* Login page */}
         <Route
           path="/login"
