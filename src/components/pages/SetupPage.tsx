@@ -41,14 +41,32 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
 
   // Check for existing user when wallet is connected
   useEffect(() => {
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
+
     const checkExistingUser = async () => {
       if (!isConnected || !address) return;
 
+      console.log('🔍 Checking for existing user with wallet:', address);
       setIsCheckingExisting(true);
+
+      // Set a timeout to prevent infinite loading (10 seconds)
+      timeoutId = setTimeout(() => {
+        if (isMounted) {
+          console.warn('⏰ User check timed out, showing setup form');
+          setIsCheckingExisting(false);
+        }
+      }, 10000);
+
       try {
         const existingUser = await getUserByWalletAddress(address);
+        console.log('🔍 Query result:', existingUser ? 'User found' : 'New user');
+
+        if (!isMounted) return;
+
         if (existingUser) {
           // User already exists, load their data
+          console.log('✅ Loading existing user data:', existingUser.oderId);
           const player: Player = {
             oderId: existingUser.oderId,
             walletAddress: existingUser.walletAddress,
@@ -74,17 +92,28 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
             initializeFarm(player.landSize);
           }
 
+          clearTimeout(timeoutId);
           onComplete();
           return;
         }
       } catch (error) {
-        console.error('Failed to check existing user:', error);
+        console.error('❌ Failed to check existing user:', error);
+        setError('無法連接伺服器，請重新整理頁面');
       } finally {
-        setIsCheckingExisting(false);
+        clearTimeout(timeoutId);
+        if (isMounted) {
+          console.log('🔍 Check complete, showing setup form');
+          setIsCheckingExisting(false);
+        }
       }
     };
 
     checkExistingUser();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
   }, [isConnected, address]);
 
   // Handle wallet connection
