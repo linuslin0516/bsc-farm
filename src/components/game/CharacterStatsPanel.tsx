@@ -1,18 +1,29 @@
 import { useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { getExpForLevel } from '../../config/constants';
-import { getTimeGreeting } from '../../utils/timeOfDay';
+import { getTimeOfDay } from '../../utils/timeOfDay';
+import { useLanguageStore } from '../../store/useLanguageStore';
+import { localizeText } from '../../utils/i18n';
 import { ActiveBonusesPanel } from './ActiveBonusesPanel';
 
 export const CharacterStatsPanel: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { player, farmCells, demoBalance } = useGameStore();
+  const { language } = useLanguageStore();
+  const l = (en: string, zh: string) => localizeText(language, en, zh);
 
   if (!player) return null;
 
   const currentLevelExp = getExpForLevel(player.level);
   const expProgress = (player.experience / currentLevelExp) * 100;
-  const greeting = getTimeGreeting();
+  const timeOfDay = getTimeOfDay();
+  const greeting = timeOfDay === 'dawn'
+    ? l('Good morning', '早安')
+    : timeOfDay === 'day'
+      ? l('Hello', '你好')
+      : timeOfDay === 'dusk'
+        ? l('Good evening', '傍晚好')
+        : l('Good night', '晚安');
 
   // Calculate farm stats
   const totalCells = farmCells.length;
@@ -26,7 +37,7 @@ export const CharacterStatsPanel: React.FC = () => {
         <button
           onClick={() => setIsCollapsed(false)}
           className="glass-panel p-3 rounded-xl hover:bg-white/20 transition-all"
-          title="展開面板"
+          title={l('Expand panel', '展開面板')}
         >
           <span className="text-xl">👤</span>
         </button>
@@ -60,7 +71,7 @@ export const CharacterStatsPanel: React.FC = () => {
                 <button
                   onClick={() => navigator.clipboard.writeText(player.oderId)}
                   className="text-gray-500 hover:text-binance-yellow transition-colors"
-                  title="複製 ID"
+                  title={l('Copy ID', '複製 ID')}
                 >
                   📋
                 </button>
@@ -70,7 +81,7 @@ export const CharacterStatsPanel: React.FC = () => {
             {/* Level */}
             <div className="bg-binance-gray/50 rounded-lg p-3">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-xs text-gray-400">等級</span>
+                <span className="text-xs text-gray-400">{l('Level', '等級')}</span>
                 <span className="text-sm font-bold text-binance-yellow">
                   Lv. {player.level}
                 </span>
@@ -90,7 +101,7 @@ export const CharacterStatsPanel: React.FC = () => {
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-binance-gray/50 rounded-lg p-2 text-center">
                 <p className="text-lg font-bold text-farm-green">{player.landSize}×{player.landSize}</p>
-                <p className="text-[10px] text-gray-400">農地</p>
+                <p className="text-[10px] text-gray-400">{l('Farmland', '農地')}</p>
               </div>
               <div className="bg-binance-gray/50 rounded-lg p-2 text-center">
                 <p className="text-lg font-bold text-binance-yellow">{demoBalance}</p>
@@ -101,11 +112,11 @@ export const CharacterStatsPanel: React.FC = () => {
             {/* Crop Stats */}
             <div className="space-y-2">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">種植中</span>
+                <span className="text-gray-400">{l('Planted', '種植中')}</span>
                 <span className="text-farm-green">{plantedCells} / {totalCells}</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">可收成</span>
+                <span className="text-gray-400">{l('Ready', '可收成')}</span>
                 <span className="text-binance-yellow">{matureCells}</span>
               </div>
             </div>
@@ -121,7 +132,7 @@ export const CharacterStatsPanel: React.FC = () => {
                   // Could add more actions here
                 }}
               >
-                查看成就 →
+                {l('View achievements →', '查看成就 →')}
               </button>
             </div>
           </div>

@@ -132,6 +132,7 @@ export interface ShopItem {
   name: string;
   nameCn: string;
   description: string;
+  descriptionCn?: string;
   price: number;
   type: 'seed' | 'tool' | 'land' | 'boost';
   icon: string;
@@ -231,7 +232,9 @@ export type DailyTaskType = 'plant' | 'harvest' | 'steal' | 'earn' | 'visit';
 export interface DailyTask {
   id: string;
   type: DailyTaskType;
+  name: string;
   nameCn: string;
+  description: string;
   descriptionCn: string;
   icon: string;
   requirement: number;

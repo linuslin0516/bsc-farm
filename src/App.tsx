@@ -8,8 +8,10 @@ import { WhitepaperPage } from './components/pages/WhitepaperPage';
 import { useGameStore } from './store/useGameStore';
 import { useWalletStore } from './store/useWalletStore';
 import { useAuthStore } from './store/useAuthStore';
+import { useLanguageStore } from './store/useLanguageStore';
 import { onAuthStateChanged } from './services/authService';
 import { COMING_SOON_MODE } from './config/constants';
+import { localizeText } from './utils/i18n';
 
 // Protected Route wrapper - redirects to login if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -56,6 +58,7 @@ const LoginRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 function AppContent() {
   const navigate = useNavigate();
   const { player, resetGame } = useGameStore();
+  const { language } = useLanguageStore();
   const { isConnected, disconnect } = useWalletStore();
   const { setFirebaseUser, setInitialized, isInitialized, signOut } = useAuthStore();
 
@@ -104,7 +107,7 @@ function AppContent() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl animate-bounce mb-4">🌱</div>
-          <p className="text-gray-400">載入中...</p>
+          <p className="text-gray-400">{localizeText(language, 'Loading...', '載入中...')}</p>
         </div>
       </div>
     );

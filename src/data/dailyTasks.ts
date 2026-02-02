@@ -6,7 +6,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'plant_3',
     type: 'plant',
+    name: 'Planting Beginner',
     nameCn: '種植新手',
+    description: 'Plant 3 crops',
     descriptionCn: '種植 3 株作物',
     icon: '🌱',
     requirement: 3,
@@ -16,7 +18,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'plant_5',
     type: 'plant',
+    name: 'Hardworking Farmer',
     nameCn: '勤勞農夫',
+    description: 'Plant 5 crops',
     descriptionCn: '種植 5 株作物',
     icon: '🌱',
     requirement: 5,
@@ -26,7 +30,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'plant_10',
     type: 'plant',
+    name: 'Planting Expert',
     nameCn: '種田達人',
+    description: 'Plant 10 crops',
     descriptionCn: '種植 10 株作物',
     icon: '🌿',
     requirement: 10,
@@ -38,7 +44,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'harvest_3',
     type: 'harvest',
+    name: 'Small Harvest',
     nameCn: '小有收穫',
+    description: 'Harvest 3 crops',
     descriptionCn: '收成 3 株作物',
     icon: '🧺',
     requirement: 3,
@@ -48,7 +56,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'harvest_5',
     type: 'harvest',
+    name: 'Good Harvest',
     nameCn: '豐收日',
+    description: 'Harvest 5 crops',
     descriptionCn: '收成 5 株作物',
     icon: '🧺',
     requirement: 5,
@@ -58,7 +68,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'harvest_10',
     type: 'harvest',
+    name: 'Bumper Harvest',
     nameCn: '滿載而歸',
+    description: 'Harvest 10 crops',
     descriptionCn: '收成 10 株作物',
     icon: '🎉',
     requirement: 10,
@@ -70,7 +82,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'steal_1',
     type: 'steal',
+    name: 'Sneaky',
     nameCn: '偷偷摸摸',
+    description: 'Steal 1 crop',
     descriptionCn: '偷取 1 株作物',
     icon: '🥷',
     requirement: 1,
@@ -80,7 +94,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'steal_3',
     type: 'steal',
+    name: 'Garden Thief',
     nameCn: '菜園小偷',
+    description: 'Steal 3 crops',
     descriptionCn: '偷取 3 株作物',
     icon: '🦝',
     requirement: 3,
@@ -92,7 +108,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'earn_50',
     type: 'earn',
+    name: 'Small Earner',
     nameCn: '賺錢小能手',
+    description: 'Earn 50 $FARM today',
     descriptionCn: '今日賺取 50 $FARM',
     icon: '💰',
     requirement: 50,
@@ -102,7 +120,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'earn_100',
     type: 'earn',
+    name: 'Wealth Growing',
     nameCn: '財源廣進',
+    description: 'Earn 100 $FARM today',
     descriptionCn: '今日賺取 100 $FARM',
     icon: '💰',
     requirement: 100,
@@ -112,7 +132,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'earn_200',
     type: 'earn',
+    name: 'Daily Fortune',
     nameCn: '日進斗金',
+    description: 'Earn 200 $FARM today',
     descriptionCn: '今日賺取 200 $FARM',
     icon: '💎',
     requirement: 200,
@@ -124,7 +146,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'visit_1',
     type: 'visit',
+    name: 'Neighbor Visit',
     nameCn: '串門子',
+    description: "Visit 1 friend's farm",
     descriptionCn: '拜訪 1 位好友農場',
     icon: '👋',
     requirement: 1,
@@ -134,7 +158,9 @@ export const DAILY_TASKS_POOL: DailyTask[] = [
   {
     id: 'visit_3',
     type: 'visit',
+    name: 'Social Butterfly',
     nameCn: '社交達人',
+    description: "Visit 3 friends' farms",
     descriptionCn: '拜訪 3 位好友農場',
     icon: '🤝',
     requirement: 3,

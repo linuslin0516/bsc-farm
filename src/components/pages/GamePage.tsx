@@ -27,6 +27,7 @@ import { incrementStats } from '../../services/leaderboardService';
 import { getCropPrice } from '../../services/marketService';
 import { LANGUAGE_NAMES, Language } from '../../store/useLanguageStore';
 import { useT } from '../../translations';
+import { localizeText, localizeZh } from '../../utils/i18n';
 
 interface GamePageProps {
   onLogout: () => void;
@@ -123,7 +124,9 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Translation hook
-  const { t } = useT();
+  const { t, language } = useT();
+  const l = (en: string, zh: string) => localizeText(language, en, zh);
+  const zh = (value: string) => localizeZh(value, language);
 
   // Initialize Web3 listeners
   const { initializeListeners } = useWeb3Store();
@@ -174,7 +177,7 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
   // Plant all empty cells with selected crop
   const handlePlantAll = useCallback(async () => {
     if (!selectedCrop) {
-      handleNotify('info', '請先選擇種子！');
+      handleNotify('info', l('Please select seeds first!', '請先選擇種子！'));
       return;
     }
 
@@ -183,7 +186,7 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
 
     const emptyCells = farmCells.filter((cell) => !cell.plantedCrop);
     if (emptyCells.length === 0) {
-      handleNotify('info', '沒有空地了！');
+      handleNotify('info', l('No empty land available!', '沒有空地了！'));
       return;
     }
 
@@ -191,12 +194,12 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
     if (demoBalance < totalCost) {
       const maxPlantable = Math.floor(demoBalance / cropDef.cost);
       if (maxPlantable === 0) {
-        handleNotify('error', `$FARM 不足！需要 ${cropDef.cost}`);
+        handleNotify('error', l(`Not enough $FARM! Need ${cropDef.cost}`, `$FARM 不足！需要 ${cropDef.cost}`));
         return;
       }
       handleNotify(
         'warning',
-        `$FARM 不足種滿！僅種植 ${maxPlantable} 塊地（共需 ${totalCost}，目前有 ${demoBalance.toFixed(0)}）`
+        l(`Not enough $FARM to plant all! Planting ${maxPlantable} plots (need ${totalCost}, have ${demoBalance.toFixed(0)})`, `$FARM 不足種滿！僅種植 ${maxPlantable} 塊地（共需 ${totalCost}，目前有 ${demoBalance.toFixed(0)}）`)
       );
       // Plant what we can afford
       let planted = 0;
@@ -243,7 +246,8 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
     }
 
     await syncFarmToFirebase();
-    handleNotify('success', `成功種植 ${planted} 塊 ${cropDef.nameCn}！`);
+    const cropName = language === 'en' ? cropDef.name : zh(cropDef.nameCn);
+    handleNotify('success', l(`Planted ${planted} plots of ${cropName}!`, `成功種植 ${planted} 塊 ${cropName}！`));
   }, [
     selectedCrop,
     farmCells,
@@ -278,7 +282,7 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
     );
 
     if (matureCells.length === 0) {
-      handleNotify('info', '沒有成熟的作物可以收成！');
+      handleNotify('info', l('No mature crops to harvest!', '沒有成熟的作物可以收成！'));
       return;
     }
 
@@ -344,7 +348,7 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
       }
 
       await syncFarmToFirebase();
-      handleNotify('success', `收成了 ${harvested} 塊作物！獲得 ${totalEarnings} $FARM 和 ${totalXP} XP！`);
+      handleNotify('success', l(`Harvested ${harvested} plots! Earned ${totalEarnings} $FARM and ${totalXP} XP!`, `收成了 ${harvested} 塊作物！獲得 ${totalEarnings} $FARM 和 ${totalXP} XP！`));
     }
   }, [
     farmCells,

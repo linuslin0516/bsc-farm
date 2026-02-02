@@ -1,4 +1,4 @@
-import { ShopItem } from '../types';
+﻿import { ShopItem } from '../types';
 
 export const SHOP_ITEMS: ShopItem[] = [
   // Land upgrades

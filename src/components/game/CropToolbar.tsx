@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
+import { useLanguageStore } from '../../store/useLanguageStore';
 import { getUnlockedCrops, getCropById } from '../../data/crops';
 import { CropShopIcon } from './CropIcon';
-import { RARITY_COLORS, RARITY_NAMES, CropRarity } from '../../types';
+import { RARITY_COLORS, CropRarity } from '../../types';
+import { getRarityLabel, localizeText, localizeZh } from '../../utils/i18n';
 import { getMarketData, CropMarketPrice } from '../../services/marketService';
 
 type SortMode = 'unlock' | 'price' | 'rarity' | 'profit';
@@ -17,6 +19,9 @@ const rarityOrder: Record<CropRarity, number> = {
 
 export const CropToolbar: React.FC = () => {
   const { player, selectedCrop, setSelectedCrop, demoBalance } = useGameStore();
+  const { language } = useLanguageStore();
+  const l = (en: string, zh: string) => localizeText(language, en, zh);
+  const zh = (value: string) => localizeZh(value, language);
   const [sortMode, setSortMode] = useState<SortMode>('unlock');
   const [marketPrices, setMarketPrices] = useState<Record<string, CropMarketPrice>>({});
 
@@ -65,7 +70,7 @@ export const CropToolbar: React.FC = () => {
       <div className="flex items-center justify-between mb-2 px-1">
         <div className="flex items-center gap-2">
           <span className="text-lg">🌱</span>
-          <h3 className="text-sm font-bold text-binance-yellow">選擇種子</h3>
+          <h3 className="text-sm font-bold text-binance-yellow">{l('Select Seeds', '選擇種子')}</h3>
         </div>
         <div className="flex items-center gap-2">
           {/* Sort dropdown */}
@@ -74,17 +79,17 @@ export const CropToolbar: React.FC = () => {
             onChange={(e) => setSortMode(e.target.value as SortMode)}
             className="text-xs bg-binance-gray border border-binance-yellow/30 rounded px-2 py-1 text-gray-300 focus:outline-none focus:border-binance-yellow"
           >
-            <option value="unlock">解鎖順序</option>
-            <option value="price">價格</option>
-            <option value="rarity">稀有度</option>
-            <option value="profit">利潤</option>
+            <option value="unlock">{l('Unlock', '解鎖順序')}</option>
+            <option value="price">{l('Price', '價格')}</option>
+            <option value="rarity">{l('Rarity', '稀有度')}</option>
+            <option value="profit">{l('Profit', '利潤')}</option>
           </select>
           {selectedCrop && (
             <button
               onClick={() => setSelectedCrop(null)}
               className="text-xs text-gray-400 hover:text-white transition-colors"
             >
-              取消選擇
+              {l('Clear', '取消選擇')}
             </button>
           )}
         </div>
@@ -102,6 +107,8 @@ export const CropToolbar: React.FC = () => {
           const priceChangePercent = Math.round((priceChange / crop.sellPrice) * 100);
 
           const rarityColors = RARITY_COLORS[crop.rarity];
+          const cropName = language === 'en' ? crop.name : zh(crop.nameCn);
+          const rarityLabel = getRarityLabel(crop.rarity, language);
           const trendIcon = trend === 'up' ? '📈' : trend === 'down' ? '📉' : '';
           const trendColor = trend === 'up' ? 'text-green-400' : trend === 'down' ? 'text-red-400' : 'text-gray-400';
 
@@ -118,7 +125,7 @@ export const CropToolbar: React.FC = () => {
                 }
                 ${!canAfford ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}
               `}
-              title={`${crop.nameCn} (${RARITY_NAMES[crop.rarity]}) - 成本: ${crop.cost}, 市場價: ${currentPrice} (${priceChange > 0 ? '+' : ''}${priceChangePercent}%)`}
+              title={`${cropName} (${rarityLabel}) - ${l('Cost', '成本')}: ${crop.cost}, ${l('Market', '市場價')}: ${currentPrice} (${priceChange > 0 ? '+' : ''}${priceChangePercent}%)`}
             >
               {/* Rarity indicator dot */}
               <div className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
@@ -140,7 +147,7 @@ export const CropToolbar: React.FC = () => {
                 <CropShopIcon cropId={crop.id} size="md" />
               </div>
               <span className={`text-xs mt-1 font-medium ${isSelected ? rarityColors.text : 'text-gray-300'}`}>
-                {crop.nameCn}
+                {cropName}
               </span>
               <div className="flex flex-col items-center gap-0.5 mt-0.5">
                 <span className="text-[10px] text-binance-yellow">💰{crop.cost}</span>
@@ -160,6 +167,8 @@ export const CropToolbar: React.FC = () => {
             const crop = getCropById(selectedCrop);
             if (!crop) return null;
             const rarityColors = RARITY_COLORS[crop.rarity];
+          const cropName = language === 'en' ? crop.name : zh(crop.nameCn);
+          const rarityLabel = getRarityLabel(crop.rarity, language);
             const priceData = marketPrices[selectedCrop];
             const currentPrice = priceData?.currentPrice || crop.sellPrice;
             const trend = priceData?.trend || 'stable';
@@ -172,20 +181,20 @@ export const CropToolbar: React.FC = () => {
               <div className="flex flex-col gap-1 text-xs px-1">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300 flex items-center gap-2">
-                    已選：<strong className={rarityColors.text}>{crop.nameCn}</strong>
+                    {l('Selected:', '已選：')}<strong className={rarityColors.text}>{cropName}</strong>
                     <span className={`px-1.5 py-0.5 rounded text-[10px] ${rarityColors.bg} ${rarityColors.text}`}>
-                      {RARITY_NAMES[crop.rarity]}
+                      {rarityLabel}
                     </span>
                   </span>
                   <span>⏱️ {crop.growthTime < 60 ? `${crop.growthTime}秒` : `${Math.floor(crop.growthTime / 60)}分鐘`}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">
-                    基礎價: <span className="text-gray-300">{crop.sellPrice}</span>
+                    {l('Base', '基礎價')}: <span className="text-gray-300">{crop.sellPrice}</span>
                   </span>
                   <span className={`flex items-center gap-1 ${trendColor}`}>
                     <span>{trendIcon}</span>
-                    <span>市場價: <strong>{currentPrice}</strong></span>
+                    <span>{l('Market', '市場價')}: <strong>{currentPrice}</strong></span>
                     <span className="text-[10px]">({priceChange > 0 ? '+' : ''}{priceChangePercent}%)</span>
                   </span>
                 </div>
