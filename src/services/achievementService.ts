@@ -2,7 +2,6 @@ import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
@@ -155,12 +154,12 @@ export const updateAchievementProgress = async (
     }
   }
 
-  // Save to Firebase
+  // Save to Firebase (use setDoc with merge to handle both create and update)
   const docRef = doc(db, ACHIEVEMENTS_COLLECTION, oderId);
-  await updateDoc(docRef, {
+  await setDoc(docRef, {
     ...playerData,
     updatedAt: serverTimestamp(),
-  });
+  }, { merge: true });
 
   return { newlyUnlocked, playerData };
 };

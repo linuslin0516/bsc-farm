@@ -1,28 +1,72 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Players can read/write their own data
-    match /players/{oderId} {
-      allow read, write: if true; // For demo purposes - add auth later
+    // User data
+    match /users/{oderId} {
+      allow read, write: if true;
     }
 
-    // Exchange rates are public read
+    // Legacy players collection
+    match /players/{oderId} {
+      allow read, write: if true;
+    }
+
+    // Daily tasks
+    match /dailyTasks/{oderId} {
+      allow read, write: if true;
+    }
+
+    // Achievements
+    match /achievements/{oderId} {
+      allow read, write: if true;
+    }
+
+    // Player stats (leaderboard)
+    match /playerStats/{oderId} {
+      allow read, write: if true;
+    }
+
+    // Leaderboard cache
+    match /leaderboardCache/{document} {
+      allow read, write: if true;
+    }
+
+    // Friends
+    match /friends/{oderId} {
+      allow read, write: if true;
+    }
+
+    // Steal records
+    match /steal_records/{document} {
+      allow read, write: if true;
+    }
+
+    // Market data
+    match /market/{document} {
+      allow read, write: if true;
+    }
+
+    // Exchange rates
     match /exchange/{document} {
       allow read: if true;
-      allow write: if false; // Only admin can modify
+      allow write: if false;
     }
 
     // User exchange data
     match /user_exchange/{userId} {
-      allow read: if true;
-      allow write: if true; // For demo purposes
+      allow read, write: if true;
     }
 
-    // Withdrawal requests - users can create, only functions can update
+    // Airdrop history (admin)
+    match /airdropHistory/{document} {
+      allow read, write: if true;
+    }
+
+    // Withdrawal requests
     match /withdrawal_requests/{requestId} {
       allow read: if true;
       allow create: if true;
-      allow update: if false; // Only Cloud Functions can update
+      allow update: if false;
     }
 
     // Exchange transactions
@@ -30,12 +74,6 @@ service cloud.firestore {
       allow read: if true;
       allow create: if true;
       allow update: if false;
-    }
-
-    // Market data
-    match /market/{document} {
-      allow read: if true;
-      allow write: if true;
     }
   }
 }
