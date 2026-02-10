@@ -285,12 +285,6 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
         </div>
       </FarmCamera>
 
-      {/* Visiting indicator */}
-      {isVisiting && (
-        <div className="absolute top-20 left-4 glass-panel text-white px-4 py-2 rounded-lg font-bold z-20 border border-red-500/50">
-          <span className="text-red-400">🥷</span> 正在訪問好友農場 - 點擊成熟的作物偷菜！
-        </div>
-      )}
     </div>
   );
 };

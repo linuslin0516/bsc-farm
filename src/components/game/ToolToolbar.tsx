@@ -44,7 +44,7 @@ export const ToolToolbar: React.FC<ToolToolbarProps> = ({ onNotify, onPlantAll, 
   ];
 
   return (
-    <div className="glass-panel rounded-2xl p-3 pointer-events-auto max-w-[90vw] sm:max-w-xl">
+    <div className="hud-panel rounded-2xl p-3 pointer-events-auto max-w-[90vw] sm:max-w-xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-2 px-1">
         <div className="flex items-center gap-2">

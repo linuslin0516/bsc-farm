@@ -57,23 +57,23 @@ export const IsometricCell: React.FC<IsometricCellProps> = ({
     [onClick]
   );
 
-  // Determine cell state for styling
+  // Determine cell border styling
   const getCellStyle = () => {
     if (isVisiting && canSteal && isMature && !isStolen) {
-      return 'border-red-500 bg-red-500/20';
+      return 'border-red-500/60';
     }
     if (isMature && !isVisiting) {
-      return 'border-space-cyan bg-space-cyan/20';
+      return 'border-space-bio-cyan/40';
     }
     if (plantedCrop) {
-      return 'border-green-600 bg-green-900/30';
+      return 'border-space-bio-purple/20';
     }
     if (canPlant && !isVisiting) {
       return isHovered
-        ? 'border-green-400 bg-green-500/30'
-        : 'border-space-gray-light';
+        ? 'border-space-bio-cyan/30'
+        : 'border-white/5';
     }
-    return 'border-space-gray-light';
+    return 'border-white/5';
   };
 
   // Get hover effect for diamond
@@ -83,12 +83,34 @@ export const IsometricCell: React.FC<IsometricCellProps> = ({
       return 'shadow-[0_0_20px_rgba(239,68,68,0.6)]';
     }
     if (isMature && !isVisiting) {
-      return 'shadow-[0_0_20px_rgba(34,211,238,0.6)]';
+      return 'shadow-[0_0_20px_rgba(0,245,212,0.5)]';
     }
     if (canPlant && !isVisiting) {
-      return 'shadow-[0_0_20px_rgba(34,197,94,0.5)]';
+      return 'shadow-[0_0_15px_rgba(0,245,212,0.3)]';
     }
     return '';
+  };
+
+  // Get rock background gradient based on cell state
+  const getRockBackground = () => {
+    if (isVisiting && canSteal && isMature && !isStolen) {
+      // Stealable - red-tinted rock
+      return 'linear-gradient(135deg, #3a1a1a 0%, #4d2a2a 50%, #3a1a1a 100%)';
+    }
+    if (isMature && !isVisiting) {
+      // Mature - energy glow rock
+      return 'linear-gradient(135deg, #1a2a3a 0%, #2a3d4d 50%, #1a2a3a 100%)';
+    }
+    if (plantedCrop) {
+      // Planted - slightly lit rock
+      return 'linear-gradient(135deg, #2a2a3a 0%, #3a3a4d 50%, #2a2a3a 100%)';
+    }
+    if (isHovered && canPlant && !isVisiting) {
+      // Hover on empty plantable
+      return 'linear-gradient(135deg, #2a3a3a 0%, #3d4d4d 50%, #2a3a3a 100%)';
+    }
+    // Empty - dark asteroid rock
+    return 'linear-gradient(135deg, #2a2a3a 0%, #3d3d4d 50%, #2a2a3a 100%)';
   };
 
   return (
@@ -123,7 +145,7 @@ export const IsometricCell: React.FC<IsometricCellProps> = ({
             absolute border-2 transition-all duration-200
             ${getCellStyle()}
             ${getHoverEffect()}
-            ${isSelected ? 'ring-2 ring-space-cyan ring-offset-2 ring-offset-space-dark' : ''}
+            ${isSelected ? 'ring-2 ring-space-bio-cyan ring-offset-2 ring-offset-space-deep' : ''}
           `}
           style={{
             width: `${CELL_WIDTH}px`,
@@ -131,21 +153,34 @@ export const IsometricCell: React.FC<IsometricCellProps> = ({
             top: `${CELL_HEIGHT}px`,
             left: 0,
             clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-            background: plantedCrop
-              ? 'linear-gradient(135deg, #2D1B4E 0%, #4C3575 50%, #2D1B4E 100%)'
-              : isHovered && canPlant
-              ? 'linear-gradient(135deg, #1a3a4a 0%, #2a5a6a 50%, #1a3a4a 100%)'
-              : 'linear-gradient(135deg, #1E293B 0%, #334155 50%, #1E293B 100%)',
+            background: getRockBackground(),
           }}
         >
-          {/* Soil texture */}
+          {/* Rock surface texture - highlights and shadows */}
           <div
-            className="absolute inset-0 opacity-30"
+            className="absolute inset-0 opacity-40"
             style={{
-              backgroundImage: `radial-gradient(circle, #000 1px, transparent 1px)`,
-              backgroundSize: '8px 8px',
+              backgroundImage: `
+                radial-gradient(ellipse 30% 20% at 30% 35%, rgba(255,255,255,0.08) 0%, transparent 100%),
+                radial-gradient(ellipse 20% 15% at 70% 60%, rgba(255,255,255,0.05) 0%, transparent 100%),
+                radial-gradient(ellipse 40% 30% at 50% 80%, rgba(0,0,0,0.15) 0%, transparent 100%)
+              `,
             }}
           />
+
+          {/* Bioluminescent cracks - only for planted cells */}
+          {plantedCrop && (
+            <div
+              className={`absolute inset-0 ${isMature && !isVisiting ? 'animate-[crack-pulse_2s_ease-in-out_infinite]' : 'opacity-30'}`}
+              style={{
+                backgroundImage: `
+                  linear-gradient(${45}deg, transparent 40%, ${isMature ? '#00f5d4' : '#9b5de5'}40 45%, transparent 50%),
+                  linear-gradient(${135}deg, transparent 35%, ${isMature ? '#00f5d4' : '#9b5de5'}30 40%, transparent 45%),
+                  linear-gradient(${90}deg, transparent 45%, ${isMature ? '#00f5d4' : '#9b5de5'}20 50%, transparent 55%)
+                `,
+              }}
+            />
+          )}
         </div>
 
         {/* Crop - positioned to sit on the diamond */}
@@ -179,7 +214,7 @@ export const IsometricCell: React.FC<IsometricCellProps> = ({
         {/* Harvest indicator */}
         {isMature && !isVisiting && (
           <div
-            className="absolute left-1/2 -translate-x-1/2 text-xs text-space-cyan font-bold animate-bounce bg-black/60 px-2 py-1 rounded-full"
+            className="absolute left-1/2 -translate-x-1/2 text-xs text-space-bio-cyan font-bold animate-bounce bg-black/60 px-2 py-1 rounded-full border border-space-bio-cyan/30"
             style={{ top: `${CELL_HEIGHT - 5}px` }}
           >
             收成!
@@ -206,8 +241,8 @@ export const IsometricCell: React.FC<IsometricCellProps> = ({
               transition-all duration-200
               ${
                 isHovered
-                  ? 'text-farm-green scale-125 drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]'
-                  : 'text-white/60'
+                  ? 'text-space-bio-cyan scale-125 drop-shadow-[0_0_8px_rgba(0,245,212,0.8)]'
+                  : 'text-white/40'
               }
             `}
             style={{

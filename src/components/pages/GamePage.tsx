@@ -1,13 +1,11 @@
 import { useState, useCallback } from 'react';
 import { AnimatedBackground } from '../game/AnimatedBackground';
 import { HUD } from '../game/HUD';
-import { CharacterStatsPanel } from '../game/CharacterStatsPanel';
 import { IsometricFarm } from '../game/IsometricFarm';
 import { CropToolbar } from '../game/CropToolbar';
 import { ToolToolbar } from '../game/ToolToolbar';
 import { Shop } from '../game/Shop';
 import { FriendPanel } from '../social/FriendPanel';
-import { FriendFarmPage } from './FriendFarmPage';
 import { Notification } from '../ui/Notification';
 import { AchievementPanel } from '../game/AchievementPanel';
 import { DailyTasksPanel } from '../game/DailyTasksPanel';
@@ -16,6 +14,7 @@ import { CropCodex } from '../game/CropCodex';
 import { UnlockAnimation } from '../ui/UnlockAnimation';
 import { UpgradeShopPanel } from '../game/UpgradeShopPanel';
 import { useGameStore } from '../../store/useGameStore';
+import { useFriendFarm } from '../../hooks/useFriendFarm';
 import { Notification as NotificationType, CropRarity } from '../../types';
 import { getCropById } from '../../data/crops';
 import { updateTaskProgress } from '../../services/dailyTaskService';
@@ -53,12 +52,11 @@ const SettingsMenu: React.FC<{ onClose: () => void; onLogout: () => void }> = ({
 
   const languages: Language[] = ['zh-CN', 'zh-TW', 'en'];
 
-  // Localize whitepaper text based on language
   const whitepaperText = language === 'en' ? 'Whitepaper' : '白皮書';
 
   return (
     <div className="fixed bottom-20 left-4 z-40 pointer-events-auto">
-      <div className="glass-panel rounded-xl p-4 w-56">
+      <div className="hud-panel rounded-xl p-4 w-56">
         <h3 className="text-white font-bold mb-3">{t.settings.title}</h3>
 
         {/* Language Selector */}
@@ -85,7 +83,7 @@ const SettingsMenu: React.FC<{ onClose: () => void; onLogout: () => void }> = ({
                   }}
                   className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${
                     language === lang
-                      ? 'bg-space-cyan/20 text-space-cyan'
+                      ? 'bg-space-bio-cyan/20 text-space-bio-cyan'
                       : 'hover:bg-white/10 text-gray-300'
                   }`}
                 >
@@ -170,6 +168,20 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
     getUpgradeBonuses,
   } = useGameStore();
 
+  // Friend farm hook
+  const {
+    friendFarm,
+    stolenPositions,
+    isLoading: isFriendFarmLoading,
+    friendLevel,
+    handleSteal,
+    stolenCount,
+    stealableCount,
+  } = useFriendFarm(
+    visitingState.isVisiting ? visitingState.friendId : null,
+    player?.oderId || ''
+  );
+
   const handleNotify = useCallback(
     (type: NotificationType['type'], message: string, duration?: number) => {
       setNotification({ type, message, duration });
@@ -204,7 +216,6 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
         'warning',
         l(`Not enough GOLD to plant all! Planting ${maxPlantable} plots (need ${totalCost}, have ${demoBalance.toFixed(0)})`, `GOLD 不足種滿！僅種植 ${maxPlantable} 塊地（共需 ${totalCost}，目前有 ${demoBalance.toFixed(0)}）`)
       );
-      // Plant what we can afford
       let planted = 0;
       for (let i = 0; i < maxPlantable; i++) {
         if (subtractDemoBalance(cropDef.cost)) {
@@ -213,7 +224,6 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
         }
       }
 
-      // Update achievements, daily tasks, and leaderboard stats
       if (player && planted > 0) {
         try {
           await updateAchievementProgress(player.oderId, 'plant', planted);
@@ -228,7 +238,6 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
       return;
     }
 
-    // Plant all
     let planted = 0;
     for (const cell of emptyCells) {
       if (subtractDemoBalance(cropDef.cost)) {
@@ -237,7 +246,6 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
       }
     }
 
-    // Update achievements, daily tasks, and leaderboard stats
     if (player && planted > 0) {
       try {
         await updateAchievementProgress(player.oderId, 'plant', planted);
@@ -278,6 +286,19 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
     });
   }, []);
 
+  // Handle steal with notification
+  const handleStealWithNotify = useCallback(
+    async (position: { x: number; y: number }) => {
+      const result = await handleSteal(position);
+      if (result.success) {
+        handleNotify('success', result.message);
+      } else {
+        handleNotify('error', result.message);
+      }
+    },
+    [handleSteal, handleNotify]
+  );
+
   // Harvest all mature crops
   const handleHarvestAll = useCallback(async () => {
     const matureCells = farmCells.filter(
@@ -289,7 +310,6 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
       return;
     }
 
-    // Get upgrade bonuses
     const bonuses = getUpgradeBonuses();
 
     let totalEarnings = 0;
@@ -301,25 +321,18 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
       if (result) {
         const cropDef = getCropById(result.cropId);
         if (cropDef) {
-          // Get current market price for this crop
           let currentPrice = await getCropPrice(result.cropId);
-
-          // Apply sell price bonus
           currentPrice = Math.floor(currentPrice * bonuses.sellPriceMultiplier);
 
-          // Apply rare bonus for rare+ crops
           const isRareOrAbove = ['rare', 'epic', 'legendary'].includes(cropDef.rarity);
           if (isRareOrAbove) {
             currentPrice = Math.floor(currentPrice * bonuses.rareBonusMultiplier);
           }
 
           totalEarnings += currentPrice;
-
-          // Apply exp bonus
           totalXP += Math.floor(cropDef.experience * bonuses.expMultiplier);
           harvested++;
 
-          // Mark crop as discovered
           if (player) {
             try {
               await updateAchievementProgress(player.oderId, 'discover_crop', 1, {
@@ -334,11 +347,9 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
     }
 
     if (harvested > 0 && player) {
-      // Apply rewards
       addDemoBalance(totalEarnings);
       addExperience(totalXP);
 
-      // Update achievements, tasks, and stats
       try {
         await updateAchievementProgress(player.oderId, 'harvest', harvested);
         await updateAchievementProgress(player.oderId, 'earn', totalEarnings);
@@ -364,7 +375,7 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
     getUpgradeBonuses,
   ]);
 
-  // Function to show unlock animation (exported for use by other components)
+  // Function to show unlock animation
   const showUnlockAnimation = useCallback((
     type: 'crop' | 'achievement',
     title: string,
@@ -384,22 +395,29 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
     });
   }, []);
 
-  // Expose showUnlockAnimation to window for global access (e.g., from services)
+  // Expose showUnlockAnimation to window for global access
   if (typeof window !== 'undefined') {
     (window as unknown as { showUnlockAnimation: typeof showUnlockAnimation }).showUnlockAnimation = showUnlockAnimation;
   }
 
   if (!player) return null;
 
-  // Show friend's farm if visiting
-  if (visitingState.isVisiting) {
+  const isVisiting = visitingState.isVisiting;
+
+  // Loading state for friend farm
+  if (isVisiting && isFriendFarmLoading) {
     return (
-      <FriendFarmPage
-        friendId={visitingState.friendId}
-        friendName={visitingState.friendName}
-        myUserId={player.oderId}
-        onBack={handleBackFromVisit}
-      />
+      <div className="h-screen w-screen overflow-hidden relative">
+        <AnimatedBackground />
+        <div className="relative z-10 flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-space-bio-cyan mx-auto mb-4" />
+            <p className="text-gray-400">
+              {l(`Loading ${visitingState.friendName}'s farm...`, `正在載入 ${visitingState.friendName} 的農場...`)}
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -410,11 +428,18 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
 
       {/* Main Game Area - Full Screen */}
       <div className="relative z-10 h-full w-full">
-        {/* Isometric Farm - Full Screen */}
-        <IsometricFarm onNotify={handleNotify} />
+        {/* Isometric Farm - renders own farm or friend's farm */}
+        <IsometricFarm
+          onNotify={handleNotify}
+          isVisiting={isVisiting}
+          visitingFarm={isVisiting ? friendFarm : undefined}
+          visitingUserId={isVisiting ? visitingState.friendId : undefined}
+          stolenPositions={isVisiting ? stolenPositions : undefined}
+          onSteal={isVisiting ? handleStealWithNotify : undefined}
+        />
       </div>
 
-      {/* Floating HUD */}
+      {/* HUD - switches between normal and visiting mode */}
       <HUD
         onOpenShop={() => setIsShopOpen(true)}
         onOpenFriends={() => setIsFriendPanelOpen(true)}
@@ -423,55 +448,63 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
         onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
         onOpenCodex={() => setIsCodexOpen(true)}
         onOpenUpgrades={() => setIsUpgradeShopOpen(true)}
+        isVisiting={isVisiting}
+        visitingFriendName={visitingState.friendName}
+        visitingFriendLevel={friendLevel}
+        onReturnFromVisit={handleBackFromVisit}
+        stolenCount={stolenCount}
+        stealableCount={stealableCount}
       />
 
-      {/* Character Stats Panel */}
-      <CharacterStatsPanel />
+      {/* Only show toolbars, settings, help when NOT visiting */}
+      {!isVisiting && (
+        <>
+          {/* Floating Crop Toolbar - Bottom */}
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40">
+            <CropToolbar />
+          </div>
 
-      {/* Floating Crop Toolbar - Bottom */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40">
-        <CropToolbar />
-      </div>
+          {/* Floating Tool Toolbar - Bottom Right */}
+          <div className="fixed bottom-4 right-4 z-40">
+            <ToolToolbar onNotify={handleNotify} onPlantAll={handlePlantAll} onHarvestAll={handleHarvestAll} />
+          </div>
 
-      {/* Floating Tool Toolbar - Bottom Right */}
-      <div className="fixed bottom-4 right-4 z-40">
-        <ToolToolbar onNotify={handleNotify} onPlantAll={handlePlantAll} onHarvestAll={handleHarvestAll} />
-      </div>
+          {/* Help & Settings - Bottom Left */}
+          <div className="fixed bottom-4 left-4 z-30 pointer-events-auto flex gap-2">
+            <button
+              className="hud-panel p-3 rounded-full hover:bg-white/20 transition-all group"
+              title={t.farm.dragHint}
+              onClick={() => handleNotify('info', t.farm.dragHint)}
+            >
+              <span className="text-xl">❓</span>
+            </button>
+            <button
+              className="hud-panel p-3 rounded-full hover:bg-white/20 transition-all group"
+              title={t.settings.title}
+              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+            >
+              <span className="text-xl">⚙️</span>
+            </button>
+          </div>
 
-      {/* Help & Settings - Bottom Left */}
-      <div className="fixed bottom-4 left-4 z-30 pointer-events-auto flex gap-2">
-        <button
-          className="glass-panel p-3 rounded-full hover:bg-white/20 transition-all group"
-          title={t.farm.dragHint}
-          onClick={() => handleNotify('info', t.farm.dragHint)}
-        >
-          <span className="text-xl">❓</span>
-        </button>
-        <button
-          className="glass-panel p-3 rounded-full hover:bg-white/20 transition-all group"
-          title={t.settings.title}
-          onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-        >
-          <span className="text-xl">⚙️</span>
-        </button>
-      </div>
-
-      {/* Settings Menu */}
-      {isSettingsOpen && (
-        <SettingsMenu
-          onClose={() => setIsSettingsOpen(false)}
-          onLogout={() => {
-            setIsSettingsOpen(false);
-            setShowLogoutConfirm(true);
-          }}
-        />
+          {/* Settings Menu */}
+          {isSettingsOpen && (
+            <SettingsMenu
+              onClose={() => setIsSettingsOpen(false)}
+              onLogout={() => {
+                setIsSettingsOpen(false);
+                setShowLogoutConfirm(true);
+              }}
+            />
+          )}
+        </>
       )}
 
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/70" onClick={() => setShowLogoutConfirm(false)} />
-          <div className="relative glass-panel rounded-xl p-6 w-80 text-center">
+          <div className="relative hud-panel rounded-xl p-6 w-80 text-center">
             <h3 className="text-xl font-bold text-white mb-2">{t.settings.logoutConfirm}</h3>
             <p className="text-gray-400 text-sm mb-6">
               {t.settings.logoutDesc}
