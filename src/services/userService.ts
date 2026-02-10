@@ -21,7 +21,6 @@ export const generateUserId = async (): Promise<string> => {
   let exists = true;
 
   while (exists) {
-    // Generate random 6-digit number
     oderId = Math.floor(100000 + Math.random() * 900000).toString();
     const userDoc = await getDoc(doc(db, USERS_COLLECTION, oderId));
     exists = userDoc.exists();
@@ -36,14 +35,14 @@ export const createUser = async (
   name: string,
   landSize: number,
   initialBalance: number,
-  walletAddress?: string,
+  bnbAddress?: string,
   twitterUid?: string,
   twitterHandle?: string,
   avatarUrl?: string
 ): Promise<FirebaseUser> => {
   const userData: FirebaseUser = {
     oderId,
-    walletAddress: walletAddress || '',
+    bnbAddress: bnbAddress || '',
     twitterUid,
     twitterHandle,
     avatarUrl,
@@ -57,7 +56,6 @@ export const createUser = async (
     lastOnline: Date.now(),
   };
 
-  // Build Firestore data object, excluding undefined values
   const firestoreData: Record<string, unknown> = {
     oderId,
     name,
@@ -70,9 +68,8 @@ export const createUser = async (
     lastOnline: serverTimestamp(),
   };
 
-  // Only add optional fields if they exist
-  if (walletAddress) {
-    firestoreData.walletAddress = walletAddress;
+  if (bnbAddress) {
+    firestoreData.bnbAddress = bnbAddress;
   }
   if (twitterUid) {
     firestoreData.twitterUid = twitterUid;
@@ -106,27 +103,14 @@ export const getUserById = async (oderId: string): Promise<FirebaseUser | null> 
   } as FirebaseUser;
 };
 
-// Get user by wallet address
-export const getUserByWallet = async (walletAddress: string): Promise<FirebaseUser | null> => {
+// Get user by Twitter UID
+export const getUserByTwitterUid = async (twitterUid: string): Promise<FirebaseUser | null> => {
   const usersRef = collection(db, USERS_COLLECTION);
-  const q = query(usersRef, where('walletAddress', '==', walletAddress.toLowerCase()));
+  const q = query(usersRef, where('twitterUid', '==', twitterUid));
   const snapshot = await getDocs(q);
 
   if (snapshot.empty) {
-    // Try with original case
-    const q2 = query(usersRef, where('walletAddress', '==', walletAddress));
-    const snapshot2 = await getDocs(q2);
-    if (snapshot2.empty) {
-      return null;
-    }
-    const docSnap = snapshot2.docs[0];
-    const data = docSnap.data();
-    return {
-      ...data,
-      oderId: docSnap.id,
-      createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : data.createdAt,
-      lastOnline: data.lastOnline instanceof Timestamp ? data.lastOnline.toMillis() : data.lastOnline,
-    } as FirebaseUser;
+    return null;
   }
 
   const docSnap = snapshot.docs[0];
@@ -139,8 +123,11 @@ export const getUserByWallet = async (walletAddress: string): Promise<FirebaseUs
   } as FirebaseUser;
 };
 
-// Alias for getUserByWallet
-export const getUserByWalletAddress = getUserByWallet;
+// Update BNB address
+export const updateBnbAddress = async (oderId: string, bnbAddress: string): Promise<void> => {
+  const userRef = doc(db, USERS_COLLECTION, oderId);
+  await updateDoc(userRef, { bnbAddress });
+};
 
 // Helper: Clean undefined values from object (Firestore doesn't accept undefined)
 const cleanUndefined = (obj: unknown): unknown => {
@@ -172,7 +159,6 @@ export const updateUser = async (
 ): Promise<void> => {
   const userRef = doc(db, USERS_COLLECTION, oderId);
 
-  // Clean undefined values before sending to Firestore
   const cleanedUpdates = cleanUndefined({
     ...updates,
     lastOnline: serverTimestamp(),

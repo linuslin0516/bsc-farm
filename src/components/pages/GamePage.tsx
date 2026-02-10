@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { AnimatedBackground } from '../game/AnimatedBackground';
 import { HUD } from '../game/HUD';
 import { CharacterStatsPanel } from '../game/CharacterStatsPanel';
@@ -14,11 +14,8 @@ import { DailyTasksPanel } from '../game/DailyTasksPanel';
 import { LeaderboardPanel } from '../game/LeaderboardPanel';
 import { CropCodex } from '../game/CropCodex';
 import { UnlockAnimation } from '../ui/UnlockAnimation';
-import { WalletPanel } from '../game/WalletPanel';
-import { TokenExchangePanel } from '../game/TokenExchangePanel';
 import { UpgradeShopPanel } from '../game/UpgradeShopPanel';
 import { useGameStore } from '../../store/useGameStore';
-import { useWeb3Store } from '../../store/useWeb3Store';
 import { Notification as NotificationType, CropRarity } from '../../types';
 import { getCropById } from '../../data/crops';
 import { updateTaskProgress } from '../../services/dailyTaskService';
@@ -88,7 +85,7 @@ const SettingsMenu: React.FC<{ onClose: () => void; onLogout: () => void }> = ({
                   }}
                   className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${
                     language === lang
-                      ? 'bg-binance-yellow/20 text-binance-yellow'
+                      ? 'bg-space-cyan/20 text-space-cyan'
                       : 'hover:bg-white/10 text-gray-300'
                   }`}
                 >
@@ -131,8 +128,6 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
   const [isDailyTasksPanelOpen, setIsDailyTasksPanelOpen] = useState(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [isCodexOpen, setIsCodexOpen] = useState(false);
-  const [isWalletPanelOpen, setIsWalletPanelOpen] = useState(false);
-  const [isExchangePanelOpen, setIsExchangePanelOpen] = useState(false);
   const [isUpgradeShopOpen, setIsUpgradeShopOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -141,12 +136,6 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
   const { t, language } = useT();
   const l = (en: string, zh: string) => localizeText(language, en, zh);
   const zh = (value: string) => localizeZh(value, language);
-
-  // Initialize Web3 listeners
-  const { initializeListeners } = useWeb3Store();
-  useEffect(() => {
-    initializeListeners();
-  }, [initializeListeners]);
 
   // Notification state
   const [notification, setNotification] = useState<NotificationType | null>(null);
@@ -208,12 +197,12 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
     if (demoBalance < totalCost) {
       const maxPlantable = Math.floor(demoBalance / cropDef.cost);
       if (maxPlantable === 0) {
-        handleNotify('error', l(`Not enough $FARM! Need ${cropDef.cost}`, `$FARM 不足！需要 ${cropDef.cost}`));
+        handleNotify('error', l(`Not enough GOLD! Need ${cropDef.cost}`, `GOLD 不足！需要 ${cropDef.cost}`));
         return;
       }
       handleNotify(
         'warning',
-        l(`Not enough $FARM to plant all! Planting ${maxPlantable} plots (need ${totalCost}, have ${demoBalance.toFixed(0)})`, `$FARM 不足種滿！僅種植 ${maxPlantable} 塊地（共需 ${totalCost}，目前有 ${demoBalance.toFixed(0)}）`)
+        l(`Not enough GOLD to plant all! Planting ${maxPlantable} plots (need ${totalCost}, have ${demoBalance.toFixed(0)})`, `GOLD 不足種滿！僅種植 ${maxPlantable} 塊地（共需 ${totalCost}，目前有 ${demoBalance.toFixed(0)}）`)
       );
       // Plant what we can afford
       let planted = 0;
@@ -362,7 +351,7 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
       }
 
       await syncFarmToFirebase();
-      handleNotify('success', l(`Harvested ${harvested} plots! Earned ${totalEarnings} $FARM and ${totalXP} XP!`, `收成了 ${harvested} 塊作物！獲得 ${totalEarnings} $FARM 和 ${totalXP} XP！`));
+      handleNotify('success', l(`Harvested ${harvested} plots! Earned ${totalEarnings} GOLD and ${totalXP} XP!`, `收成了 ${harvested} 塊作物！獲得 ${totalEarnings} GOLD 和 ${totalXP} XP！`));
     }
   }, [
     farmCells,
@@ -433,8 +422,6 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
         onOpenDailyTasks={() => setIsDailyTasksPanelOpen(true)}
         onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
         onOpenCodex={() => setIsCodexOpen(true)}
-        onOpenWallet={() => setIsWalletPanelOpen(!isWalletPanelOpen)}
-        onOpenExchange={() => setIsExchangePanelOpen(true)}
         onOpenUpgrades={() => setIsUpgradeShopOpen(true)}
       />
 
@@ -510,20 +497,6 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
         </div>
       )}
 
-      {/* Wallet Panel - Floating (appears below HUD on left side) */}
-      {isWalletPanelOpen && (
-        <div className="fixed top-20 left-4 z-50 w-80">
-          <WalletPanel onNotify={handleNotify} />
-          <button
-            onClick={() => setIsWalletPanelOpen(false)}
-            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full text-white text-xs
-                     flex items-center justify-center hover:bg-red-600 transition-colors"
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       {/* Shop Modal */}
       <Shop
         isOpen={isShopOpen}
@@ -563,13 +536,6 @@ export const GamePage: React.FC<GamePageProps> = ({ onLogout }) => {
       <CropCodex
         isOpen={isCodexOpen}
         onClose={() => setIsCodexOpen(false)}
-      />
-
-      {/* Token Exchange Panel */}
-      <TokenExchangePanel
-        isOpen={isExchangePanelOpen}
-        onClose={() => setIsExchangePanelOpen(false)}
-        onNotify={handleNotify}
       />
 
       {/* Upgrade Shop Panel */}

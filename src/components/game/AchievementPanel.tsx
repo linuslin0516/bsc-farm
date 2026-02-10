@@ -67,14 +67,14 @@ export const AchievementPanel: React.FC<AchievementPanelProps> = ({ isOpen, onCl
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-3xl max-h-[90vh] bg-binance-gray rounded-2xl border-2 border-binance-yellow/30 overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-3xl max-h-[90vh] bg-space-gray rounded-2xl border-2 border-space-cyan/30 overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-binance-yellow/20 bg-binance-dark/50">
+        <div className="p-4 border-b border-space-cyan/20 bg-space-dark/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-3xl">🏆</span>
               <div>
-                <h2 className="text-2xl font-bold text-binance-yellow">{l('Achievements', '成就系統')}</h2>
+                <h2 className="text-2xl font-bold text-space-cyan">{l('Achievements', '成就系統')}</h2>
                 <p className="text-sm text-gray-400">
                   {l(`Unlocked ${unlockedCount}/${totalCount} achievements`, `已解鎖 ${unlockedCount}/${totalCount} 個成就`)}
                 </p>
@@ -82,16 +82,16 @@ export const AchievementPanel: React.FC<AchievementPanelProps> = ({ isOpen, onCl
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-binance-gray-light hover:bg-red-500/20 flex items-center justify-center transition-colors"
+              className="w-10 h-10 rounded-full bg-space-gray-light hover:bg-red-500/20 flex items-center justify-center transition-colors"
             >
               <span className="text-xl">✕</span>
             </button>
           </div>
 
           {/* Progress bar */}
-          <div className="mt-3 h-3 bg-binance-dark rounded-full overflow-hidden">
+          <div className="mt-3 h-3 bg-space-dark rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-binance-yellow to-binance-gold transition-all duration-500"
+              className="h-full bg-gradient-to-r from-space-cyan to-space-glow transition-all duration-500"
               style={{ width: `${(unlockedCount / totalCount) * 100}%` }}
             />
           </div>
@@ -104,8 +104,8 @@ export const AchievementPanel: React.FC<AchievementPanelProps> = ({ isOpen, onCl
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-colors ${
                   selectedCategory === cat.id
-                    ? 'bg-binance-yellow text-black font-bold'
-                    : 'bg-binance-gray-light text-gray-300 hover:bg-binance-gray-light/80'
+                    ? 'bg-space-cyan text-black font-bold'
+                    : 'bg-space-gray-light text-gray-300 hover:bg-space-gray-light/80'
                 }`}
               >
                 <span>{cat.icon}</span>
@@ -169,7 +169,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
         relative p-4 rounded-xl border-2 transition-all duration-200
         ${unlocked
           ? `${colors.bg} ${colors.border} ${colors.glow}`
-          : 'bg-binance-dark/50 border-binance-gray-light'
+          : 'bg-space-dark/50 border-space-gray-light'
         }
       `}
     >
@@ -184,7 +184,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
         {/* Icon */}
         <div className={`
           text-4xl p-2 rounded-lg
-          ${unlocked ? colors.bg : 'bg-binance-gray-light/50'}
+          ${unlocked ? colors.bg : 'bg-space-gray-light/50'}
         `}>
           {unlocked ? achievement.icon : '🔒'}
         </div>
@@ -211,10 +211,10 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
                 <span>{l('Progress', '進度')}</span>
                 <span>{progress}/{achievement.requirement}</span>
               </div>
-              <div className="h-2 bg-binance-dark rounded-full overflow-hidden">
+              <div className="h-2 bg-space-dark rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all duration-300 ${
-                    progressPercent >= 100 ? 'bg-green-500' : 'bg-binance-yellow'
+                    progressPercent >= 100 ? 'bg-green-500' : 'bg-space-cyan'
                   }`}
                   style={{ width: `${progressPercent}%` }}
                 />
@@ -236,7 +236,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
               <div className="flex items-center gap-1 text-xs">
                 <span>💰</span>
                 <span className={unlocked ? 'text-yellow-400' : 'text-gray-500'}>
-                  +{achievement.rewardTokens} $FARM
+                  +{achievement.rewardTokens} GOLD
                 </span>
               </div>
             )}

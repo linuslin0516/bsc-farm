@@ -1,7 +1,7 @@
 // Player types
 export interface Player {
   oderId: string; // 6-digit unique ID
-  walletAddress?: string; // Optional wallet address
+  bnbAddress?: string; // Optional wallet address
   twitterUid?: string; // Twitter UID from Firebase Auth
   twitterHandle?: string; // Twitter username/handle
   avatarUrl?: string; // Profile picture URL (from Twitter)
@@ -17,7 +17,7 @@ export interface Player {
 // Firebase user data (stored in Firestore)
 export interface FirebaseUser {
   oderId: string;
-  walletAddress?: string;
+  bnbAddress?: string;
   twitterUid?: string;
   twitterHandle?: string;
   avatarUrl?: string;
@@ -171,15 +171,6 @@ export interface GameState {
   selectedTool: string | null;
 }
 
-// Wallet state
-export interface WalletState {
-  isConnected: boolean;
-  address: string | null;
-  chainId: number | null;
-  balance: string;
-  farmBalance: string;
-  isCorrectNetwork: boolean;
-}
 
 // UI state
 export interface UIState {
@@ -280,53 +271,6 @@ export interface PlayerStats {
   score: number; // Calculated: (level * 100) + (harvests * 10) + (steals * 5)
 }
 
-// ============ Dual Token System ============
-export interface DualTokenBalance {
-  gold: number;      // In-game soft currency (off-chain)
-  farm: string;      // On-chain hard currency (as string for BigNumber)
-}
-
-// Web3 Wallet State
-export interface Web3WalletState {
-  isConnected: boolean;
-  address: string | null;
-  chainId: number | null;
-  bnbBalance: string;
-  farmBalance: string;
-  isCorrectNetwork: boolean;
-  isConnecting: boolean;
-  error: string | null;
-}
-
-// Token Exchange
-export interface ExchangeRate {
-  goldPerFarm: number;       // How much GOLD you get for 1 FARM
-  farmPerGold: number;       // How much FARM you get for 1 GOLD (very small)
-  exchangeFee: number;       // Fee percentage (e.g., 0.05 = 5%)
-  lastUpdated: number;
-  dailyExchangeLimit: number; // Max FARM per day per user
-}
-
-export interface ExchangeTransaction {
-  id: string;
-  oderId: string;
-  type: 'gold_to_farm' | 'farm_to_gold';
-  goldAmount: number;
-  farmAmount: string;
-  txHash?: string;
-  status: 'pending' | 'completed' | 'failed';
-  createdAt: number;
-  completedAt?: number;
-}
-
-export interface UserExchangeData {
-  oderId: string;
-  dailyExchanged: number;      // FARM exchanged today
-  lastExchangeDate: string;    // YYYY-MM-DD
-  totalGoldExchanged: number;
-  totalFarmExchanged: string;
-  pendingTransactions: ExchangeTransaction[];
-}
 
 // ============ Supply/Demand Market System ============
 export interface CropSupplyDemand {

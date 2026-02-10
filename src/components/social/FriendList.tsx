@@ -68,7 +68,7 @@ export const FriendList: React.FC<FriendListProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-binance-yellow"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-space-cyan"></div>
       </div>
     );
   }
@@ -88,7 +88,7 @@ export const FriendList: React.FC<FriendListProps> = ({
       {friends.map((friend) => (
         <div
           key={friend.oderId}
-          className="flex items-center justify-between p-3 bg-binance-gray-light rounded-lg hover:bg-binance-gray transition-colors"
+          className="flex items-center justify-between p-3 bg-space-gray-light rounded-lg hover:bg-space-gray transition-colors"
         >
           <div className="flex items-center gap-3">
             {/* Online indicator */}

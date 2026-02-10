@@ -49,7 +49,7 @@ export const ToolToolbar: React.FC<ToolToolbarProps> = ({ onNotify, onPlantAll, 
       <div className="flex items-center justify-between mb-2 px-1">
         <div className="flex items-center gap-2">
           <span className="text-lg">🛠️</span>
-          <h3 className="text-sm font-bold text-binance-yellow">{l('Tools', '工具欄')}</h3>
+          <h3 className="text-sm font-bold text-space-cyan">{l('Tools', '工具欄')}</h3>
         </div>
         {selectedTool && (
           <button
@@ -62,7 +62,7 @@ export const ToolToolbar: React.FC<ToolToolbarProps> = ({ onNotify, onPlantAll, 
       </div>
 
       {/* Tools Grid */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-binance-yellow scrollbar-track-transparent">
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-space-cyan scrollbar-track-transparent">
         {tools.map((tool) => {
           const isSelected = selectedTool === tool.id;
           const isAvailable = tool.count !== 0;
@@ -82,8 +82,8 @@ export const ToolToolbar: React.FC<ToolToolbarProps> = ({ onNotify, onPlantAll, 
                 relative flex-shrink-0 flex flex-col items-center p-2 rounded-xl border-2 transition-all min-w-[70px]
                 ${
                   isSelected
-                    ? 'border-binance-yellow bg-binance-yellow/20 shadow-lg'
-                    : 'border-white/10 hover:border-binance-yellow/50 bg-white/5'
+                    ? 'border-space-cyan bg-space-cyan/20 shadow-lg'
+                    : 'border-white/10 hover:border-space-cyan/50 bg-white/5'
                 }
                 ${
                   !isAvailable && tool.id !== 'remove'
@@ -98,7 +98,7 @@ export const ToolToolbar: React.FC<ToolToolbarProps> = ({ onNotify, onPlantAll, 
               </div>
               <span
                 className={`text-xs mt-1 font-medium ${
-                  isSelected ? 'text-binance-yellow' : 'text-gray-300'
+                  isSelected ? 'text-space-cyan' : 'text-gray-300'
                 }`}
               >
                 {tool.name}

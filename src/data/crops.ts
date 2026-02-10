@@ -7,285 +7,274 @@ import { CropDefinition, CropRarity } from '../types';
 // Epic: 25-35 minutes
 // Legendary: 45-60 minutes
 
-// ROI configuration (after fee deduction):
-// Common: 20-25%
-// Uncommon: 30-35%
-// Rare: 40-45%
-// Epic: 50-60%
-// Legendary: 70-80%
-
 export const CROPS: CropDefinition[] = [
-  // ============ Common (普通) - Gray ============
-  // Growth: 3-5 minutes, ROI: 20-25%
+  // ============ Common - Gray ============
   {
-    id: 'carrot',
-    name: 'Carrot',
-    nameCn: '胡蘿蔔',
-    description: '最基本的農作物，適合新手種植',
+    id: 'space_sprout',
+    name: 'Space Sprout',
+    nameCn: '太空芽',
+    description: 'Basic cosmic seedling, perfect for new explorers',
     cost: 50,
-    growthTime: 180, // 3 minutes
-    sellPrice: 61, // ROI: 22%
+    growthTime: 180,
+    sellPrice: 61,
     experience: 10,
     unlockLevel: 1,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'common',
-    emoji: '🥕',
+    emoji: '🌱',
   },
   {
-    id: 'tomato',
-    name: 'Tomato',
-    nameCn: '番茄',
-    description: '多汁的番茄，收益穩定',
+    id: 'moon_grass',
+    name: 'Moon Grass',
+    nameCn: '月光草',
+    description: 'Bioluminescent grass that thrives in low gravity',
     cost: 100,
-    growthTime: 240, // 4 minutes
-    sellPrice: 125, // ROI: 25%
+    growthTime: 240,
+    sellPrice: 125,
     experience: 20,
     unlockLevel: 1,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'common',
-    emoji: '🍅',
+    emoji: '🍃',
   },
   {
-    id: 'cabbage',
-    name: 'Cabbage',
-    nameCn: '高麗菜',
-    description: '耐寒的蔬菜，生長穩定',
+    id: 'bubble_fruit',
+    name: 'Bubble Fruit',
+    nameCn: '氣泡果',
+    description: 'Floating fruit filled with cosmic gas',
     cost: 70,
-    growthTime: 210, // 3.5 minutes
-    sellPrice: 85, // ROI: 21%
+    growthTime: 210,
+    sellPrice: 85,
     experience: 15,
     unlockLevel: 1,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'common',
-    emoji: '🥬',
+    emoji: '🫧',
   },
   {
-    id: 'onion',
-    name: 'Onion',
-    nameCn: '洋蔥',
-    description: '地下生長的調味蔬菜',
+    id: 'ice_crystal_flower',
+    name: 'Ice Crystal Flower',
+    nameCn: '冰晶花',
+    description: 'Frozen flower that blooms in zero atmosphere',
     cost: 80,
-    growthTime: 300, // 5 minutes
-    sellPrice: 100, // ROI: 25%
+    growthTime: 300,
+    sellPrice: 100,
     experience: 18,
     unlockLevel: 2,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'common',
-    emoji: '🧅',
+    emoji: '🧊',
   },
 
-  // ============ Uncommon (優良) - Green ============
-  // Growth: 5-10 minutes, ROI: 30-35%
+  // ============ Uncommon - Green ============
   {
-    id: 'corn',
-    name: 'Corn',
-    nameCn: '玉米',
-    description: '金黃飽滿的玉米粒',
+    id: 'stardust_shroom',
+    name: 'Stardust Mushroom',
+    nameCn: '星塵蘑菇',
+    description: 'Glowing mushroom infused with cosmic dust',
     cost: 300,
-    growthTime: 300, // 5 minutes
-    sellPrice: 390, // ROI: 30%
+    growthTime: 300,
+    sellPrice: 390,
     experience: 35,
     unlockLevel: 2,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'uncommon',
-    emoji: '🌽',
+    emoji: '🔮',
   },
   {
-    id: 'potato',
-    name: 'Potato',
-    nameCn: '馬鈴薯',
-    description: '地下的金礦，產量豐富',
+    id: 'plasma_berry',
+    name: 'Plasma Berry',
+    nameCn: '電漿莓',
+    description: 'Electrified berries that spark with energy',
     cost: 500,
-    growthTime: 420, // 7 minutes
-    sellPrice: 660, // ROI: 32%
+    growthTime: 420,
+    sellPrice: 660,
     experience: 50,
     unlockLevel: 3,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'uncommon',
-    emoji: '🥔',
+    emoji: '⚡',
   },
   {
-    id: 'pepper',
-    name: 'Bell Pepper',
-    nameCn: '彩椒',
-    description: '色彩繽紛的健康蔬菜',
+    id: 'vortex_vine',
+    name: 'Vortex Vine',
+    nameCn: '漩渦藤',
+    description: 'Spiraling vine that defies gravity',
     cost: 400,
-    growthTime: 360, // 6 minutes
-    sellPrice: 520, // ROI: 30%
+    growthTime: 360,
+    sellPrice: 520,
     experience: 45,
     unlockLevel: 3,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'uncommon',
-    emoji: '🫑',
+    emoji: '🌀',
   },
   {
-    id: 'eggplant',
-    name: 'Eggplant',
-    nameCn: '茄子',
-    description: '紫色光澤的高級蔬菜',
+    id: 'prism_melon',
+    name: 'Prism Melon',
+    nameCn: '菱晶瓜',
+    description: 'Crystalline melon that refracts starlight',
     cost: 550,
-    growthTime: 480, // 8 minutes
-    sellPrice: 730, // ROI: 33%
+    growthTime: 480,
+    sellPrice: 730,
     experience: 55,
     unlockLevel: 4,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'uncommon',
-    emoji: '🍆',
+    emoji: '💠',
   },
   {
-    id: 'broccoli',
-    name: 'Broccoli',
-    nameCn: '花椰菜',
-    description: '營養價值極高的蔬菜',
+    id: 'dark_matter_berry',
+    name: 'Dark Matter Berry',
+    nameCn: '暗物質莓',
+    description: 'Mysterious berry that absorbs all light',
     cost: 600,
-    growthTime: 600, // 10 minutes
-    sellPrice: 810, // ROI: 35%
+    growthTime: 600,
+    sellPrice: 810,
     experience: 60,
     unlockLevel: 4,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'uncommon',
-    emoji: '🥦',
+    emoji: '🫐',
   },
 
-  // ============ Rare (稀有) - Blue ============
-  // Growth: 10-20 minutes, ROI: 40-45%
+  // ============ Rare - Blue ============
   {
-    id: 'strawberry',
-    name: 'Strawberry',
-    nameCn: '草莓',
-    description: '甜蜜的紅寶石，廣受歡迎',
+    id: 'comet_fruit',
+    name: 'Comet Fruit',
+    nameCn: '彗星果',
+    description: 'Blazing fruit that leaves a cosmic trail',
     cost: 1000,
-    growthTime: 600, // 10 minutes
-    sellPrice: 1400, // ROI: 40%
+    growthTime: 600,
+    sellPrice: 1400,
     experience: 80,
     unlockLevel: 5,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'rare',
-    emoji: '🍓',
+    emoji: '☄️',
   },
   {
-    id: 'watermelon',
-    name: 'Watermelon',
-    nameCn: '西瓜',
-    description: '夏日消暑的大型水果',
+    id: 'saturn_ring_flower',
+    name: 'Saturn Ring Flower',
+    nameCn: '土星環花',
+    description: 'Flower with petals that orbit like planetary rings',
     cost: 2000,
-    growthTime: 900, // 15 minutes
-    sellPrice: 2840, // ROI: 42%
+    growthTime: 900,
+    sellPrice: 2840,
     experience: 120,
     unlockLevel: 5,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'rare',
-    emoji: '🍉',
+    emoji: '🪐',
   },
   {
-    id: 'grapes',
-    name: 'Grapes',
-    nameCn: '葡萄',
-    description: '可釀造美酒的高級水果',
+    id: 'meteor_potato',
+    name: 'Meteor Potato',
+    nameCn: '流星薯',
+    description: 'Underground tuber that glows with meteor dust',
     cost: 1500,
-    growthTime: 720, // 12 minutes
-    sellPrice: 2100, // ROI: 40%
+    growthTime: 720,
+    sellPrice: 2100,
     experience: 100,
     unlockLevel: 6,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'rare',
-    emoji: '🍇',
+    emoji: '🌠',
   },
   {
-    id: 'peach',
-    name: 'Peach',
-    nameCn: '水蜜桃',
-    description: '香甜多汁的仙桃',
+    id: 'nebula_orchid',
+    name: 'Nebula Orchid',
+    nameCn: '星雲蘭',
+    description: 'Orchid with colors of a distant nebula',
     cost: 1800,
-    growthTime: 1020, // 17 minutes
-    sellPrice: 2600, // ROI: 44%
+    growthTime: 1020,
+    sellPrice: 2600,
     experience: 110,
     unlockLevel: 6,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'rare',
-    emoji: '🍑',
+    emoji: '💫',
   },
   {
-    id: 'cherry',
-    name: 'Cherry',
-    nameCn: '櫻桃',
-    description: '小巧玲瓏的紅寶石',
+    id: 'supernova_pepper',
+    name: 'Supernova Pepper',
+    nameCn: '超新星椒',
+    description: 'Pepper with the heat of an exploding star',
     cost: 1200,
-    growthTime: 1200, // 20 minutes
-    sellPrice: 1740, // ROI: 45%
+    growthTime: 1200,
+    sellPrice: 1740,
     experience: 90,
     unlockLevel: 7,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'rare',
-    emoji: '🍒',
+    emoji: '🔆',
   },
 
-  // ============ Epic (史詩) - Purple ============
-  // Growth: 25-35 minutes, ROI: 50-60%
+  // ============ Epic - Purple ============
   {
-    id: 'pumpkin',
-    name: 'Pumpkin',
-    nameCn: '南瓜',
-    description: '巨大的萬聖節象徵',
+    id: 'black_hole_pumpkin',
+    name: 'Black Hole Pumpkin',
+    nameCn: '黑洞南瓜',
+    description: 'Massive pumpkin with gravitational pull',
     cost: 5000,
-    growthTime: 1500, // 25 minutes
-    sellPrice: 7500, // ROI: 50%
+    growthTime: 1500,
+    sellPrice: 7500,
     experience: 200,
     unlockLevel: 7,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'epic',
-    emoji: '🎃',
+    emoji: '🌑',
   },
   {
-    id: 'golden_wheat',
-    name: 'Golden Wheat',
-    nameCn: '黃金小麥',
-    description: '閃閃發光的神奇穀物',
+    id: 'galaxy_wheat',
+    name: 'Galaxy Wheat',
+    nameCn: '銀河小麥',
+    description: 'Shimmering grain that contains stardust',
     cost: 8000,
-    growthTime: 1800, // 30 minutes
-    sellPrice: 12400, // ROI: 55%
+    growthTime: 1800,
+    sellPrice: 12400,
     experience: 300,
     unlockLevel: 8,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'epic',
-    emoji: '🌾',
+    emoji: '✨',
   },
   {
-    id: 'dragon_fruit',
-    name: 'Dragon Fruit',
-    nameCn: '火龍果',
-    description: '來自熱帶的神秘果實',
+    id: 'star_dragon_fruit',
+    name: 'Star Dragon Fruit',
+    nameCn: '星龍果',
+    description: 'Legendary fruit guarded by cosmic dragons',
     cost: 6000,
-    growthTime: 1620, // 27 minutes
-    sellPrice: 9120, // ROI: 52%
+    growthTime: 1620,
+    sellPrice: 9120,
     experience: 250,
     unlockLevel: 9,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'epic',
-    emoji: '🐉',
+    emoji: '🐲',
   },
   {
-    id: 'star_fruit',
-    name: 'Star Fruit',
-    nameCn: '楊桃',
-    description: '形狀如星的奇特水果',
+    id: 'pulsar_fruit',
+    name: 'Pulsar Fruit',
+    nameCn: '脈衝星果',
+    description: 'Fruit that pulses with neutron star energy',
     cost: 7000,
-    growthTime: 1920, // 32 minutes
-    sellPrice: 11200, // ROI: 60%
+    growthTime: 1920,
+    sellPrice: 11200,
     experience: 280,
     unlockLevel: 10,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'epic',
-    emoji: '⭐',
+    emoji: '🌟',
   },
   {
-    id: 'crystal_melon',
-    name: 'Crystal Melon',
-    nameCn: '水晶瓜',
-    description: '透明如水晶的神奇瓜果',
+    id: 'quantum_crystal',
+    name: 'Quantum Crystal Melon',
+    nameCn: '量子水晶瓜',
+    description: 'Exists in multiple dimensions simultaneously',
     cost: 10000,
-    growthTime: 2100, // 35 minutes
-    sellPrice: 16000, // ROI: 60%
+    growthTime: 2100,
+    sellPrice: 16000,
     experience: 350,
     unlockLevel: 12,
     stages: ['seed', 'sprout', 'growing', 'mature'],
@@ -293,44 +282,43 @@ export const CROPS: CropDefinition[] = [
     emoji: '💎',
   },
 
-  // ============ Legendary (傳說) - Gold ============
-  // Growth: 45-60 minutes, ROI: 70-80%
+  // ============ Legendary - Cyan/Glow ============
   {
-    id: 'rainbow_rose',
-    name: 'Rainbow Rose',
-    nameCn: '彩虹玫瑰',
-    description: '傳說中的七彩花朵，據說能帶來好運',
+    id: 'wormhole_rose',
+    name: 'Wormhole Rose',
+    nameCn: '蟲洞玫瑰',
+    description: 'A rose that blooms across spacetime dimensions',
     cost: 15000,
-    growthTime: 2700, // 45 minutes
-    sellPrice: 25500, // ROI: 70%
+    growthTime: 2700,
+    sellPrice: 25500,
     experience: 500,
     unlockLevel: 15,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'legendary',
-    emoji: '🌹',
+    emoji: '🌌',
   },
   {
-    id: 'golden_apple',
-    name: 'Golden Apple',
-    nameCn: '黃金蘋果',
-    description: '傳說中神仙吃的不老仙果',
+    id: 'antimatter_apple',
+    name: 'Antimatter Apple',
+    nameCn: '反物質蘋果',
+    description: 'Apple forged from pure antimatter energy',
     cost: 25000,
-    growthTime: 3000, // 50 minutes
-    sellPrice: 43000, // ROI: 72%
+    growthTime: 3000,
+    sellPrice: 43000,
     experience: 700,
     unlockLevel: 18,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'legendary',
-    emoji: '🍎',
+    emoji: '🍏',
   },
   {
-    id: 'phoenix_flower',
-    name: 'Phoenix Flower',
-    nameCn: '鳳凰花',
-    description: '浴火重生的不滅之花，傳說級作物',
+    id: 'stellar_bloom',
+    name: 'Stellar Bloom',
+    nameCn: '恆星之花',
+    description: 'Flower that burns with the fire of a living star',
     cost: 35000,
-    growthTime: 3300, // 55 minutes
-    sellPrice: 61250, // ROI: 75%
+    growthTime: 3300,
+    sellPrice: 61250,
     experience: 900,
     unlockLevel: 20,
     stages: ['seed', 'sprout', 'growing', 'mature'],
@@ -338,13 +326,13 @@ export const CROPS: CropDefinition[] = [
     emoji: '🔥',
   },
   {
-    id: 'moonlight_orchid',
-    name: 'Moonlight Orchid',
-    nameCn: '月光蘭',
-    description: '只在月圓之夜綻放的神秘蘭花',
+    id: 'dark_energy_orchid',
+    name: 'Dark Energy Orchid',
+    nameCn: '暗能量蘭',
+    description: 'Orchid powered by the universe\'s dark energy',
     cost: 45000,
-    growthTime: 3420, // 57 minutes
-    sellPrice: 80100, // ROI: 78%
+    growthTime: 3420,
+    sellPrice: 80100,
     experience: 1100,
     unlockLevel: 25,
     stages: ['seed', 'sprout', 'growing', 'mature'],
@@ -352,18 +340,18 @@ export const CROPS: CropDefinition[] = [
     emoji: '🌙',
   },
   {
-    id: 'cosmic_fruit',
-    name: 'Cosmic Fruit',
-    nameCn: '宇宙果',
-    description: '蘊含星辰之力的終極作物，據說是外星文明的禮物',
+    id: 'genesis_fruit',
+    name: 'Genesis Fruit',
+    nameCn: '宇宙創世果',
+    description: 'The ultimate cosmic crop - contains the essence of creation',
     cost: 50000,
-    growthTime: 3600, // 60 minutes
-    sellPrice: 90000, // ROI: 80%
+    growthTime: 3600,
+    sellPrice: 90000,
     experience: 1500,
     unlockLevel: 30,
     stages: ['seed', 'sprout', 'growing', 'mature'],
     rarity: 'legendary',
-    emoji: '🌌',
+    emoji: '🪐',
   },
 ];
 

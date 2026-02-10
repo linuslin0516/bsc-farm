@@ -70,14 +70,14 @@ export const CropToolbar: React.FC = () => {
       <div className="flex items-center justify-between mb-2 px-1">
         <div className="flex items-center gap-2">
           <span className="text-lg">🌱</span>
-          <h3 className="text-sm font-bold text-binance-yellow">{l('Select Seeds', '選擇種子')}</h3>
+          <h3 className="text-sm font-bold text-space-cyan">{l('Select Seeds', '選擇種子')}</h3>
         </div>
         <div className="flex items-center gap-2">
           {/* Sort dropdown */}
           <select
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value as SortMode)}
-            className="text-xs bg-binance-gray border border-binance-yellow/30 rounded px-2 py-1 text-gray-300 focus:outline-none focus:border-binance-yellow"
+            className="text-xs bg-space-gray border border-space-cyan/30 rounded px-2 py-1 text-gray-300 focus:outline-none focus:border-space-cyan"
           >
             <option value="unlock">{l('Unlock', '解鎖順序')}</option>
             <option value="price">{l('Price', '價格')}</option>
@@ -96,7 +96,7 @@ export const CropToolbar: React.FC = () => {
       </div>
 
       {/* Crop Grid - Horizontal scrollable */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-binance-yellow scrollbar-track-transparent">
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-space-cyan scrollbar-track-transparent">
         {unlockedCrops.map((crop) => {
           const isSelected = selectedCrop === crop.id;
           const canAfford = demoBalance >= crop.cost;
@@ -150,7 +150,7 @@ export const CropToolbar: React.FC = () => {
                 {cropName}
               </span>
               <div className="flex flex-col items-center gap-0.5 mt-0.5">
-                <span className="text-[10px] text-binance-yellow">💰{crop.cost}</span>
+                <span className="text-[10px] text-space-cyan">💰{crop.cost}</span>
                 <span className={`text-[9px] ${trendColor}`}>
                   🏷️{currentPrice}
                 </span>

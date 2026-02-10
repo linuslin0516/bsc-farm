@@ -6,23 +6,22 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({ size = 'md', showText = false }) => {
-  const imageSizes = {
-    sm: 'h-10',
-    md: 'h-16',
-    lg: 'h-32',
+  const textSizes = {
+    sm: 'text-lg',
+    md: 'text-2xl',
+    lg: 'text-4xl',
   };
 
   return (
     <div className="flex items-center gap-2">
-      <img
-        src="/logo.png"
-        alt="BSC Farm"
-        className={`${imageSizes[size]} w-auto object-contain`}
-      />
+      <span className={`${textSizes[size]}`}>🚀</span>
+      <span className={`${textSizes[size]} font-bold bg-gradient-to-r from-space-cyan to-space-purple bg-clip-text text-transparent`}>
+        Space Farm
+      </span>
       {showText && (
         <div className="flex flex-col">
-          <span className="text-xs text-binance-gold font-semibold tracking-widest uppercase">
-            Powered by $FARM
+          <span className="text-xs text-space-glow font-semibold tracking-widest uppercase">
+            Cosmic Crops
           </span>
         </div>
       )}

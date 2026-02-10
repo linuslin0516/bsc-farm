@@ -47,8 +47,8 @@ export const CharacterStatsPanel: React.FC = () => {
       {!isCollapsed && (
         <div className="glass-panel rounded-xl overflow-hidden w-56">
           {/* Header with close button */}
-          <div className="bg-binance-yellow/20 px-4 py-2 flex justify-between items-center">
-            <span className="text-sm font-bold text-binance-yellow">
+          <div className="bg-space-cyan/20 px-4 py-2 flex justify-between items-center">
+            <span className="text-sm font-bold text-space-cyan">
               {greeting}！
             </span>
             <button
@@ -67,10 +67,10 @@ export const CharacterStatsPanel: React.FC = () => {
                 {player.name}
               </h3>
               <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
-                ID: <span className="font-mono text-binance-yellow">{player.oderId}</span>
+                ID: <span className="font-mono text-space-cyan">{player.oderId}</span>
                 <button
                   onClick={() => navigator.clipboard.writeText(player.oderId)}
-                  className="text-gray-500 hover:text-binance-yellow transition-colors"
+                  className="text-gray-500 hover:text-space-cyan transition-colors"
                   title={l('Copy ID', '複製 ID')}
                 >
                   📋
@@ -79,14 +79,14 @@ export const CharacterStatsPanel: React.FC = () => {
             </div>
 
             {/* Level */}
-            <div className="bg-binance-gray/50 rounded-lg p-3">
+            <div className="bg-space-gray/50 rounded-lg p-3">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-xs text-gray-400">{l('Level', '等級')}</span>
-                <span className="text-sm font-bold text-binance-yellow">
+                <span className="text-sm font-bold text-space-cyan">
                   Lv. {player.level}
                 </span>
               </div>
-              <div className="h-2 bg-binance-dark rounded-full overflow-hidden">
+              <div className="h-2 bg-space-dark rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-farm-green to-farm-green-light transition-all duration-300"
                   style={{ width: `${expProgress}%` }}
@@ -99,13 +99,13 @@ export const CharacterStatsPanel: React.FC = () => {
 
             {/* Farm Stats */}
             <div className="grid grid-cols-2 gap-2">
-              <div className="bg-binance-gray/50 rounded-lg p-2 text-center">
+              <div className="bg-space-gray/50 rounded-lg p-2 text-center">
                 <p className="text-lg font-bold text-farm-green">{player.landSize}×{player.landSize}</p>
                 <p className="text-[10px] text-gray-400">{l('Farmland', '農地')}</p>
               </div>
-              <div className="bg-binance-gray/50 rounded-lg p-2 text-center">
-                <p className="text-lg font-bold text-binance-yellow">{demoBalance}</p>
-                <p className="text-[10px] text-gray-400">$FARM</p>
+              <div className="bg-space-gray/50 rounded-lg p-2 text-center">
+                <p className="text-lg font-bold text-space-cyan">{demoBalance}</p>
+                <p className="text-[10px] text-gray-400">GOLD</p>
               </div>
             </div>
 
@@ -117,7 +117,7 @@ export const CharacterStatsPanel: React.FC = () => {
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400">{l('Ready', '可收成')}</span>
-                <span className="text-binance-yellow">{matureCells}</span>
+                <span className="text-space-cyan">{matureCells}</span>
               </div>
             </div>
 
@@ -125,7 +125,7 @@ export const CharacterStatsPanel: React.FC = () => {
             <ActiveBonusesPanel />
 
             {/* Quick Actions */}
-            <div className="pt-2 border-t border-binance-gray-light">
+            <div className="pt-2 border-t border-space-gray-light">
               <button
                 className="w-full py-2 text-xs text-gray-400 hover:text-white transition-colors"
                 onClick={() => {

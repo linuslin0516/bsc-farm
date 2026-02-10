@@ -165,9 +165,9 @@ export const FriendFarmPage: React.FC<FriendFarmPageProps> = ({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-binance-dark">
+      <div className="min-h-screen flex items-center justify-center bg-space-dark">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-binance-yellow mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-space-cyan mx-auto mb-4"></div>
           <p className="text-gray-400">正在載入 {friendName} 的農場...</p>
         </div>
       </div>
@@ -175,9 +175,9 @@ export const FriendFarmPage: React.FC<FriendFarmPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-binance-dark via-binance-gray to-binance-dark">
+    <div className="min-h-screen bg-gradient-to-b from-space-dark via-space-gray to-space-dark">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-binance-dark/90 backdrop-blur-md border-b-2 border-red-500/50">
+      <header className="sticky top-0 z-40 bg-space-dark/90 backdrop-blur-md border-b-2 border-red-500/50">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Button onClick={onBack} variant="secondary" size="sm">

@@ -186,7 +186,7 @@ export const stealCrop = async (
   return {
     success: true,
     amount: stolenAmount,
-    message: `成功偷到 ${crop.nameCn}！獲得 ${stolenAmount} $FARM！`,
+    message: `成功偷到 ${crop.nameCn}！獲得 ${stolenAmount} GOLD！`,
   };
 };
 

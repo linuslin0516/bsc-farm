@@ -82,7 +82,7 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
           )
         );
 
-        onNotify?.('success', l(`Got ${reward.xp} XP and ${reward.tokens} $FARM!`, `獲得 ${reward.xp} XP 和 ${reward.tokens} $FARM！`));
+        onNotify?.('success', l(`Got ${reward.xp} XP and ${reward.tokens} GOLD!`, `獲得 ${reward.xp} XP 和 ${reward.tokens} GOLD！`));
       }
     } catch (error) {
       console.error('Failed to claim reward:', error);
@@ -108,14 +108,14 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-binance-gray rounded-2xl border-2 border-binance-yellow/30 overflow-hidden">
+      <div className="relative w-full max-w-md bg-space-gray rounded-2xl border-2 border-space-cyan/30 overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b border-binance-yellow/20 bg-binance-dark/50">
+        <div className="p-4 border-b border-space-cyan/20 bg-space-dark/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-3xl">📋</span>
               <div>
-                <h2 className="text-xl font-bold text-binance-yellow">{l('Daily Tasks', '每日任務')}</h2>
+                <h2 className="text-xl font-bold text-space-cyan">{l('Daily Tasks', '每日任務')}</h2>
                 <p className="text-sm text-gray-400">
                   {l('Complete tasks to earn rewards', '完成任務獲得獎勵')}
                 </p>
@@ -123,7 +123,7 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-binance-gray-light hover:bg-red-500/20 flex items-center justify-center transition-colors"
+              className="w-10 h-10 rounded-full bg-space-gray-light hover:bg-red-500/20 flex items-center justify-center transition-colors"
             >
               <span className="text-xl">✕</span>
             </button>
@@ -132,14 +132,14 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
           {/* Reset timer */}
           <div className="mt-3 flex items-center justify-between text-sm">
             <span className="text-gray-400">{l('Reset countdown', '重置倒計時')}</span>
-            <span className="text-binance-yellow font-mono font-bold">
+            <span className="text-space-cyan font-mono font-bold">
               {formatTimeRemaining(timeUntilReset)}
             </span>
           </div>
 
           {/* Progress */}
           <div className="mt-2 flex items-center gap-2">
-            <div className="flex-1 h-2 bg-binance-dark rounded-full overflow-hidden">
+            <div className="flex-1 h-2 bg-space-dark rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
                 style={{ width: `${(completedCount / 3) * 100}%` }}
@@ -175,7 +175,7 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
         </div>
 
         {/* Bonus for completing all */}
-        <div className="p-4 border-t border-binance-yellow/20 bg-binance-dark/30">
+        <div className="p-4 border-t border-space-cyan/20 bg-space-dark/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-2xl">🎁</span>
@@ -187,7 +187,7 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
             <div className="flex items-center gap-3">
               <div className="text-right">
                 <div className="text-xs text-blue-400">+100 XP</div>
-                <div className="text-xs text-yellow-400">+25 $FARM</div>
+                <div className="text-xs text-yellow-400">+25 GOLD</div>
               </div>
               {completedCount === 3 && claimedCount < 3 ? (
                 <button className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-400 text-white font-bold rounded-lg hover:opacity-90 transition-opacity">
@@ -197,7 +197,7 @@ export const DailyTasksPanel: React.FC<DailyTasksPanelProps> = ({
                 <div className={`px-4 py-2 rounded-lg ${
                   claimedCount === 3
                     ? 'bg-green-500/20 text-green-400'
-                    : 'bg-binance-gray-light text-gray-500'
+                    : 'bg-space-gray-light text-gray-500'
                 }`}>
                   {claimedCount === 3 ? l('Claimed', '已領取') : `${completedCount}/3`}
                 </div>
@@ -242,8 +242,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
         ${completed
           ? claimed
             ? 'bg-green-500/10 border-green-500/30'
-            : 'bg-binance-yellow/10 border-binance-yellow/50'
-          : 'bg-binance-dark/50 border-binance-gray-light'
+            : 'bg-space-cyan/10 border-space-cyan/50'
+          : 'bg-space-dark/50 border-space-gray-light'
         }
       `}
     >
@@ -262,10 +262,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
               <span>{l('Progress', '進度')}</span>
               <span>{Math.min(progress, task.requirement)}/{task.requirement}</span>
             </div>
-            <div className="h-2 bg-binance-dark rounded-full overflow-hidden">
+            <div className="h-2 bg-space-dark rounded-full overflow-hidden">
               <div
                 className={`h-full transition-all duration-300 ${
-                  completed ? 'bg-green-500' : 'bg-binance-yellow'
+                  completed ? 'bg-green-500' : 'bg-space-cyan'
                 }`}
                 style={{ width: `${progressPercent}%` }}
               />
@@ -280,7 +280,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             </div>
             <div className="flex items-center gap-1 text-xs">
               <span>💰</span>
-              <span className="text-yellow-400">+{task.rewardTokens} $FARM</span>
+              <span className="text-yellow-400">+{task.rewardTokens} GOLD</span>
             </div>
           </div>
         </div>
@@ -294,12 +294,12 @@ const TaskCard: React.FC<TaskCardProps> = ({
           ) : completed ? (
             <button
               onClick={onClaim}
-              className="px-4 py-2 bg-gradient-to-r from-binance-yellow to-binance-gold text-black font-bold rounded-lg hover:opacity-90 transition-opacity animate-pulse"
+              className="px-4 py-2 bg-gradient-to-r from-space-cyan to-space-glow text-black font-bold rounded-lg hover:opacity-90 transition-opacity animate-pulse"
             >
               {l('Claim', '領取')}
             </button>
           ) : (
-            <div className="px-3 py-2 bg-binance-gray-light text-gray-500 rounded-lg text-sm">
+            <div className="px-3 py-2 bg-space-gray-light text-gray-500 rounded-lg text-sm">
               {l('In Progress', '進行中')}
             </div>
           )}

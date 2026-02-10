@@ -7,25 +7,37 @@ export default {
   theme: {
     extend: {
       colors: {
+        space: {
+          blue: '#0EA5E9',
+          cyan: '#22D3EE',
+          purple: '#8B5CF6',
+          dark: '#0F172A',
+          gray: '#1E293B',
+          'gray-light': '#334155',
+          glow: '#67E8F9',
+          pink: '#EC4899',
+          indigo: '#6366F1',
+        },
+        // Keep binance aliases pointing to space colors for gradual migration
         binance: {
-          yellow: '#F0B90B',
-          gold: '#FCD535',
-          dark: '#0B0E11',
-          gray: '#1E2026',
-          'gray-light': '#2B3139',
+          yellow: '#22D3EE',
+          gold: '#67E8F9',
+          dark: '#0F172A',
+          gray: '#1E293B',
+          'gray-light': '#334155',
         },
         farm: {
           green: '#22C55E',
           'green-light': '#4ADE80',
           'green-dark': '#15803D',
-          soil: '#5D4E37',
-          'soil-light': '#8B7355',
+          soil: '#2D1B4E',
+          'soil-light': '#4C3575',
           sky: '#0EA5E9',
           'sky-light': '#7DD3FC',
-          'sky-dawn': '#FB923C',
+          'sky-dawn': '#8B5CF6',
           'sky-dusk': '#A855F7',
-          'sky-night': '#1E1B4B',
-          grass: '#84CC16',
+          'sky-night': '#0F172A',
+          grass: '#22D3EE',
         },
       },
       fontFamily: {
@@ -44,11 +56,12 @@ export default {
         'sparkle': 'sparkle 2s ease-in-out infinite',
         'sway': 'sway 4s ease-in-out infinite',
         'twinkle': 'twinkle 3s ease-in-out infinite',
+        'star-drift': 'star-drift 120s linear infinite',
       },
       keyframes: {
         'pulse-glow': {
-          '0%, 100%': { boxShadow: '0 0 5px #F0B90B, 0 0 10px #F0B90B' },
-          '50%': { boxShadow: '0 0 20px #F0B90B, 0 0 30px #F0B90B' },
+          '0%, 100%': { boxShadow: '0 0 5px #22D3EE, 0 0 10px #22D3EE' },
+          '50%': { boxShadow: '0 0 20px #22D3EE, 0 0 30px #8B5CF6' },
         },
         'grow': {
           '0%': { transform: 'scale(0.5)', opacity: '0' },
@@ -82,6 +95,10 @@ export default {
         'twinkle': {
           '0%, 100%': { opacity: '0.3' },
           '50%': { opacity: '1' },
+        },
+        'star-drift': {
+          '0%': { transform: 'translateY(0) translateX(0)' },
+          '100%': { transform: 'translateY(-100vh) translateX(50px)' },
         },
       },
       backgroundImage: {

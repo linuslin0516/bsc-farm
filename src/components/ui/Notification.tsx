@@ -46,7 +46,7 @@ export const Notification: React.FC<NotificationProps> = ({
     success: 'border-green-500 bg-green-900/50',
     error: 'border-red-500 bg-red-900/50',
     info: 'border-blue-500 bg-blue-900/50',
-    warning: 'border-binance-yellow bg-binance-yellow/10',
+    warning: 'border-space-cyan bg-space-cyan/10',
   };
 
   return (

@@ -47,7 +47,7 @@ export const Shop: React.FC<ShopProps> = ({ isOpen, onClose, onNotify }) => {
 
   const handleBuyItem = (itemId: string, price: number, name: string, nameCn: string) => {
     if (demoBalance < price) {
-      onNotify('error', l(`Not enough $FARM! Need ${price}`, `$FARM 不足！需要 ${price}`));
+      onNotify('error', l(`Not enough GOLD! Need ${price}`, `GOLD 不足！需要 ${price}`));
       return;
     }
 
@@ -66,16 +66,16 @@ export const Shop: React.FC<ShopProps> = ({ isOpen, onClose, onNotify }) => {
     <Modal isOpen={isOpen} onClose={onClose} title={l('Shop', '商店')} size="lg">
       <div className="space-y-6">
         {/* Balance display */}
-        <div className="flex items-center justify-between p-3 bg-binance-gray rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-space-gray rounded-lg">
           <span className="text-gray-300">{l('Your Balance:', '你的餘額：')}</span>
-          <span className="text-xl font-bold text-binance-yellow">
-            {demoBalance.toFixed(0)} $FARM
+          <span className="text-xl font-bold text-space-cyan">
+            {demoBalance.toFixed(0)} GOLD
           </span>
         </div>
 
         {/* Land Upgrades */}
         <div>
-          <h3 className="text-lg font-bold text-binance-yellow mb-3">
+          <h3 className="text-lg font-bold text-space-cyan mb-3">
             {l('Land Upgrades', '農地升級')}
           </h3>
           <div className="grid grid-cols-3 gap-3">
@@ -129,7 +129,7 @@ export const Shop: React.FC<ShopProps> = ({ isOpen, onClose, onNotify }) => {
 
         {/* Tools */}
         <div>
-          <h3 className="text-lg font-bold text-binance-yellow mb-3">{l('Tools', '工具')}</h3>
+          <h3 className="text-lg font-bold text-space-cyan mb-3">{l('Tools', '工具')}</h3>
           <div className="grid grid-cols-3 gap-3">
             {toolItems.map((item) => {
               const canAfford = demoBalance >= item.price;
@@ -147,7 +147,7 @@ export const Shop: React.FC<ShopProps> = ({ isOpen, onClose, onNotify }) => {
                       disabled={!canAfford}
                       onClick={() => handleBuyItem(item.id, item.price, item.name, item.nameCn)}
                     >
-                      {item.price} $FARM
+                      {item.price} GOLD
                     </Button>
                   </div>
                 </div>
@@ -158,7 +158,7 @@ export const Shop: React.FC<ShopProps> = ({ isOpen, onClose, onNotify }) => {
 
         {/* Boosts */}
         <div>
-          <h3 className="text-lg font-bold text-binance-yellow mb-3">{l('Boosts', '加成道具')}</h3>
+          <h3 className="text-lg font-bold text-space-cyan mb-3">{l('Boosts', '加成道具')}</h3>
           <div className="grid grid-cols-3 gap-3">
             {boostItems.map((item) => {
               const canAfford = demoBalance >= item.price;
@@ -176,7 +176,7 @@ export const Shop: React.FC<ShopProps> = ({ isOpen, onClose, onNotify }) => {
                       disabled={!canAfford}
                       onClick={() => handleBuyItem(item.id, item.price, item.name, item.nameCn)}
                     >
-                      {item.price} $FARM
+                      {item.price} GOLD
                     </Button>
                   </div>
                 </div>

@@ -82,12 +82,12 @@ export const AddFriend: React.FC<AddFriendProps> = ({ myUserId, onNotify, langua
       </form>
 
       {/* Share section */}
-      <div className="border-t border-binance-gray-light pt-6">
-        <h3 className="text-sm font-bold text-binance-yellow mb-3">{l('Share with friends', '分享給朋友')}</h3>
+      <div className="border-t border-space-gray-light pt-6">
+        <h3 className="text-sm font-bold text-space-cyan mb-3">{l('Share with friends', '分享給朋友')}</h3>
 
-        <div className="p-4 bg-binance-gray rounded-lg text-center">
+        <div className="p-4 bg-space-gray rounded-lg text-center">
           <p className="text-gray-300 mb-3">{l('Let friends add you:', '讓朋友加你為好友：')}</p>
-          <p className="text-3xl font-bold font-mono text-binance-yellow mb-4">
+          <p className="text-3xl font-bold font-mono text-space-cyan mb-4">
             {myUserId}
           </p>
 
@@ -117,8 +117,8 @@ export const AddFriend: React.FC<AddFriendProps> = ({ myUserId, onNotify, langua
       </div>
 
       {/* Tips */}
-      <div className="bg-binance-yellow/10 border border-binance-yellow/30 rounded-lg p-4">
-        <h4 className="text-sm font-bold text-binance-yellow mb-2">💡 {l('Tips', '小提示')}</h4>
+      <div className="bg-space-cyan/10 border border-space-cyan/30 rounded-lg p-4">
+        <h4 className="text-sm font-bold text-space-cyan mb-2">💡 {l('Tips', '小提示')}</h4>
         <ul className="text-xs text-gray-300 space-y-1">
           <li>• {l("After adding friends, you can visit their farms", '加好友後可以訪問對方的農場')}</li>
           <li>• {l("You can steal mature crops from friends (once per plot)", '可以偷好友成熟的作物（每塊地只能偷一次）')}</li>

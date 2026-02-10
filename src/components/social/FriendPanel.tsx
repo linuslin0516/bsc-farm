@@ -37,10 +37,10 @@ export const FriendPanel: React.FC<FriendPanelProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={l('Friend System', '好友系統')} size="lg">
       {/* My ID display */}
-      <div className="mb-4 p-3 bg-binance-gray rounded-lg flex items-center justify-between">
+      <div className="mb-4 p-3 bg-space-gray rounded-lg flex items-center justify-between">
         <div>
           <span className="text-xs text-gray-400">{l('My ID', '我的 ID')}</span>
-          <p className="text-xl font-bold text-binance-yellow font-mono">
+          <p className="text-xl font-bold text-space-cyan font-mono">
             {myUserId}
           </p>
         </div>
@@ -64,8 +64,8 @@ export const FriendPanel: React.FC<FriendPanelProps> = ({
             className={`
               flex-1 py-2 px-4 rounded-lg font-medium transition-all
               ${activeTab === tab.id
-                ? 'bg-binance-yellow text-black'
-                : 'bg-binance-gray-light text-gray-300 hover:bg-binance-gray'
+                ? 'bg-space-cyan text-black'
+                : 'bg-space-gray-light text-gray-300 hover:bg-space-gray'
               }
             `}
           >

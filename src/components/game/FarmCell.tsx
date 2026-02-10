@@ -48,7 +48,7 @@ export const FarmCellComponent: React.FC<FarmCellProps> = ({
         ${plantedCrop ? 'planted' : ''}
         ${isMature ? 'mature cursor-pointer' : ''}
         ${!plantedCrop && selectedCropId ? 'hover:bg-green-800/30 cursor-pointer' : ''}
-        ${isSelected ? 'ring-2 ring-binance-yellow' : ''}
+        ${isSelected ? 'ring-2 ring-space-cyan' : ''}
       `}
     >
       {plantedCrop && cropDef ? (
@@ -60,7 +60,7 @@ export const FarmCellComponent: React.FC<FarmCellProps> = ({
             </span>
           )}
           {isMature && (
-            <span className="text-[10px] text-binance-yellow font-bold animate-pulse">
+            <span className="text-[10px] text-space-cyan font-bold animate-pulse">
               Harvest!
             </span>
           )}

@@ -10,7 +10,7 @@
 
 body {
   font-family: 'Nunito', sans-serif;
-  background: linear-gradient(135deg, #0B0E11 0%, #1E2026 50%, #0B0E11 100%);
+  background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #0F172A 100%);
   min-height: 100vh;
   color: white;
   overflow-x: hidden;
@@ -23,51 +23,51 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1E2026;
+  background: #1E293B;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #F0B90B;
+  background: #0EA5E9;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #FCD535;
+  background: #22D3EE;
 }
 
 /* Button styles */
 @layer components {
   .btn-primary {
-    @apply bg-binance-yellow text-black font-bold py-2 px-4 rounded-lg
-           hover:bg-binance-gold transition-all duration-200
-           active:scale-95 shadow-lg hover:shadow-binance-yellow/30;
+    @apply bg-space-blue text-white font-bold py-2 px-4 rounded-lg
+           hover:bg-space-cyan hover:text-space-dark transition-all duration-200
+           active:scale-95 shadow-lg hover:shadow-space-cyan/30;
   }
 
   .btn-secondary {
-    @apply bg-binance-gray border-2 border-binance-yellow text-binance-yellow
-           font-bold py-2 px-4 rounded-lg hover:bg-binance-yellow hover:text-black
+    @apply bg-space-gray border-2 border-space-cyan text-space-cyan
+           font-bold py-2 px-4 rounded-lg hover:bg-space-cyan hover:text-space-dark
            transition-all duration-200 active:scale-95;
   }
 
   .card {
-    @apply bg-binance-gray/80 border-2 border-binance-yellow/30 rounded-xl
+    @apply bg-space-gray/80 border-2 border-space-cyan/30 rounded-xl
            backdrop-blur-sm shadow-lg;
   }
 
   .card-hover {
-    @apply card hover:border-binance-yellow hover:shadow-binance-yellow/20
+    @apply card hover:border-space-cyan hover:shadow-space-cyan/20
            transition-all duration-300;
   }
 
   .input-field {
-    @apply bg-binance-dark border-2 border-binance-gray-light rounded-lg
-           px-4 py-2 text-white focus:border-binance-yellow focus:outline-none
+    @apply bg-space-dark border-2 border-space-gray-light rounded-lg
+           px-4 py-2 text-white focus:border-space-cyan focus:outline-none
            transition-colors duration-200;
   }
 
   .tooltip {
-    @apply absolute z-50 bg-binance-dark border border-binance-yellow
+    @apply absolute z-50 bg-space-dark border border-space-cyan
            text-sm px-3 py-2 rounded-lg shadow-lg;
   }
 
@@ -78,16 +78,16 @@ body {
   }
 
   .glass-panel-solid {
-    @apply bg-binance-gray/90 backdrop-blur-md border border-binance-yellow/20
+    @apply bg-space-gray/90 backdrop-blur-md border border-space-cyan/20
            shadow-lg;
   }
 }
 
 /* Farm grid cell */
 .farm-cell {
-  @apply relative w-16 h-16 bg-amber-900/40 border-2 border-amber-700/50
+  @apply relative w-16 h-16 bg-space-purple/20 border-2 border-space-purple/30
          rounded-lg cursor-pointer transition-all duration-200
-         hover:border-binance-yellow hover:bg-amber-800/50;
+         hover:border-space-cyan hover:bg-space-purple/30;
 }
 
 .farm-cell.planted {
@@ -95,7 +95,7 @@ body {
 }
 
 .farm-cell.mature {
-  @apply border-binance-yellow bg-binance-yellow/10 animate-pulse-glow;
+  @apply border-space-cyan bg-space-cyan/10 animate-pulse-glow;
 }
 
 /* Crop growth animations */
@@ -199,8 +199,8 @@ body {
 
 /* Glow pulse for mature crops */
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(240, 185, 11, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(240, 185, 11, 0.8); }
+  0%, 100% { box-shadow: 0 0 5px rgba(34, 211, 238, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.8), 0 0 30px rgba(139, 92, 246, 0.4); }
 }
 
 .animate-pulse-glow {
@@ -229,11 +229,11 @@ body {
 .glow-rare { box-shadow: 0 0 20px rgba(96, 165, 250, 0.7); }
 .glow-epic { box-shadow: 0 0 25px rgba(192, 132, 252, 0.8); }
 .glow-legendary {
-  box-shadow: 0 0 30px rgba(250, 204, 21, 0.9);
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.9);
   animation: legendary-glow 2s ease-in-out infinite;
 }
 
 @keyframes legendary-glow {
-  0%, 100% { box-shadow: 0 0 30px rgba(250, 204, 21, 0.9); }
-  50% { box-shadow: 0 0 50px rgba(250, 204, 21, 1), 0 0 80px rgba(250, 204, 21, 0.5); }
+  0%, 100% { box-shadow: 0 0 30px rgba(34, 211, 238, 0.9); }
+  50% { box-shadow: 0 0 50px rgba(34, 211, 238, 1), 0 0 80px rgba(139, 92, 246, 0.5); }
 }

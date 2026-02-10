@@ -83,7 +83,7 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-binance-yellow"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-space-cyan"></div>
       </div>
     );
   }
@@ -110,7 +110,7 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
         return (
           <div
             key={request.oderId}
-            className="flex items-center justify-between p-4 bg-binance-gray-light rounded-lg"
+            className="flex items-center justify-between p-4 bg-space-gray-light rounded-lg"
           >
             <div>
               <div className="flex items-center gap-2">

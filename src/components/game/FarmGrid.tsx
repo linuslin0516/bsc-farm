@@ -41,7 +41,7 @@ export const FarmGrid: React.FC<FarmGridProps> = ({ onNotify }) => {
       if (!cropDef) return;
 
       if (demoBalance < cropDef.cost) {
-        onNotify('error', `Not enough $FARM! Need ${cropDef.cost}`);
+        onNotify('error', `Not enough GOLD! Need ${cropDef.cost}`);
         return;
       }
 
@@ -61,7 +61,7 @@ export const FarmGrid: React.FC<FarmGridProps> = ({ onNotify }) => {
         if (cropDef) {
           addDemoBalance(cropDef.sellPrice);
           addExperience(cropDef.experience);
-          onNotify('success', `Harvested ${cropDef.nameCn}! +${cropDef.sellPrice} $FARM`);
+          onNotify('success', `Harvested ${cropDef.nameCn}! +${cropDef.sellPrice} GOLD`);
         }
       }
     },

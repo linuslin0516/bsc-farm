@@ -22,7 +22,7 @@ const RARITY_GLOW: Record<CropRarity, string> = {
   uncommon: 'drop-shadow-[0_0_6px_rgba(74,222,128,0.6)]',
   rare: 'drop-shadow-[0_0_8px_rgba(96,165,250,0.7)]',
   epic: 'drop-shadow-[0_0_10px_rgba(192,132,252,0.8)]',
-  legendary: 'drop-shadow-[0_0_15px_rgba(250,204,21,1)] animate-pulse',
+  legendary: 'drop-shadow-[0_0_15px_rgba(34,211,238,1)] animate-pulse',
 };
 
 export const IsometricCrop: React.FC<IsometricCropProps> = ({

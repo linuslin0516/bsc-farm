@@ -84,7 +84,7 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
       if (!cropDef) return;
 
       if (demoBalance < cropDef.cost) {
-        onNotify('error', `$FARM 不足！需要 ${cropDef.cost}`);
+        onNotify('error', `GOLD 不足！需要 ${cropDef.cost}`);
         return;
       }
 
@@ -129,7 +129,7 @@ export const IsometricFarm: React.FC<IsometricFarmProps> = ({
           // Show price with trend indicator
           const trendEmoji = priceChange > 0 ? '📈' : priceChange < 0 ? '📉' : '';
           const priceChangeText = priceChange !== 0 ? ` (${priceChange > 0 ? '+' : ''}${priceChangePercent}%)` : '';
-          onNotify('success', `收成了 ${cropDef.nameCn}！${trendEmoji}+${currentPrice} $FARM${priceChangeText}`);
+          onNotify('success', `收成了 ${cropDef.nameCn}！${trendEmoji}+${currentPrice} GOLD${priceChangeText}`);
 
           // Update achievements, daily tasks, and leaderboard stats - mark crop as discovered
           try {

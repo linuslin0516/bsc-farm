@@ -63,7 +63,7 @@ export const IsometricCell: React.FC<IsometricCellProps> = ({
       return 'border-red-500 bg-red-500/20';
     }
     if (isMature && !isVisiting) {
-      return 'border-binance-yellow bg-binance-yellow/20';
+      return 'border-space-cyan bg-space-cyan/20';
     }
     if (plantedCrop) {
       return 'border-green-600 bg-green-900/30';
@@ -71,9 +71,9 @@ export const IsometricCell: React.FC<IsometricCellProps> = ({
     if (canPlant && !isVisiting) {
       return isHovered
         ? 'border-green-400 bg-green-500/30'
-        : 'border-binance-gray-light';
+        : 'border-space-gray-light';
     }
-    return 'border-binance-gray-light';
+    return 'border-space-gray-light';
   };
 
   // Get hover effect for diamond
@@ -83,7 +83,7 @@ export const IsometricCell: React.FC<IsometricCellProps> = ({
       return 'shadow-[0_0_20px_rgba(239,68,68,0.6)]';
     }
     if (isMature && !isVisiting) {
-      return 'shadow-[0_0_20px_rgba(240,185,11,0.6)]';
+      return 'shadow-[0_0_20px_rgba(34,211,238,0.6)]';
     }
     if (canPlant && !isVisiting) {
       return 'shadow-[0_0_20px_rgba(34,197,94,0.5)]';
@@ -123,7 +123,7 @@ export const IsometricCell: React.FC<IsometricCellProps> = ({
             absolute border-2 transition-all duration-200
             ${getCellStyle()}
             ${getHoverEffect()}
-            ${isSelected ? 'ring-2 ring-binance-yellow ring-offset-2 ring-offset-binance-dark' : ''}
+            ${isSelected ? 'ring-2 ring-space-cyan ring-offset-2 ring-offset-space-dark' : ''}
           `}
           style={{
             width: `${CELL_WIDTH}px`,
@@ -132,10 +132,10 @@ export const IsometricCell: React.FC<IsometricCellProps> = ({
             left: 0,
             clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
             background: plantedCrop
-              ? 'linear-gradient(135deg, #3d2914 0%, #5a3d1a 50%, #3d2914 100%)'
+              ? 'linear-gradient(135deg, #2D1B4E 0%, #4C3575 50%, #2D1B4E 100%)'
               : isHovered && canPlant
-              ? 'linear-gradient(135deg, #2d5a2d 0%, #3d7a3d 50%, #2d5a2d 100%)'
-              : 'linear-gradient(135deg, #4a3728 0%, #6b4423 50%, #4a3728 100%)',
+              ? 'linear-gradient(135deg, #1a3a4a 0%, #2a5a6a 50%, #1a3a4a 100%)'
+              : 'linear-gradient(135deg, #1E293B 0%, #334155 50%, #1E293B 100%)',
           }}
         >
           {/* Soil texture */}
@@ -179,7 +179,7 @@ export const IsometricCell: React.FC<IsometricCellProps> = ({
         {/* Harvest indicator */}
         {isMature && !isVisiting && (
           <div
-            className="absolute left-1/2 -translate-x-1/2 text-xs text-binance-yellow font-bold animate-bounce bg-black/60 px-2 py-1 rounded-full"
+            className="absolute left-1/2 -translate-x-1/2 text-xs text-space-cyan font-bold animate-bounce bg-black/60 px-2 py-1 rounded-full"
             style={{ top: `${CELL_HEIGHT - 5}px` }}
           >
             收成!

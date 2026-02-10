@@ -70,14 +70,14 @@ export const CropCodex: React.FC<CropCodexProps> = ({ isOpen, onClose }) => {
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-binance-gray rounded-2xl border-2 border-binance-yellow/30 overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-4xl max-h-[90vh] bg-space-gray rounded-2xl border-2 border-space-cyan/30 overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-binance-yellow/20 bg-binance-dark/50">
+        <div className="p-4 border-b border-space-cyan/20 bg-space-dark/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-3xl">📚</span>
               <div>
-                <h2 className="text-2xl font-bold text-binance-yellow">作物圖鑑</h2>
+                <h2 className="text-2xl font-bold text-space-cyan">作物圖鑑</h2>
                 <p className="text-sm text-gray-400">
                   已發現 {totalDiscovered}/{totalCrops} 種作物
                 </p>
@@ -85,16 +85,16 @@ export const CropCodex: React.FC<CropCodexProps> = ({ isOpen, onClose }) => {
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-binance-gray-light hover:bg-red-500/20 flex items-center justify-center transition-colors"
+              className="w-10 h-10 rounded-full bg-space-gray-light hover:bg-red-500/20 flex items-center justify-center transition-colors"
             >
               <span className="text-xl">✕</span>
             </button>
           </div>
 
           {/* Progress bar */}
-          <div className="mt-3 h-3 bg-binance-dark rounded-full overflow-hidden">
+          <div className="mt-3 h-3 bg-space-dark rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-binance-yellow to-binance-gold transition-all duration-500"
+              className="h-full bg-gradient-to-r from-space-cyan to-space-glow transition-all duration-500"
               style={{ width: `${(totalDiscovered / totalCrops) * 100}%` }}
             />
           </div>
@@ -105,8 +105,8 @@ export const CropCodex: React.FC<CropCodexProps> = ({ isOpen, onClose }) => {
               onClick={() => setSelectedRarity('all')}
               className={`px-3 py-1 rounded-full text-sm transition-colors ${
                 selectedRarity === 'all'
-                  ? 'bg-binance-yellow text-black'
-                  : 'bg-binance-gray-light text-gray-300 hover:bg-binance-gray-light/80'
+                  ? 'bg-space-cyan text-black'
+                  : 'bg-space-gray-light text-gray-300 hover:bg-space-gray-light/80'
               }`}
             >
               全部
@@ -120,7 +120,7 @@ export const CropCodex: React.FC<CropCodexProps> = ({ isOpen, onClose }) => {
                   className={`px-3 py-1 rounded-full text-sm border transition-colors ${
                     selectedRarity === rarity
                       ? `${colors.bg} ${colors.border} ${colors.text}`
-                      : 'bg-binance-gray-light text-gray-300 border-transparent hover:bg-binance-gray-light/80'
+                      : 'bg-space-gray-light text-gray-300 border-transparent hover:bg-space-gray-light/80'
                   }`}
                 >
                   {RARITY_NAMES[rarity]}
@@ -209,7 +209,7 @@ const CropCard: React.FC<CropCardProps> = ({ crop, discovered, unlocked, onClick
         transition-all duration-200 hover:scale-105
         ${discovered
           ? `${colors.bg} ${colors.border} ${colors.glow}`
-          : 'bg-binance-dark/50 border-binance-gray-light'
+          : 'bg-space-dark/50 border-space-gray-light'
         }
       `}
     >
@@ -300,11 +300,11 @@ const CropDetailModal: React.FC<CropDetailModalProps> = ({
             <div className="w-full mt-4 grid grid-cols-2 gap-3 text-sm">
               <div className="bg-black/30 rounded-lg p-3">
                 <div className="text-gray-400">種子價格</div>
-                <div className="text-binance-yellow font-bold">{crop.cost} $FARM</div>
+                <div className="text-space-cyan font-bold">{crop.cost} GOLD</div>
               </div>
               <div className="bg-black/30 rounded-lg p-3">
                 <div className="text-gray-400">售價</div>
-                <div className="text-green-400 font-bold">{crop.sellPrice} $FARM</div>
+                <div className="text-green-400 font-bold">{crop.sellPrice} GOLD</div>
               </div>
               <div className="bg-black/30 rounded-lg p-3">
                 <div className="text-gray-400">生長時間</div>
@@ -327,7 +327,7 @@ const CropDetailModal: React.FC<CropDetailModalProps> = ({
           {/* Profit calculation */}
           {discovered && (
             <div className="mt-4 text-sm text-gray-400">
-              利潤: <span className="text-green-400 font-bold">+{crop.sellPrice - crop.cost} $FARM</span>
+              利潤: <span className="text-green-400 font-bold">+{crop.sellPrice - crop.cost} GOLD</span>
               {' '}({((crop.sellPrice - crop.cost) / crop.cost * 100).toFixed(0)}% 回報率)
             </div>
           )}

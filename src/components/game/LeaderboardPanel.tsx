@@ -61,7 +61,7 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
       case 3:
         return 'bg-gradient-to-r from-amber-700 to-amber-600 text-white';
       default:
-        return 'bg-binance-gray-light text-gray-300';
+        return 'bg-space-gray-light text-gray-300';
     }
   };
 
@@ -95,14 +95,14 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg max-h-[90vh] bg-binance-gray rounded-2xl border-2 border-binance-yellow/30 overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-lg max-h-[90vh] bg-space-gray rounded-2xl border-2 border-space-cyan/30 overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-binance-yellow/20 bg-binance-dark/50">
+        <div className="p-4 border-b border-space-cyan/20 bg-space-dark/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-3xl">🏆</span>
               <div>
-                <h2 className="text-xl font-bold text-binance-yellow">{l('Leaderboard', '排行榜')}</h2>
+                <h2 className="text-xl font-bold text-space-cyan">{l('Leaderboard', '排行榜')}</h2>
                 <p className="text-sm text-gray-400">
                   {l('Compete with other farmers', '與其他農夫一較高下')}
                 </p>
@@ -110,7 +110,7 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-binance-gray-light hover:bg-red-500/20 flex items-center justify-center transition-colors"
+              className="w-10 h-10 rounded-full bg-space-gray-light hover:bg-red-500/20 flex items-center justify-center transition-colors"
             >
               <span className="text-xl">✕</span>
             </button>
@@ -124,8 +124,8 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
                 onClick={() => setSelectedType(tab.id)}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-colors ${
                   selectedType === tab.id
-                    ? 'bg-binance-yellow text-black font-bold'
-                    : 'bg-binance-gray-light text-gray-300 hover:bg-binance-gray-light/80'
+                    ? 'bg-space-cyan text-black font-bold'
+                    : 'bg-space-gray-light text-gray-300 hover:bg-space-gray-light/80'
                 }`}
               >
                 <span>{tab.icon}</span>
@@ -137,10 +137,10 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
 
         {/* My Rank Card */}
         {player && myRank && (
-          <div className="p-4 bg-gradient-to-r from-binance-yellow/10 to-transparent border-b border-binance-yellow/20">
+          <div className="p-4 bg-gradient-to-r from-space-cyan/10 to-transparent border-b border-space-cyan/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-binance-yellow text-black flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-full bg-space-cyan text-black flex items-center justify-center font-bold">
                   {player.avatarUrl ? (
                     <img src={player.avatarUrl} alt="" className="w-full h-full rounded-full object-cover" />
                   ) : (
@@ -154,7 +154,7 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
               </div>
               <div className="text-right">
                 <div className={`text-2xl font-bold ${
-                  myRank.rank <= 3 ? 'text-binance-yellow' : 'text-white'
+                  myRank.rank <= 3 ? 'text-space-cyan' : 'text-white'
                 }`}>
                   #{myRank.rank}
                   {myRank.rank <= 3 && <span className="ml-1">{getRankEmoji(myRank.rank)}</span>}
@@ -189,10 +189,10 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
                     className={`
                       flex items-center gap-3 p-3 rounded-xl transition-colors
                       ${isMe
-                        ? 'bg-binance-yellow/20 border border-binance-yellow/50'
+                        ? 'bg-space-cyan/20 border border-space-cyan/50'
                         : index < 3
-                          ? 'bg-binance-dark/50 border border-binance-gray-light'
-                          : 'bg-binance-dark/30'
+                          ? 'bg-space-dark/50 border border-space-gray-light'
+                          : 'bg-space-dark/30'
                       }
                     `}
                   >
@@ -207,7 +207,7 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
                     </div>
 
                     {/* Avatar */}
-                    <div className="w-10 h-10 rounded-full bg-binance-gray-light flex items-center justify-center overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-space-gray-light flex items-center justify-center overflow-hidden">
                       {entry.avatarUrl ? (
                         <img src={entry.avatarUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -217,9 +217,9 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
 
                     {/* Name & Level */}
                     <div className="flex-1 min-w-0">
-                      <div className={`font-bold truncate ${isMe ? 'text-binance-yellow' : 'text-white'}`}>
+                      <div className={`font-bold truncate ${isMe ? 'text-space-cyan' : 'text-white'}`}>
                         {entry.name}
-                        {isMe && <span className="ml-2 text-xs text-binance-yellow">({l('You', '你')})</span>}
+                        {isMe && <span className="ml-2 text-xs text-space-cyan">({l('You', '你')})</span>}
                       </div>
                       <div className="text-xs text-gray-400">
                         Lv.{entry.level}
@@ -246,7 +246,7 @@ export const LeaderboardPanel: React.FC<LeaderboardPanelProps> = ({ isOpen, onCl
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-binance-yellow/20 bg-binance-dark/30">
+        <div className="p-4 border-t border-space-cyan/20 bg-space-dark/30">
           <div className="text-center text-xs text-gray-500">
             {l('Score = (Level × 100) + (Harvests × 10) + (Steals × 5)', '積分計算: (等級 × 100) + (收成數 × 10) + (偷菜數 × 5)')}
           </div>

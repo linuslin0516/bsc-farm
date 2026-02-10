@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { Logo } from '../game/Logo';
 import { Button } from '../ui/Button';
 import { useGameStore } from '../../store/useGameStore';
-import { useWalletStore } from '../../store/useWalletStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { GAME_CONFIG } from '../../config/constants';
 import { Player } from '../../types';
-import { createUser, getUserByWalletAddress } from '../../services/userService';
+import { createUser, getUserByTwitterUid } from '../../services/userService';
 import { initializeFriendData } from '../../services/friendService';
 import { useT } from '../../translations';
 
@@ -22,6 +21,7 @@ const generateUserId = (): string => {
 export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
   const { twitterProfile } = useAuthStore();
   const [name, setName] = useState('');
+  const [bnbAddress, setBnbAddress] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatedId] = useState(() => generateUserId());
@@ -29,10 +29,6 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
   const { t } = useT();
 
   const { setPlayer, initializeFarm, setFarmCells, setDemoBalance, setGoldBalance } = useGameStore();
-  const { address, isConnected, connect, isConnecting, switchNetwork, isCorrectNetwork } = useWalletStore();
-
-  // Check if wallet is required (Twitter login without wallet)
-  const needsWalletBinding = twitterProfile && !isConnected;
 
   // Auto-fill name from Twitter profile
   useEffect(() => {
@@ -41,37 +37,31 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
     }
   }, [twitterProfile]);
 
-  // Check for existing user when wallet is connected
+  // Check for existing user when Twitter profile is available
   useEffect(() => {
     let isMounted = true;
     let timeoutId: NodeJS.Timeout;
 
     const checkExistingUser = async () => {
-      if (!isConnected || !address) return;
+      if (!twitterProfile?.uid) return;
 
-      console.log('🔍 Checking for existing user with wallet:', address);
       setIsCheckingExisting(true);
 
-      // Set a timeout to prevent infinite loading (10 seconds)
       timeoutId = setTimeout(() => {
         if (isMounted) {
-          console.warn('⏰ User check timed out, showing setup form');
           setIsCheckingExisting(false);
         }
       }, 10000);
 
       try {
-        const existingUser = await getUserByWalletAddress(address);
-        console.log('🔍 Query result:', existingUser ? 'User found' : 'New user');
+        const existingUser = await getUserByTwitterUid(twitterProfile.uid);
 
         if (!isMounted) return;
 
         if (existingUser) {
-          // User already exists, load their data
-          console.log('✅ Loading existing user data:', existingUser.oderId);
           const player: Player = {
             oderId: existingUser.oderId,
-            walletAddress: existingUser.walletAddress,
+            bnbAddress: existingUser.bnbAddress,
             twitterUid: existingUser.twitterUid,
             twitterHandle: existingUser.twitterHandle,
             avatarUrl: existingUser.avatarUrl,
@@ -86,11 +76,9 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
           setPlayer(player);
           setGoldBalance(player.farmBalance);
 
-          // Load farm cells from Firebase (with planted crops)
           if (existingUser.farmCells && existingUser.farmCells.length > 0) {
             setFarmCells(existingUser.farmCells);
           } else {
-            // No saved farm cells, initialize new ones
             initializeFarm(player.landSize);
           }
 
@@ -99,12 +87,11 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
           return;
         }
       } catch (error) {
-        console.error('❌ Failed to check existing user:', error);
+        console.error('Failed to check existing user:', error);
         setError(t.setup.errors.loadError);
       } finally {
         clearTimeout(timeoutId);
         if (isMounted) {
-          console.log('🔍 Check complete, showing setup form');
           setIsCheckingExisting(false);
         }
       }
@@ -116,34 +103,11 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
       isMounted = false;
       clearTimeout(timeoutId);
     };
-  }, [isConnected, address]);
-
-  // Handle wallet connection
-  const handleConnectWallet = async () => {
-    setError(null);
-    const success = await connect();
-    if (!success) {
-      setError(t.setup.errors.walletFailed);
-      return;
-    }
-
-    if (!isCorrectNetwork()) {
-      const switched = await switchNetwork();
-      if (!switched) {
-        setError(t.setup.errors.switchNetwork);
-      }
-    }
-  };
+  }, [twitterProfile?.uid]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    // Wallet is required
-    if (!isConnected || !address) {
-      setError(t.setup.errors.connectWallet);
-      return;
-    }
 
     const trimmedName = name.trim();
 
@@ -157,12 +121,18 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
       return;
     }
 
+    // Validate BNB address format if provided
+    const trimmedBnb = bnbAddress.trim();
+    if (trimmedBnb && !/^0x[a-fA-F0-9]{40}$/.test(trimmedBnb)) {
+      setError('BNB address format is invalid (should start with 0x followed by 40 hex characters)');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Create new player with generated ID
     const newPlayer: Player = {
       oderId: generatedId,
-      walletAddress: address,
+      bnbAddress: trimmedBnb || undefined,
       twitterUid: twitterProfile?.uid,
       twitterHandle: twitterProfile?.handle || undefined,
       avatarUrl: twitterProfile?.photoURL || undefined,
@@ -174,19 +144,17 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
       farmBalance: GAME_CONFIG.INITIAL_FARM_BALANCE,
     };
 
-    // Initialize game state
     setPlayer(newPlayer);
     initializeFarm(GAME_CONFIG.INITIAL_LAND_SIZE);
     setDemoBalance(GAME_CONFIG.INITIAL_FARM_BALANCE);
 
-    // Save to Firebase
     try {
       await createUser(
         generatedId,
         trimmedName,
         GAME_CONFIG.INITIAL_LAND_SIZE,
         GAME_CONFIG.INITIAL_FARM_BALANCE,
-        address,
+        trimmedBnb || undefined,
         twitterProfile?.uid,
         twitterProfile?.handle || undefined,
         twitterProfile?.photoURL || undefined
@@ -199,19 +167,17 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
       return;
     }
 
-    // Small delay for animation
     setTimeout(() => {
       setIsSubmitting(false);
       onComplete();
     }, 500);
   };
 
-  // Show loading state while checking for existing user
   if (isCheckingExisting) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <div className="card p-8 max-w-md w-full text-center">
-          <div className="animate-spin w-12 h-12 border-4 border-binance-yellow border-t-transparent rounded-full mx-auto mb-4" />
+          <div className="animate-spin w-12 h-12 border-4 border-space-cyan border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-gray-400">{t.setup.loadingData}</p>
         </div>
       </div>
@@ -225,7 +191,7 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
           <Logo size="md" />
         </div>
 
-        <h2 className="text-2xl font-bold text-center text-binance-yellow mb-2">
+        <h2 className="text-2xl font-bold text-center text-space-cyan mb-2">
           {t.setup.welcome}
         </h2>
         <p className="text-gray-400 text-center mb-6">
@@ -258,106 +224,82 @@ export const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
           </div>
         )}
 
-        {/* Wallet Connection Section - Required */}
-        {needsWalletBinding ? (
-          <div className="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">🦊</span>
-              <span className="text-orange-400 font-medium">{t.setup.needsWallet}</span>
-            </div>
-            <p className="text-sm text-gray-400 mb-4">
-              {t.setup.needsWalletDesc}
-            </p>
-            <Button
-              onClick={handleConnectWallet}
-              isLoading={isConnecting}
-              className="w-full"
+        {/* Generated ID display */}
+        <div className="mb-6 p-4 bg-space-gray rounded-lg text-center">
+          <span className="text-xs text-gray-400">{t.setup.yourId}</span>
+          <p className="text-3xl font-bold text-space-cyan font-mono">
+            {generatedId}
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            {t.setup.shareIdHint}
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-300 mb-2"
             >
-              {t.setup.connectWallet}
-            </Button>
+              {t.setup.farmName}
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t.setup.farmNamePlaceholder}
+              className="input-field w-full text-lg"
+              maxLength={20}
+              autoFocus
+            />
           </div>
-        ) : isConnected && address ? (
-          <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-xs text-gray-400">{t.setup.walletConnected}</span>
-                <p className="text-sm text-green-400 font-mono">
-                  {address.slice(0, 10)}...{address.slice(-8)}
-                </p>
-              </div>
-              <span className="text-green-400 text-xl">✓</span>
-            </div>
-          </div>
-        ) : null}
 
-        {/* Generated ID display - Only show when wallet is connected */}
-        {isConnected && (
-          <div className="mb-6 p-4 bg-binance-gray rounded-lg text-center">
-            <span className="text-xs text-gray-400">{t.setup.yourId}</span>
-            <p className="text-3xl font-bold text-binance-yellow font-mono">
-              {generatedId}
+          {/* BNB Address - Optional */}
+          <div className="mb-6">
+            <label
+              htmlFor="bnbAddress"
+              className="block text-sm font-medium text-gray-300 mb-2"
+            >
+              BNB Receiving Address <span className="text-gray-500">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              id="bnbAddress"
+              value={bnbAddress}
+              onChange={(e) => setBnbAddress(e.target.value)}
+              placeholder="0x..."
+              className="input-field w-full text-sm font-mono"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Fill in your BNB address to receive airdrop rewards based on leaderboard ranking.
             </p>
-            <p className="text-xs text-gray-500 mt-2">
-              {t.setup.shareIdHint}
-            </p>
           </div>
-        )}
 
-        {/* Only show form when wallet is connected */}
-        {isConnected && (
-          <>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-6">
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-300 mb-2"
-                >
-                  {t.setup.farmName}
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={t.setup.farmNamePlaceholder}
-                  className="input-field w-full text-lg"
-                  maxLength={20}
-                  autoFocus
-                />
-                {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
-              </div>
+          {error && <p className="mb-4 text-sm text-red-400">{error}</p>}
 
-              <Button
-                type="submit"
-                isLoading={isSubmitting}
-                className="w-full text-lg py-3"
-                disabled={!name.trim()}
-              >
-                {t.setup.startFarming}
-              </Button>
-            </form>
+          <Button
+            type="submit"
+            isLoading={isSubmitting}
+            className="w-full text-lg py-3"
+            disabled={!name.trim()}
+          >
+            {t.setup.startFarming}
+          </Button>
+        </form>
 
-            {/* Starter pack info */}
-            <div className="mt-6 p-4 bg-binance-yellow/10 border border-binance-yellow/30 rounded-lg">
-              <h3 className="text-sm font-bold text-binance-yellow mb-2">
-                {t.setup.starterPack}
-              </h3>
-              <ul className="text-sm text-gray-300 space-y-1">
-                <li>• {GAME_CONFIG.INITIAL_LAND_SIZE}x{GAME_CONFIG.INITIAL_LAND_SIZE} {t.setup.starterPackItems.land} ({GAME_CONFIG.INITIAL_LAND_SIZE * GAME_CONFIG.INITIAL_LAND_SIZE} {t.setup.starterPackItems.plots})</li>
-                <li>• {GAME_CONFIG.INITIAL_FARM_BALANCE} {t.setup.starterPackItems.gold}</li>
-                <li>• {t.setup.starterPackItems.cropsUnlocked}</li>
-                <li>• {t.setup.starterPackItems.uniqueId}</li>
-              </ul>
-            </div>
-          </>
-        )}
-
-        {/* Error display */}
-        {error && !isConnected && (
-          <div className="mt-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-300 text-sm text-center">
-            {error}
-          </div>
-        )}
+        {/* Starter pack info */}
+        <div className="mt-6 p-4 bg-space-blue/10 border border-space-blue/30 rounded-lg">
+          <h3 className="text-sm font-bold text-space-cyan mb-2">
+            {t.setup.starterPack}
+          </h3>
+          <ul className="text-sm text-gray-300 space-y-1">
+            <li>- {GAME_CONFIG.INITIAL_LAND_SIZE}x{GAME_CONFIG.INITIAL_LAND_SIZE} {t.setup.starterPackItems.land} ({GAME_CONFIG.INITIAL_LAND_SIZE * GAME_CONFIG.INITIAL_LAND_SIZE} {t.setup.starterPackItems.plots})</li>
+            <li>- {GAME_CONFIG.INITIAL_FARM_BALANCE} {t.setup.starterPackItems.gold}</li>
+            <li>- {t.setup.starterPackItems.cropsUnlocked}</li>
+            <li>- {t.setup.starterPackItems.uniqueId}</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

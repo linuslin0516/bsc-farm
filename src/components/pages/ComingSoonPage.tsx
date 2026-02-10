@@ -9,57 +9,56 @@ export const ComingSoonPage: React.FC = () => {
 
   const languages: Language[] = ['zh-CN', 'zh-TW', 'en'];
 
-  // Translations for coming soon page
   const comingSoonText = {
     'zh-CN': {
       title: '即将上线',
-      subtitle: 'BSC链上的Play-to-Earn农场游戏',
-      description: '种植作物，收获$FARM代币，与好友互动，开启你的链上农场之旅！',
-      whitepaper: '查看白皮书',
+      subtitle: '太空农场探险游戏',
+      description: '种植宇宙作物，探索星际农场，与好友互动，开启你的太空农场之旅！',
+      whitepaper: '了解更多',
       followUs: '关注我们',
       features: {
-        plant: '种植作物',
-        plantDesc: '多种作物可选择，不同生长周期和收益',
-        earn: '赚取代币',
-        earnDesc: '收成作物获得GOLD，可提现为$FARM',
+        plant: '培育作物',
+        plantDesc: '多种宇宙作物可选择，不同生长周期和收益',
+        earn: '赚取奖励',
+        earnDesc: '收成作物获得 GOLD，登上排行榜赢取 BNB 空投',
         social: '社交互动',
-        socialDesc: '添加好友，互相访问，偷菜乐趣无穷',
+        socialDesc: '添加好友，互相拜访，掠夺资源乐趣无穷',
         upgrade: '升级成长',
-        upgradeDesc: '提升等级，解锁更多高级作物',
+        upgradeDesc: '提升等级，解锁更多高级宇宙作物',
       },
     },
     'zh-TW': {
       title: '即將上線',
-      subtitle: 'BSC鏈上的Play-to-Earn農場遊戲',
-      description: '種植作物，收穫$FARM代幣，與好友互動，開啟你的鏈上農場之旅！',
-      whitepaper: '查看白皮書',
+      subtitle: '太空農場探險遊戲',
+      description: '種植宇宙作物，探索星際農場，與好友互動，開啟你的太空農場之旅！',
+      whitepaper: '了解更多',
       followUs: '關注我們',
       features: {
-        plant: '種植作物',
-        plantDesc: '多種作物可選擇，不同生長週期和收益',
-        earn: '賺取代幣',
-        earnDesc: '收成作物獲得GOLD，可提現為$FARM',
+        plant: '培育作物',
+        plantDesc: '多種宇宙作物可選擇，不同生長週期和收益',
+        earn: '賺取獎勵',
+        earnDesc: '收成作物獲得 GOLD，登上排行榜贏取 BNB 空投',
         social: '社交互動',
-        socialDesc: '添加好友，互相訪問，偷菜樂趣無窮',
+        socialDesc: '添加好友，互相拜訪，掠奪資源樂趣無窮',
         upgrade: '升級成長',
-        upgradeDesc: '提升等級，解鎖更多高級作物',
+        upgradeDesc: '提升等級，解鎖更多高級宇宙作物',
       },
     },
     'en': {
       title: 'Coming Soon',
-      subtitle: 'Play-to-Earn Farming Game on BSC',
-      description: 'Plant crops, harvest $FARM tokens, interact with friends, and start your on-chain farming journey!',
-      whitepaper: 'Read Whitepaper',
+      subtitle: 'Space Farming Adventure Game',
+      description: 'Grow cosmic crops, explore interstellar farms, interact with friends, and start your space farming journey!',
+      whitepaper: 'Learn More',
       followUs: 'Follow Us',
       features: {
-        plant: 'Plant Crops',
-        plantDesc: 'Various crops with different growth cycles and yields',
-        earn: 'Earn Tokens',
-        earnDesc: 'Harvest crops for GOLD, withdraw as $FARM',
+        plant: 'Grow Crops',
+        plantDesc: 'Various cosmic crops with different growth cycles and yields',
+        earn: 'Earn Rewards',
+        earnDesc: 'Harvest crops for GOLD, climb leaderboards to win BNB airdrops',
         social: 'Social Interaction',
-        socialDesc: 'Add friends, visit farms, steal crops for fun',
+        socialDesc: 'Add friends, visit farms, raid resources for fun',
         upgrade: 'Level Up',
-        upgradeDesc: 'Increase level to unlock premium crops',
+        upgradeDesc: 'Increase level to unlock premium cosmic crops',
       },
     },
   };
@@ -67,26 +66,26 @@ export const ComingSoonPage: React.FC = () => {
   const text = comingSoonText[language];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0B0E11] via-[#1a1d21] to-[#0B0E11] relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-space-dark via-[#1E1B4B] to-space-dark relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 text-6xl opacity-10 animate-float">
-          🌽
+          🚀
         </div>
         <div className="absolute top-40 right-20 text-5xl opacity-10 animate-float" style={{ animationDelay: '1s' }}>
-          🥕
+          🪐
         </div>
         <div className="absolute bottom-40 left-20 text-7xl opacity-10 animate-float" style={{ animationDelay: '0.5s' }}>
-          🍅
+          🌌
         </div>
         <div className="absolute bottom-20 right-10 text-5xl opacity-10 animate-float" style={{ animationDelay: '1.5s' }}>
-          🌾
+          ⭐
         </div>
         <div className="absolute top-1/3 left-1/4 text-4xl opacity-10 animate-float" style={{ animationDelay: '2s' }}>
-          🥬
+          🛸
         </div>
         <div className="absolute top-1/2 right-1/3 text-5xl opacity-10 animate-float" style={{ animationDelay: '0.8s' }}>
-          🍆
+          ☄️
         </div>
       </div>
 
@@ -110,7 +109,7 @@ export const ComingSoonPage: React.FC = () => {
                     setShowLangMenu(false);
                   }}
                   className={`w-full text-left px-4 py-2 ${
-                    language === lang ? 'text-binance-yellow' : 'text-gray-300 hover:text-white'
+                    language === lang ? 'text-space-cyan' : 'text-gray-300 hover:text-white'
                   }`}
                 >
                   {LANGUAGE_NAMES[lang]}
@@ -129,7 +128,7 @@ export const ComingSoonPage: React.FC = () => {
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl md:text-6xl font-bold text-binance-yellow mb-4 text-center">
+        <h1 className="text-4xl md:text-6xl font-bold text-space-cyan mb-4 text-center">
           {text.title}
         </h1>
         <p className="text-xl md:text-2xl text-gray-300 mb-2 text-center">
@@ -139,10 +138,10 @@ export const ComingSoonPage: React.FC = () => {
           {text.description}
         </p>
 
-        {/* Whitepaper Button */}
+        {/* Learn More Button */}
         <Link
           to="/whitepaper"
-          className="mb-12 px-8 py-3 bg-binance-yellow text-binance-dark font-bold rounded-xl hover:bg-binance-yellow/90 transition-colors text-lg"
+          className="mb-12 px-8 py-3 bg-space-cyan text-space-dark font-bold rounded-xl hover:bg-space-cyan/90 transition-colors text-lg"
         >
           {text.whitepaper}
         </Link>
@@ -155,7 +154,7 @@ export const ComingSoonPage: React.FC = () => {
             <p className="text-xs text-gray-400">{text.features.plantDesc}</p>
           </div>
           <div className="glass-panel p-4 rounded-xl text-center">
-            <div className="text-3xl mb-2">💰</div>
+            <div className="text-3xl mb-2">⚡</div>
             <h3 className="text-white font-bold mb-1">{text.features.earn}</h3>
             <p className="text-xs text-gray-400">{text.features.earnDesc}</p>
           </div>
@@ -177,7 +176,7 @@ export const ComingSoonPage: React.FC = () => {
           <div className="flex gap-4 justify-center">
             {/* Twitter/X */}
             <a
-              href="https://x.com/FarmOnBSC"
+              href="https://x.com/SpaceFarmGame"
               target="_blank"
               rel="noopener noreferrer"
               className="glass-panel p-3 rounded-full hover:bg-white/10 transition-colors"
@@ -188,7 +187,7 @@ export const ComingSoonPage: React.FC = () => {
             </a>
             {/* Telegram */}
             <a
-              href="https://t.me/FarmOnBSC"
+              href="https://t.me/SpaceFarmGame"
               target="_blank"
               rel="noopener noreferrer"
               className="glass-panel p-3 rounded-full hover:bg-white/10 transition-colors"
@@ -203,7 +202,7 @@ export const ComingSoonPage: React.FC = () => {
 
       {/* Footer */}
       <div className="absolute bottom-4 left-0 right-0 text-center text-gray-500 text-sm">
-        Powered by $FARM on BSC
+        Space Farm - Cosmic Crops Adventure
       </div>
     </div>
   );
