@@ -1,7 +1,7 @@
-# 🚀 Space Farm (BSC Farm)
+# 🚀 Space Farm — Technical Specification
 
 > **Deep Space Sci-Fi Farming Simulation Game**
-> Version 0.1.0 | Firebase Project: `bscfarm-f83b4`
+> Project: BSC Farm | Version 0.1.0 | Firebase: `bscfarm-f83b4`
 
 ---
 
